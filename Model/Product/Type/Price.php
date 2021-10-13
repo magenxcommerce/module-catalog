@@ -262,7 +262,7 @@ class Price
 
         $tierPrice = $product->getTierPrice($qty);
         if (is_numeric($tierPrice)) {
-            $finalPrice = min($finalPrice, $tierPrice);
+            $finalPrice = min($finalPrice, (float) $tierPrice);
         }
         return $finalPrice;
     }
@@ -298,7 +298,7 @@ class Price
 
         $custGroup = $this->_getCustomerGroupId($product);
         if ($qty) {
-            $prevQty = 1;
+            $prevQty = 0;
             $prevPrice = $product->getPrice();
             $prevGroup = $allGroupsId;
 
@@ -379,7 +379,7 @@ class Price
             if (array_key_exists('website_price', $price)) {
                 $value = $price['website_price'];
             } else {
-                $value = $price['price'];
+                $value = $price['price'] ?? 0;
             }
             $tierPrice->setValue($value);
             $tierPrice->setQty($price['price_qty']);
@@ -647,7 +647,7 @@ class Price
     ) {
         if ($specialPrice !== null && $specialPrice != false) {
             if ($this->_localeDate->isScopeDateInInterval($store, $specialPriceFrom, $specialPriceTo)) {
-                $finalPrice = min($finalPrice, $specialPrice);
+                $finalPrice = min($finalPrice, (float) $specialPrice);
             }
         }
         return $finalPrice;

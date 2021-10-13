@@ -6,7 +6,9 @@
 
 namespace Magento\Catalog\Model\ResourceModel\Eav;
 
+use Magento\Catalog\Model\Attribute\Backend\DefaultBackend;
 use Magento\Catalog\Model\Attribute\LockValidatorInterface;
+use Magento\Eav\Model\Entity;
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Stdlib\DateTime\DateTimeFormatterInterface;
 
@@ -37,6 +39,18 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute implements
     const ENTITY = 'catalog_eav_attribute';
 
     const KEY_IS_GLOBAL = 'is_global';
+
+    private const ALLOWED_INPUT_TYPES = [
+        'boolean'     => true,
+        'date'        => true,
+        'datetime'    => true,
+        'multiselect' => true,
+        'price'       => true,
+        'select'      => true,
+        'text'        => true,
+        'textarea'    => true,
+        'weight'      => true,
+    ];
 
     /**
      * @var LockValidatorInterface
@@ -384,7 +398,7 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute implements
     /**
      * Retrieve source model
      *
-     * @return \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
+     * @return \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource|string|null
      */
     public function getSourceModel()
     {
@@ -404,18 +418,7 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute implements
      */
     public function isAllowedForRuleCondition()
     {
-        $allowedInputTypes = [
-            'boolean',
-            'date',
-            'datetime',
-            'multiselect',
-            'price',
-            'select',
-            'text',
-            'textarea',
-            'weight',
-        ];
-        return $this->getIsVisible() && in_array($this->getFrontendInput(), $allowedInputTypes);
+        return $this->getIsVisible() && isset(self::ALLOWED_INPUT_TYPES[$this->getFrontendInput()]);
     }
 
     /**
@@ -900,5 +903,18 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute implements
     {
         $this->setData(self::IS_FILTERABLE_IN_GRID, $isFilterableInGrid);
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function _getDefaultBackendModel()
+    {
+        $backend = parent::_getDefaultBackendModel();
+        if ($backend === Entity::DEFAULT_BACKEND_MODEL) {
+            $backend = DefaultBackend::class;
+        }
+
+        return $backend;
     }
 }
