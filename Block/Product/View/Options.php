@@ -61,11 +61,6 @@ class Options extends \Magento\Framework\View\Element\Template
     protected $_catalogData;
 
     /**
-     * @var \Magento\Framework\Stdlib\ArrayUtils
-     */
-    private $arrayUtils;
-
-    /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Framework\Pricing\Helper\Data $pricingHelper
      * @param \Magento\Catalog\Helper\Data $catalogData
@@ -98,7 +93,7 @@ class Options extends \Magento\Framework\View\Element\Template
      * Retrieve product object
      *
      * @return Product
-     * @throws \LogicException
+     * @throws \LogicExceptions
      */
     public function getProduct()
     {

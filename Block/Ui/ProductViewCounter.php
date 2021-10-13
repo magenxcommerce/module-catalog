@@ -153,7 +153,6 @@ class ProductViewCounter extends Template
         $this->productRenderCollectorComposite
             ->collect($product, $productRender);
         $data = $this->hydrator->extract($productRender);
-        $data['is_available'] = $product->isAvailable();
 
         $currentProductData = [
             'items' => [

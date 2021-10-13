@@ -26,7 +26,6 @@
             <actionGroup ref="DeleteProductUsingProductGridActionGroup" stepKey="deleteSimpleProduct">
                 <argument name="product" value="SimpleProduct"/>
             </actionGroup>
-            <actionGroup ref="ClearFiltersAdminDataGridActionGroup" stepKey="clearFilter"/>
             <deleteData createDataKey="createPreReqCategory" stepKey="deletePreReqCategory"/>
             <deleteData createDataKey="createProductAttribute" stepKey="deleteProductAttribute"/>
             <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutOfAdmin"/>

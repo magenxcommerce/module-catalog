@@ -3,20 +3,12 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 namespace Magento\Catalog\Model;
 
 use Magento\Catalog\Model\Category\Attribute\LayoutUpdateManager as CategoryLayoutManager;
 use Magento\Catalog\Model\Product\Attribute\LayoutUpdateManager as ProductLayoutManager;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\DataObject;
-use Magento\Framework\Model\Context;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Registry;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Framework\TranslateInterface;
-use Magento\Framework\View\DesignInterface;
+use \Magento\Framework\TranslateInterface;
 
 /**
  * Catalog Custom Category design Model
@@ -36,12 +28,12 @@ class Design extends \Magento\Framework\Model\AbstractModel
     /**
      * Design package instance
      *
-     * @var DesignInterface
+     * @var \Magento\Framework\View\DesignInterface
      */
     protected $_design = null;
 
     /**
-     * @var TimezoneInterface
+     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
      */
     protected $_localeDate;
 
@@ -61,12 +53,12 @@ class Design extends \Magento\Framework\Model\AbstractModel
     private $productLayoutUpdates;
 
     /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param TimezoneInterface $localeDate
-     * @param DesignInterface $design
-     * @param AbstractResource|null $resource
-     * @param AbstractDb|null $resourceCollection
+     * @param \Magento\Framework\Model\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
+     * @param \Magento\Framework\View\DesignInterface $design
+     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
      * @param TranslateInterface|null $translator
      * @param CategoryLayoutManager|null $categoryLayoutManager
@@ -74,12 +66,12 @@ class Design extends \Magento\Framework\Model\AbstractModel
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
-        TimezoneInterface $localeDate,
-        DesignInterface $design,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
+        \Magento\Framework\Model\Context $context,
+        \Magento\Framework\Registry $registry,
+        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
+        \Magento\Framework\View\DesignInterface $design,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
+        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = [],
         TranslateInterface $translator = null,
         ?CategoryLayoutManager $categoryLayoutManager = null,
@@ -112,7 +104,7 @@ class Design extends \Magento\Framework\Model\AbstractModel
      * Get custom layout settings
      *
      * @param Category|Product $object
-     * @return DataObject
+     * @return \Magento\Framework\DataObject
      */
     public function getDesignSettings($object)
     {
@@ -142,17 +134,14 @@ class Design extends \Magento\Framework\Model\AbstractModel
      * Extract custom layout settings from category or product object
      *
      * @param Category|Product $object
-     * @return DataObject
+     * @return \Magento\Framework\DataObject
      */
     protected function _extractSettings($object)
     {
-        $settings = new DataObject();
+        $settings = new \Magento\Framework\DataObject();
         if (!$object) {
             return $settings;
         }
-        $settings->setPageLayout($object->getPageLayout());
-        $settings->setLayoutUpdates((array)$object->getCustomLayoutUpdate());
-
         $date = $object->getCustomDesignDate();
         if (array_key_exists(
             'from',
@@ -166,28 +155,28 @@ class Design extends \Magento\Framework\Model\AbstractModel
             $date['to']
         )
         ) {
-            if ($object->getCustomDesign()) {
-                $settings->setCustomDesign($object->getCustomDesign());
-            }
-            if ($object->getCustomLayout()) {
-                $settings->setPageLayout($object->getCustomLayout());
-            }
+            $settings->setCustomDesign(
+                $object->getCustomDesign()
+            )->setPageLayout(
+                $object->getPageLayout()
+            )->setLayoutUpdates(
+                (array)$object->getCustomLayoutUpdate()
+            );
             if ($object instanceof Category) {
                 $this->categoryLayoutUpdates->extractCustomSettings($object, $settings);
             } elseif ($object instanceof Product) {
                 $this->productLayoutUpdates->extractCustomSettings($object, $settings);
             }
         }
-
         return $settings;
     }
 
     /**
      * Merge custom design settings
      *
-     * @param DataObject $categorySettings
-     * @param DataObject $productSettings
-     * @return DataObject
+     * @param \Magento\Framework\DataObject $categorySettings
+     * @param \Magento\Framework\DataObject $productSettings
+     * @return \Magento\Framework\DataObject
      */
     protected function _mergeSettings($categorySettings, $productSettings)
     {
@@ -201,21 +190,6 @@ class Design extends \Magento\Framework\Model\AbstractModel
             $update = array_merge($categorySettings->getLayoutUpdates(), $productSettings->getLayoutUpdates());
             $categorySettings->setLayoutUpdates($update);
         }
-        if ($categorySettings->getPageLayoutHandles()) {
-            $handles = [];
-            foreach ($categorySettings->getPageLayoutHandles() as $key => $value) {
-                $handles[$key] = [
-                    'handle' => 'catalog_category_view',
-                    'value' => $value,
-                ];
-            }
-            $categorySettings->setPageLayoutHandles($handles);
-        }
-        if ($productSettings->getPageLayoutHandles()) {
-            $handle = array_merge($categorySettings->getPageLayoutHandles(), $productSettings->getPageLayoutHandles());
-            $categorySettings->setPageLayoutHandles($handle);
-        }
-
         return $categorySettings;
     }
 }

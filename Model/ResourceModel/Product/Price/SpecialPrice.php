@@ -6,18 +6,10 @@
 
 namespace Magento\Catalog\Model\ResourceModel\Product\Price;
 
-use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
-use Magento\Catalog\Api\SpecialPriceInterface;
-use Magento\Catalog\Model\ProductIdLocatorInterface;
-use Magento\Catalog\Model\ResourceModel\Attribute;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Framework\Exception\CouldNotDeleteException;
-use Magento\Framework\App\ObjectManager;
-
 /**
  * Special price resource.
  */
-class SpecialPrice implements SpecialPriceInterface
+class SpecialPrice implements \Magento\Catalog\Api\SpecialPriceInterface
 {
     /**
      * Price storage table.
@@ -34,24 +26,24 @@ class SpecialPrice implements SpecialPriceInterface
     private $datetimeTable = 'catalog_product_entity_datetime';
 
     /**
-     * @var Attribute
+     * @var \Magento\Catalog\Model\ResourceModel\Attribute
      */
     private $attributeResource;
 
     /**
-     * @var ProductAttributeRepositoryInterface
+     * @var \Magento\Catalog\Api\ProductAttributeRepositoryInterface
      */
     private $attributeRepository;
 
     /**
-     * @var ProductIdLocatorInterface
+     * @var \Magento\Catalog\Model\ProductIdLocatorInterface
      */
     private $productIdLocator;
 
     /**
      * Metadata pool.
      *
-     * @var MetadataPool
+     * @var \Magento\Framework\EntityManager\MetadataPool
      */
     private $metadataPool;
 
@@ -84,16 +76,16 @@ class SpecialPrice implements SpecialPriceInterface
     private $itemsPerOperation = 500;
 
     /**
-     * @param Attribute $attributeResource
-     * @param ProductAttributeRepositoryInterface $attributeRepository
-     * @param ProductIdLocatorInterface $productIdLocator
-     * @param MetadataPool $metadataPool
+     * @param \Magento\Catalog\Model\ResourceModel\Attribute $attributeResource
+     * @param \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository
+     * @param \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator
+     * @param \Magento\Framework\EntityManager\MetadataPool $metadataPool
      */
     public function __construct(
-        Attribute $attributeResource,
-        ProductAttributeRepositoryInterface $attributeRepository,
-        ProductIdLocatorInterface $productIdLocator,
-        MetadataPool $metadataPool
+        \Magento\Catalog\Model\ResourceModel\Attribute $attributeResource,
+        \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository,
+        \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator,
+        \Magento\Framework\EntityManager\MetadataPool $metadataPool
     ) {
         $this->attributeResource = $attributeResource;
         $this->attributeRepository = $attributeRepository;
@@ -102,7 +94,7 @@ class SpecialPrice implements SpecialPriceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(array $skus)
     {
@@ -140,7 +132,7 @@ class SpecialPrice implements SpecialPriceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update(array $prices)
     {
@@ -195,61 +187,47 @@ class SpecialPrice implements SpecialPriceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete(array $prices)
     {
+        $skus = array_unique(
+            array_map(function ($price) {
+                return $price->getSku();
+            }, $prices)
+        );
+        $ids = $this->retrieveAffectedIds($skus);
         $connection = $this->attributeResource->getConnection();
-
-        foreach ($this->getStoreSkus($prices) as $storeId => $skus) {
-
-            $ids = $this->retrieveAffectedIds(array_unique($skus));
-            $connection->beginTransaction();
-            try {
-                foreach (array_chunk($ids, $this->itemsPerOperation) as $idsBunch) {
-                    $connection->delete(
-                        $this->attributeResource->getTable($this->priceTable),
-                        [
-                            'attribute_id = ?' => $this->getPriceAttributeId(),
-                            'store_id = ?' => $storeId,
-                            $this->getEntityLinkField() . ' IN (?)' => $idsBunch
-                        ]
-                    );
-                }
-                foreach (array_chunk($ids, $this->itemsPerOperation) as $idsBunch) {
-                    $connection->delete(
-                        $this->attributeResource->getTable($this->datetimeTable),
-                        [
-                            'attribute_id IN (?)' => [$this->getPriceFromAttributeId(), $this->getPriceToAttributeId()],
-                            'store_id = ?' => $storeId,
-                            $this->getEntityLinkField() . ' IN (?)' => $idsBunch
-                        ]
-                    );
-                }
-                $connection->commit();
-            } catch (\Exception $e) {
-                $connection->rollBack();
-                throw new CouldNotDeleteException(__('Could not delete Prices'), $e);
+        $connection->beginTransaction();
+        try {
+            foreach (array_chunk($ids, $this->itemsPerOperation) as $idsBunch) {
+                $this->attributeResource->getConnection()->delete(
+                    $this->attributeResource->getTable($this->priceTable),
+                    [
+                        'attribute_id = ?' => $this->getPriceAttributeId(),
+                        $this->getEntityLinkField() . ' IN (?)' => $idsBunch
+                    ]
+                );
             }
+            foreach (array_chunk($ids, $this->itemsPerOperation) as $idsBunch) {
+                $this->attributeResource->getConnection()->delete(
+                    $this->attributeResource->getTable($this->datetimeTable),
+                    [
+                        'attribute_id IN (?)' => [$this->getPriceFromAttributeId(), $this->getPriceToAttributeId()],
+                        $this->getEntityLinkField() . ' IN (?)' => $idsBunch
+                    ]
+                );
+            }
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollBack();
+            throw new \Magento\Framework\Exception\CouldNotDeleteException(
+                __('Could not delete Prices'),
+                $e
+            );
         }
 
         return true;
-    }
-
-    /**
-     * Returns associative arrays of store_id as key and array of skus as value.
-     *
-     * @param \Magento\Catalog\Api\Data\SpecialPriceInterface[] $priceItems
-     * @return array
-     */
-    private function getStoreSkus(array $priceItems): array
-    {
-        $storeSkus = [];
-        foreach ($priceItems as $priceItem) {
-            $storeSkus[$priceItem->getStoreId()][] = $priceItem->getSku();
-        }
-
-        return $storeSkus;
     }
 
     /**
@@ -334,9 +312,9 @@ class SpecialPrice implements SpecialPriceInterface
         $affectedIds = [];
 
         foreach ($this->productIdLocator->retrieveProductIdsBySkus($skus) as $productIds) {
-            $affectedIds[] = array_keys($productIds);
+            $affectedIds = array_merge($affectedIds, array_keys($productIds));
         }
 
-        return array_unique(array_merge([], ...$affectedIds));
+        return array_unique($affectedIds);
     }
 }

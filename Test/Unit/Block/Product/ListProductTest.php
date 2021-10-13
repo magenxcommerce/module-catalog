@@ -195,7 +195,7 @@ class ListProductTest extends TestCase
 
         $this->catCollectionMock->expects($this->once())
             ->method('getIterator')
-            ->willReturn(new \ArrayIterator([$currentCategory]));
+            ->willReturn([$currentCategory]);
 
         $this->prodCollectionMock->expects($this->any())
             ->method('getIterator')

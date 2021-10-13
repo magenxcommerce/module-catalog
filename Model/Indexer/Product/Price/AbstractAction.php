@@ -465,11 +465,10 @@ abstract class AbstractAction
             []
         )->where(
             'e.entity_id IN(?)',
-            $parentIds,
-            \Zend_Db::INT_TYPE
+            $parentIds
         );
         if (!empty($excludeIds)) {
-            $select->where('child_id NOT IN(?)', $excludeIds, \Zend_Db::INT_TYPE);
+            $select->where('child_id NOT IN(?)', $excludeIds);
         }
 
         $children = $this->getConnection()->fetchCol($select);
@@ -480,8 +479,7 @@ abstract class AbstractAction
                     $this->getIndexTargetTableByDimension($dimensions)
                 )->where(
                     'entity_id IN(?)',
-                    $children,
-                    \Zend_Db::INT_TYPE
+                    $children
                 );
                 $query = $select->insertFromSelect($this->_defaultIndexerResource->getIdxTable(), [], false);
                 $this->getConnection()->query($query);
@@ -580,14 +578,13 @@ abstract class AbstractAction
             ['e.entity_id as parent_id', 'type_id']
         )->where(
             'l.child_id IN(?)',
-            $productsIds,
-            \Zend_Db::INT_TYPE
+            $productsIds
         );
         $pairs = $this->getConnection()->fetchPairs($select);
 
         $byType = [];
         foreach ($pairs as $productId => $productType) {
-            $byType[$productType][$productId] = (int)$productId;
+            $byType[$productType][$productId] = $productId;
         }
 
         return $byType;

@@ -57,16 +57,6 @@ class TierPriceFactory
     private $customerGroupsByCode = [];
 
     /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * @var \Magento\Framework\Api\FilterBuilder
-     */
-    private $filterBuilder;
-
-    /**
      * TierPriceBuilder constructor.
      *
      * @param \Magento\Catalog\Api\Data\TierPriceInterfaceFactory $tierPriceFactory

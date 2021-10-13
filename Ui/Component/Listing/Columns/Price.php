@@ -25,11 +25,6 @@ class Price extends \Magento\Ui\Component\Listing\Columns\Column
     protected $localeCurrency;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param \Magento\Framework\Locale\CurrencyInterface $localeCurrency

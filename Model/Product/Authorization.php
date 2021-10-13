@@ -129,7 +129,7 @@ class Authorization
                 //No new value
                 continue;
             }
-            if ($newValue !== null && !in_array($newValue, $oldValues, true)) {
+            if (!in_array($newValue, $oldValues, true)) {
                 return true;
             }
         }

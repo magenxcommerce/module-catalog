@@ -204,8 +204,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 ['value' => $attributeCode, 'entity_id' => 'entity_id']
             )->where(
                 'entity_id IN(?)',
-                $categoryIds,
-                \Zend_Db::INT_TYPE
+                $categoryIds
             );
         } elseif ($this->_categoryAttributes[$attributeCode]['is_global'] || $storeId == 0) {
             $select->from(
@@ -217,8 +216,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 ['value']
             )->where(
                 "t1.{$identifierFiled} IN(?)",
-                $categoryIds,
-                \Zend_Db::INT_TYPE
+                $categoryIds
             )->where(
                 'e.attribute_id = :attribute_id'
             )->where(
@@ -247,8 +245,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 't1.attribute_id = :attribute_id'
             )->where(
                 "e.entity_id IN(?)",
-                $categoryIds,
-                \Zend_Db::INT_TYPE
+                $categoryIds
             )->group('e.entity_id');
 
             $bind['attribute_id'] = $this->_categoryAttributes[$attributeCode]['attribute_id'];
@@ -311,8 +308,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 0
             )->where(
                 'entity_id IN(?)',
-                $productIds,
-                \Zend_Db::INT_TYPE
+                $productIds
             );
         } else {
             $valueExpr = $connection->getCheckSql('t2.value_id > 0', 't2.value', 't1.value');
@@ -330,8 +326,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 't1.attribute_id = :attribute_id'
             )->where(
                 't1.entity_id IN(?)',
-                $productIds,
-                \Zend_Db::INT_TYPE
+                $productIds
             );
             $bind['store_id'] = $storeId;
         }
@@ -435,7 +430,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
         // Prepare variables for checking whether categories belong to store
         if ($path === null) {
-            $select->where('main_table.entity_id IN(?)', $categoryIds, \Zend_Db::INT_TYPE);
+            $select->where('main_table.entity_id IN(?)', $categoryIds);
         } else {
             // Ensure that path ends with '/', otherwise we can get wrong results - e.g. $path = '1/2' will get '1/20'
             if (substr($path, -1) != '/') {
@@ -574,7 +569,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             $this->_productLimit
         );
         if ($productIds !== null) {
-            $select->where('e.entity_id IN(?)', $productIds, \Zend_Db::INT_TYPE);
+            $select->where('e.entity_id IN(?)', $productIds);
         }
 
         $rowSet = $connection->fetchAll($select, $bind);
@@ -596,8 +591,7 @@ class Url extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 ['product_id', 'category_id']
             )->where(
                 'product_id IN(?)',
-                array_keys($products),
-                \Zend_Db::INT_TYPE
+                array_keys($products)
             );
             $categories = $connection->fetchAll($select);
             foreach ($categories as $category) {

@@ -209,14 +209,7 @@ class Content extends \Magento\Backend\Block\Widget
      */
     private function sortImagesByPosition($images)
     {
-        $nullPositions = [];
-        foreach ($images as $index => $image) {
-            if ($image['position'] === null) {
-                $nullPositions[] = $image;
-                unset($images[$index]);
-            }
-        }
-        if (is_array($images) && !empty($images)) {
+        if (is_array($images)) {
             usort(
                 $images,
                 function ($imageA, $imageB) {
@@ -224,7 +217,7 @@ class Content extends \Magento\Backend\Block\Widget
                 }
             );
         }
-        return array_merge($images, $nullPositions);
+        return $images;
     }
 
     /**

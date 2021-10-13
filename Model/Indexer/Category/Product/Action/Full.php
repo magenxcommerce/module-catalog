@@ -12,8 +12,6 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Config;
 use Magento\Catalog\Model\Indexer\Category\Product\AbstractAction;
 use Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher;
-use Magento\Catalog\Model\Indexer\Category\Product;
-use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Query\Generator as QueryGenerator;
@@ -66,18 +64,6 @@ class Full extends AbstractAction
     private $processManager;
 
     /**
-     * @var DeploymentConfig|null
-     */
-    private $deploymentConfig;
-
-    /**
-     * Deployment config path
-     *
-     * @var string
-     */
-    private const DEPLOYMENT_CONFIG_INDEXER_BATCHES = 'indexer/batch_size/';
-
-    /**
      * @param ResourceConnection $resource
      * @param StoreManagerInterface $storeManager
      * @param Config $config
@@ -87,8 +73,7 @@ class Full extends AbstractAction
      * @param MetadataPool|null $metadataPool
      * @param int|null $batchRowsCount
      * @param ActiveTableSwitcher|null $activeTableSwitcher
-     * @param ProcessManager|null $processManager
-     * @param DeploymentConfig|null $deploymentConfig
+     * @param ProcessManager $processManager
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -101,8 +86,7 @@ class Full extends AbstractAction
         MetadataPool $metadataPool = null,
         $batchRowsCount = null,
         ActiveTableSwitcher $activeTableSwitcher = null,
-        ProcessManager $processManager = null,
-        ?DeploymentConfig $deploymentConfig = null
+        ProcessManager $processManager = null
     ) {
         parent::__construct(
             $resource,
@@ -123,7 +107,6 @@ class Full extends AbstractAction
         $this->batchRowsCount = $batchRowsCount;
         $this->activeTableSwitcher = $activeTableSwitcher ?: $objectManager->get(ActiveTableSwitcher::class);
         $this->processManager = $processManager ?: $objectManager->get(ProcessManager::class);
-        $this->deploymentConfig = $deploymentConfig ?: ObjectManager::getInstance()->get(DeploymentConfig::class);
     }
 
     /**
@@ -283,11 +266,6 @@ class Full extends AbstractAction
         $columns = array_keys(
             $this->connection->describeTable($this->tableMaintainer->getMainTmpTable((int)$store->getId()))
         );
-
-        $this->batchRowsCount = $this->deploymentConfig->get(
-            self::DEPLOYMENT_CONFIG_INDEXER_BATCHES . Product::INDEXER_ID
-        ) ?? $this->batchRowsCount;
-
         $this->batchSizeManagement->ensureBatchSize($this->connection, $this->batchRowsCount);
 
         $select = $this->connection->select();

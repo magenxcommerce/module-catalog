@@ -232,10 +232,7 @@ class Category extends AbstractResource
      */
     protected function _afterDelete(DataObject $object)
     {
-        if ($object->getIsActive() || $object->getDeletedChildrenIds()) {
-            $this->indexerProcessor->markIndexerAsInvalid();
-        }
-
+        $this->indexerProcessor->markIndexerAsInvalid();
         return parent::_afterDelete($object);
     }
 
@@ -578,8 +575,7 @@ class Category extends AbstractResource
             'entity_id'
         )->where(
             'entity_id IN(?)',
-            $ids,
-            \Zend_Db::INT_TYPE
+            $ids
         );
 
         return $this->getConnection()->fetchCol($select);

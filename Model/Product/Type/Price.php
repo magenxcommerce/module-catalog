@@ -298,7 +298,7 @@ class Price
 
         $custGroup = $this->_getCustomerGroupId($product);
         if ($qty) {
-            $prevQty = 0;
+            $prevQty = 1;
             $prevPrice = $product->getPrice();
             $prevGroup = $allGroupsId;
 
@@ -379,7 +379,7 @@ class Price
             if (array_key_exists('website_price', $price)) {
                 $value = $price['website_price'];
             } else {
-                $value = $price['price'] ?? 0;
+                $value = $price['price'];
             }
             $tierPrice->setValue($value);
             $tierPrice->setQty($price['price_qty']);

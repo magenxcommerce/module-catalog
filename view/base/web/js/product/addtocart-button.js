@@ -56,16 +56,6 @@ define([
         },
 
         /**
-         * Depends on this option, stock status text can be "In stock" or "Out Of Stock"
-         *
-         * @param {Object} row
-         * @returns {Boolean}
-         */
-        isAvailable: function (row) {
-            return row['is_available'];
-        },
-
-        /**
          * Depends on this option, "Add to cart" button can be shown or hide. Depends on  backend configuration
          *
          * @returns {Boolean}

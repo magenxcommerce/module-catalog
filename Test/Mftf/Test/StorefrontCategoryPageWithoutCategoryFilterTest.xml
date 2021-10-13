@@ -43,7 +43,10 @@
 
             <!-- Set the category filter to NOT be present on the category page layered navigation -->
             <magentoCLI command="config:set {{DisableCategoryFilterOnCategoryPageConfigData.path}} {{DisableCategoryFilterOnCategoryPageConfigData.value}}" stepKey="hideCategoryFilterOnStorefront"/>
-            <comment userInput="Adding the comment to replace CliCacheFlushActionGroup action group ('cache:flush' command) for preserving Backward Compatibility" stepKey="flushCache"/>
+
+            <actionGroup ref="CliCacheFlushActionGroup" stepKey="flushCache">
+                <argument name="tags" value=""/>
+            </actionGroup>
         </before>
 
         <after>

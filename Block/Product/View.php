@@ -177,26 +177,21 @@ class View extends AbstractProduct implements \Magento\Framework\DataObject\Iden
     {
         /* @var $product \Magento\Catalog\Model\Product */
         $product = $this->getProduct();
-        $tierPrices = [];
-        $priceInfo = $product->getPriceInfo();
-        $tierPricesList = $priceInfo->getPrice('tier_price')->getTierPriceList();
-        foreach ($tierPricesList as $tierPrice) {
-            $tierPriceData = [
-                'qty' => $tierPrice['price_qty'],
-                'price' => $tierPrice['website_price'],
-            ];
-            $tierPrices[] = $tierPriceData;
-        }
 
         if (!$this->hasOptions()) {
             $config = [
                 'productId' => $product->getId(),
-                'priceFormat' => $this->_localeFormat->getPriceFormat(),
-                'tierPrices' => $tierPrices
+                'priceFormat' => $this->_localeFormat->getPriceFormat()
             ];
             return $this->_jsonEncoder->encode($config);
         }
 
+        $tierPrices = [];
+        $priceInfo = $product->getPriceInfo();
+        $tierPricesList = $priceInfo->getPrice('tier_price')->getTierPriceList();
+        foreach ($tierPricesList as $tierPrice) {
+            $tierPrices[] = $tierPrice['price']->getValue() * 1;
+        }
         $config = [
             'productId'   => (int)$product->getId(),
             'priceFormat' => $this->_localeFormat->getPriceFormat(),
