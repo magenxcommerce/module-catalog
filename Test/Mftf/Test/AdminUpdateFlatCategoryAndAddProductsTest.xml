@@ -42,8 +42,9 @@
             <magentoCLI stepKey="setFlatCatalogCategory" command="config:set catalog/frontend/flat_catalog_category 1"/>
             <!--Open Index Management Page and Select Index mode "Update by Schedule" -->
             <magentoCLI stepKey="setIndexerMode" command="indexer:set-mode" arguments="schedule" />
-            <!-- Run cron -->
-            <magentoCron stepKey="runAllCronJobs"/>
+            <!-- Run cron twice -->
+            <magentoCLI command="cron:run" stepKey="runCron1"/>
+            <magentoCLI command="cron:run" stepKey="runCron2"/>
         </before>
         <after>
             <magentoCLI stepKey="setFlatCatalogCategory" command="config:set catalog/frontend/flat_catalog_category 0 "/>
@@ -66,7 +67,7 @@
             <argument name="indices" value=""/>
         </actionGroup>
         <actionGroup ref="AdminOpenCategoryPageActionGroup" stepKey="openAdminCategoryIndexPage"/>
-        <actionGroup ref="AdminExpandCategoryTreeActionGroup" stepKey="clickOnExpandTree"/>
+        <click selector="{{AdminCategorySidebarTreeSection.expandAll}}" stepKey="clickOnExpandTree"/>
         <click selector="{{AdminCategorySidebarTreeSection.categoryInTree(SimpleSubCategory.name)}}" stepKey="selectCreatedCategory"/>
         <waitForPageLoad stepKey="waitForTheCategoryPageToLoaded"/>
         <!--Add Products in Category-->
@@ -80,7 +81,8 @@
         <waitForPageLoad stepKey="waitFroPageToLoad1"/>
         <scrollTo  selector="{{AdminCategoryContentSection.productTableRow}}"  stepKey="scrollToTableRow"/>
         <click selector="{{AdminCategoryContentSection.productTableRow}}" stepKey="selectProductFromTableRow"/>
-        <actionGroup ref="AdminSaveCategoryActionGroup" stepKey="saveSubCategory"/>
+        <click selector="{{AdminCategoryMainActionsSection.SaveButton}}" stepKey="saveSubCategory"/>
+        <waitForPageLoad stepKey="waitForSecondCategoryToSave"/>
         <seeElement selector="{{AdminCategoryMessagesSection.SuccessMessage}}" stepKey="seeSuccessMessage"/>
         <!--Open Index Management Page and verify flat categoryIndex status-->
         <actionGroup ref="CliIndexerReindexActionGroup" stepKey="reindex">

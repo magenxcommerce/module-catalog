@@ -23,7 +23,8 @@
             <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
             <!--Clear product grid-->
             <comment userInput="Clear product grid" stepKey="commentClearProductGrid"/>
-            <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="goToProductCatalog"/>
+            <amOnPage url="{{ProductCatalogPage.url}}" stepKey="goToProductCatalog"/>
+            <waitForPageLoad stepKey="waitForProductIndexPage"/>
             <actionGroup ref="ResetProductGridToDefaultViewActionGroup" stepKey="resetProductGridToDefaultView"/>
             <actionGroup ref="DeleteProductsIfTheyExistActionGroup" stepKey="deleteProductIfTheyExist"/>
             <createData stepKey="category1" entity="SimpleSubCategory"/>
@@ -36,8 +37,8 @@
             </createData>
         </before>
         <after>
-
-            <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="goToProductCatalog"/>
+            <amOnPage url="{{ProductCatalogPage.url}}" stepKey="goToProductCatalog"/>
+            <waitForPageLoad stepKey="waitForProductIndexPage"/>
             <click selector="{{AdminDataGridPaginationSection.previousPage}}" stepKey="clickPrevPageOrderGrid"/>
             <actionGroup ref="AdminDataGridDeleteCustomPerPageActionGroup" stepKey="deleteCustomAddedPerPage">
                 <argument name="perPage" value="ProductPerPage.productCount"/>
@@ -48,7 +49,8 @@
             <deleteData stepKey="deleteProduct2" createDataKey="product2"/>
             <actionGroup ref="AdminLogoutActionGroup" stepKey="logout"/>
         </after>
-        <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="goToProductCatalog"/>
+        <amOnPage url="{{ProductCatalogPage.url}}" stepKey="goToProductCatalog"/>
+        <waitForPageLoad stepKey="waitForProductIndexPage"/>
         <actionGroup ref="AdminDataGridSelectCustomPerPageActionGroup" stepKey="select1OrderPerPage">
             <argument name="perPage" value="ProductPerPage.productCount"/>
         </actionGroup>

@@ -16,9 +16,8 @@ use Magento\Framework\App\ObjectManager;
 /**
  * Catalog product option file type
  *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @author     Magento Core Team <core@magentocommerce.com>
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
 {
@@ -182,7 +181,6 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
 
     /**
      * Returns file info array if we need to get file from already existing file.
-     *
      * Or returns null, if we need to get file from uploaded array.
      *
      * @return null|array
@@ -264,6 +262,7 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
                             . "Make sure the options are entered and try again."
                         )
                     );
+                    break;
                 default:
                     $this->setUserValue(null);
                     break;
@@ -331,11 +330,7 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
     public function getFormattedOptionValue($optionValue)
     {
         if ($this->_formattedOptionValue === null) {
-            try {
-                $value = $this->serializer->unserialize($optionValue);
-            } catch (\InvalidArgumentException $e) {
-                return $optionValue;
-            }
+            $value = $this->serializer->unserialize($optionValue);
             if ($value === null) {
                 return $optionValue;
             }
@@ -481,13 +476,13 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
         try {
             $value = $this->serializer->unserialize($quoteOption->getValue());
             if (!isset($value['quote_path'])) {
-                return $this;
+                throw new \Exception();
             }
             $quotePath = $value['quote_path'];
             $orderPath = $value['order_path'];
 
             if (!$this->mediaDirectory->isFile($quotePath) || !$this->mediaDirectory->isReadable($quotePath)) {
-                return $this;
+                throw new \Exception();
             }
 
             if ($this->_coreFileStorageDatabase->checkDbUsage()) {
@@ -529,8 +524,6 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
     }
 
     /**
-     * Prepare size
-     *
      * @param array $value
      * @return string
      */

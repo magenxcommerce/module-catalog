@@ -45,7 +45,8 @@
         <click selector="{{AdminProductAttributeSetGridSection.searchBtn}}" stepKey="clickSearch2"/>
         <see selector="{{AdminDataGridTableSection.dataGridEmpty}}" userInput="We couldn't find any records." stepKey="assertDataGridEmptyMessage"/>
         <!-- Search for the product by sku and name on the product page -->
-        <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="goToAdminProductIndex"/>
+        <amOnPage url="{{AdminProductIndexPage.url}}" stepKey="goToAdminProductIndex"/>
+        <waitForPageLoad stepKey="waitForAdminProductIndex"/>
         <actionGroup ref="FilterProductGridBySkuAndNameActionGroup" stepKey="filerProductsBySkuAndName">
             <argument name="product" value="SimpleProductWithCustomAttributeSet"/>
         </actionGroup>

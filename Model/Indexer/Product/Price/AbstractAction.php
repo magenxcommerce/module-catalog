@@ -173,7 +173,7 @@ abstract class AbstractAction
                 }
             }
 
-            $query = $insertSelect->insertFromSelect($this->tableMaintainer->getMainTableByDimensions($dimensions));
+            $query = $insertSelect->insertFromSelect($this->tableMaintainer->getMainTable($dimensions));
             $this->getConnection()->query($query);
         }
         return $this;
@@ -368,20 +368,14 @@ abstract class AbstractAction
         $productsTypes = $this->getProductsTypes($changedIds);
         $parentProductsTypes = $this->getParentProductsTypes($changedIds);
 
-        $changedIds = array_unique(array_merge($changedIds, ...array_values($parentProductsTypes)));
+        $changedIds = array_merge($changedIds, ...array_values($parentProductsTypes));
         $productsTypes = array_merge_recursive($productsTypes, $parentProductsTypes);
 
         if ($changedIds) {
             $this->deleteIndexData($changedIds);
         }
-
-        $typeIndexers = $this->getTypeIndexers();
-        foreach ($typeIndexers as $productType => $indexer) {
-            $entityIds = $productsTypes[$productType] ?? [];
-            if (empty($entityIds)) {
-                continue;
-            }
-
+        foreach ($productsTypes as $productType => $entityIds) {
+            $indexer = $this->_getIndexer($productType);
             if ($indexer instanceof DimensionalIndexerInterface) {
                 foreach ($this->dimensionCollectionFactory->create() as $dimensions) {
                     $this->tableMaintainer->createMainTmpTable($dimensions);
@@ -391,7 +385,7 @@ abstract class AbstractAction
                     // copy to index
                     $this->_insertFromTable(
                         $temporaryTable,
-                        $this->tableMaintainer->getMainTableByDimensions($dimensions)
+                        $this->tableMaintainer->getMainTable($dimensions)
                     );
                 }
             } else {
@@ -407,8 +401,6 @@ abstract class AbstractAction
     }
 
     /**
-     * Delete Index data
-     *
      * @param array $entityIds
      * @return void
      */
@@ -416,7 +408,7 @@ abstract class AbstractAction
     {
         foreach ($this->dimensionCollectionFactory->create() as $dimensions) {
             $select = $this->getConnection()->select()->from(
-                ['index_price' => $this->tableMaintainer->getMainTableByDimensions($dimensions)],
+                ['index_price' => $this->tableMaintainer->getMainTable($dimensions)],
                 null
             )->where('index_price.entity_id IN (?)', $entityIds);
             $query = $select->deleteFromSelect('index_price');
@@ -484,7 +476,7 @@ abstract class AbstractAction
     {
         $indexTargetTable = $this->getIndexTargetTable();
         if ($indexTargetTable === self::getIndexTargetTable()) {
-            $indexTargetTable = $this->tableMaintainer->getMainTableByDimensions($dimensions);
+            $indexTargetTable = $this->tableMaintainer->getMainTable($dimensions);
         }
         if ($indexTargetTable === self::getIndexTargetTable() . '_replica') {
             $indexTargetTable = $this->tableMaintainer->getMainReplicaTable($dimensions);
@@ -505,8 +497,6 @@ abstract class AbstractAction
     }
 
     /**
-     * Get product Id field name
-     *
      * @return string
      */
     protected function getProductIdFieldName()
@@ -543,7 +533,6 @@ abstract class AbstractAction
 
     /**
      * Get parent products types
-     *
      * Used for add composite products to reindex if we have only simple products in changed ids set
      *
      * @param array $productsIds

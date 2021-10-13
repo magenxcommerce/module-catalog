@@ -87,7 +87,7 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
      *
      * @var string
      */
-    protected $_cacheTag = false;
+    protected $_cacheTag = self::CACHE_TAG;
 
     /**
      * URL Model instance
@@ -1111,17 +1111,6 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
         $result = parent::afterSave();
         $this->_getResource()->addCommitCallback([$this, 'reindex']);
         return $result;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getCacheTags()
-    {
-        $identities = $this->getIdentities();
-        $cacheTags = !empty($identities) ? (array) $identities : parent::getCacheTags();
-
-        return $cacheTags;
     }
 
     /**

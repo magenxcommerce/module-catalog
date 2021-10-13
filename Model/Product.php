@@ -11,6 +11,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductLinkRepositoryInterface;
 use Magento\Catalog\Model\Product\Attribute\Backend\Media\EntryConverterPool;
 use Magento\Catalog\Model\Product\Configuration\Item\Option\OptionInterface;
+use Magento\Catalog\Model\FilterProductCustomAttribute;
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
@@ -976,17 +977,6 @@ class Product extends \Magento\Catalog\Model\AbstractModel implements
         $this->reloadPriceInfo();
 
         return $result;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getCacheTags()
-    {
-        $identities = $this->getIdentities();
-        $cacheTags = !empty($identities) ? (array) $identities : parent::getCacheTags();
-
-        return $cacheTags;
     }
 
     /**
@@ -2171,7 +2161,7 @@ class Product extends \Magento\Catalog\Model\AbstractModel implements
      */
     public function getCacheIdTags()
     {
-        // phpstan:ignore "Call to an undefined static method"
+        // phpstan:ignore
         $tags = parent::getCacheIdTags();
         $affectedCategoryIds = $this->getAffectedCategoryIds();
         if (!$affectedCategoryIds) {
@@ -2352,8 +2342,7 @@ class Product extends \Magento\Catalog\Model\AbstractModel implements
     public function getImage()
     {
         $this->getTypeInstance()->setImageFromChildProduct($this);
-
-        // phpstan:ignore "Call to an undefined static method"
+        // phpstan:ignore
         return parent::getImage();
     }
 
@@ -2417,8 +2406,6 @@ class Product extends \Magento\Catalog\Model\AbstractModel implements
         }
     }
 
-    //phpcs:disable PHPCompatibility.FunctionNameRestrictions.ReservedFunctionNames.MethodDoubleUnderscore
-
     /**
      * Return Data Object data in array format.
      *
@@ -2445,8 +2432,6 @@ class Product extends \Magento\Catalog\Model\AbstractModel implements
         }
         return $data;
     }
-
-    //phpcs:enable PHPCompatibility.FunctionNameRestrictions.ReservedFunctionNames.MethodDoubleUnderscore
 
     /**
      * Convert Category model into flat array.

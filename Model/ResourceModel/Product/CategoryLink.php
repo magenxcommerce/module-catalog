@@ -147,7 +147,7 @@ class CategoryLink
      * @param bool $insert
      * @return array
      */
-    public function updateCategoryLinks(ProductInterface $product, array $insertLinks, $insert = false)
+    private function updateCategoryLinks(ProductInterface $product, array $insertLinks, $insert = false)
     {
         if (empty($insertLinks)) {
             return [];

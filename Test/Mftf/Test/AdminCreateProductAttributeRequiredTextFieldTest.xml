@@ -41,7 +41,9 @@
         </after>
 
         <!-- Open Product Index Page-->
-        <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="navigateToProductIndex"/>
+        <amOnPage url="{{AdminProductIndexPage.url}}" stepKey="navigateToProductIndex"/>
+        <waitForPageLoad stepKey="waitForProductIndexPageToLoad"/>
+
         <!-- Select Created Product-->
         <actionGroup ref="FilterProductGridBySkuActionGroup" stepKey="filterProductGridBySku">
             <argument name="product" value="$$createSimpleProduct$$"/>
@@ -72,7 +74,8 @@
         <scrollToTopOfPage stepKey="scrollToTopOfPage"/>
         <click selector="{{AdminCreateNewProductAttributeSection.saveAttribute}}" stepKey="clickOnSaveAttribute"/>
         <waitForPageLoad stepKey="waitForAttributeToSave"/>
-        <actionGroup ref="AdminProductFormSaveButtonClickActionGroup" stepKey="saveTheProduct"/>
+        <click selector="{{AdminProductFormSection.save}}" stepKey="saveTheProduct"/>
+        <waitForPageLoad stepKey="waitForProductToSave"/>
 
         <!--Verify product attribute added in product form and Is Required message displayed-->
         <scrollTo selector="{{AdminProductFormSection.contentTab}}" stepKey="scrollToContentTab"/>
@@ -82,7 +85,8 @@
         <!--Fill the Required field and save the product -->
         <fillField selector="{{AdminProductFormSection.attributeRequiredInput(newProductAttribute.attribute_code)}}" userInput="attribute" stepKey="fillTheAttributeRequiredInputField"/>
         <scrollToTopOfPage stepKey="scrollToTopOfProductFormPage"/>
-        <actionGroup ref="AdminProductFormSaveButtonClickActionGroup" stepKey="saveTheProduct1"/>
+        <click selector="{{AdminProductFormSection.save}}" stepKey="saveTheProduct1"/>
+        <waitForPageLoad stepKey="waitForProductToSave1"/>
         <see selector="{{AdminCategoryMessagesSection.SuccessMessage}}" userInput="You saved the product." stepKey="messageYouSavedTheProductIsShown"/>
     </test>
 </tests>

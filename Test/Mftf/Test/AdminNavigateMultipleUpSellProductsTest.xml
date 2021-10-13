@@ -96,7 +96,8 @@
         </after>
 
         <!--Open Product Index Page-->
-        <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="navigateToProductIndex"/>
+        <amOnPage url="{{AdminProductIndexPage.url}}" stepKey="navigateToProductIndex"/>
+        <waitForPageLoad stepKey="waitForProductIndexPageToLoad"/>
 
         <!--Select SimpleProduct -->
         <actionGroup ref="FilterProductGridBySkuActionGroup" stepKey="findCreatedProduct">

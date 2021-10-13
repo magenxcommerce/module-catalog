@@ -56,7 +56,8 @@
             <argument name="parentCategory" value="$$createNewRootCategoryA.name$$"/>
         </actionGroup>
         <!-- Change root category for Main Website Store. -->
-        <actionGroup ref="AdminSystemStoreOpenPageActionGroup" stepKey="s1"/>
+        <amOnPage stepKey="s1" url="{{AdminSystemStorePage.url}}"/>
+        <waitForPageLoad stepKey="waitForPageAdminSystemStoreLoad" />
         <click stepKey="s2" selector="{{AdminStoresGridSection.resetButton}}"/>
         <waitForPageLoad stepKey="waitForPageAdminStoresGridLoadAfterResetButton" time="10"/>
         <fillField stepKey="s4" selector="{{AdminStoresGridSection.storeGrpFilterTextField}}" userInput="Main Website Store"/>
@@ -153,7 +154,7 @@
         <click selector="{{AdminCategorySidebarTreeSection.categoryInTree('$$createNewRootCategoryA.name$$')}}" stepKey="clickOnNewRootCategoryA"/>
         <waitForPageLoad stepKey="waitForPageNewRootCategoryALoad" />
         <fillField selector="{{AdminCategoryBasicFieldSection.CategoryNameInput}}" userInput="Default Category" stepKey="enterCategoryNameAsDefaultCategory"/>
-        <actionGroup ref="AdminSaveCategoryActionGroup" stepKey="saveCategoryDefaultCategory"/>
+        <click selector="{{AdminCategoryMainActionsSection.SaveButton}}" stepKey="saveCategoryDefaultCategory"/>
         <seeElement selector="{{AdminCategoryMessagesSection.SuccessMessage}}" stepKey="assertSuccessMessageAfterSaveDefaultCategory"/>
     </test>
 </tests>

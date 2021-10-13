@@ -8,15 +8,17 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Test\Unit\Model\ResourceModel;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Attribute\LockValidatorInterface;
 use Magento\Catalog\Model\ResourceModel\Attribute;
-use Magento\Catalog\Model\ResourceModel\Attribute\RemoveProductAttributeData;
 use Magento\Eav\Model\Config;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\Entity\Attribute\Backend\AbstractBackend;
 use Magento\Eav\Model\ResourceModel\Entity\Type;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface as Adapter;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
+use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Framework\Model\ResourceModel\Db\Context;
 use Magento\ResourceConnections\DB\Select;
@@ -70,9 +72,9 @@ class AttributeTest extends TestCase
     private $lockValidatorMock;
 
     /**
-     * @var RemoveProductAttributeData|MockObject
+     * @var EntityMetadataInterface|MockObject
      */
-    private $removeProductAttributeDataMock;
+    private $entityMetaDataInterfaceMock;
 
     /**
      * @inheritDoc
@@ -86,7 +88,13 @@ class AttributeTest extends TestCase
 
         $this->connectionMock = $this->getMockBuilder(Adapter::class)
             ->getMockForAbstractClass();
+        $this->connectionMock->expects($this->once())->method('select')->willReturn($this->selectMock);
+        $this->connectionMock->expects($this->once())->method('query')->willReturn($this->selectMock);
         $this->connectionMock->expects($this->once())->method('delete')->willReturn($this->selectMock);
+        $this->selectMock->expects($this->once())->method('from')->willReturnSelf();
+        $this->selectMock->expects($this->once())->method('join')->willReturnSelf();
+        $this->selectMock->expects($this->any())->method('where')->willReturnSelf();
+        $this->selectMock->expects($this->any())->method('deleteFromSelect')->willReturnSelf();
 
         $this->resourceMock = $this->getMockBuilder(ResourceConnection::class)
             ->disableOriginalConstructor()
@@ -109,10 +117,26 @@ class AttributeTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['validate'])
             ->getMockForAbstractClass();
-        $this->removeProductAttributeDataMock = $this->getMockBuilder(RemoveProductAttributeData::class)
-            ->setMethods(['removeData'])
+        $this->entityMetaDataInterfaceMock = $this->getMockBuilder(EntityMetadataInterface::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMockForAbstractClass();
+    }
+
+    /**
+     * Sets object non-public property.
+     *
+     * @param mixed $object
+     * @param string $propertyName
+     * @param mixed $value
+     *
+     * @return void
+     */
+    private function setObjectProperty($object, string $propertyName, $value) : void
+    {
+        $reflectionClass = new \ReflectionClass($object);
+        $reflectionProperty = $reflectionClass->getProperty($propertyName);
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($object, $value);
     }
 
     /**
@@ -132,9 +156,10 @@ class AttributeTest extends TestCase
         ];
 
         $backendTableName = 'weee_tax';
+        $backendFieldName = 'value_id';
 
         $attributeModel = $this->getMockBuilder(Attribute::class)
-            ->setMethods(['getEntityAttribute', 'getConnection', 'getTable'])
+            ->setMethods(['getEntityAttribute', 'getMetadataPool', 'getConnection', 'getTable'])
             ->setConstructorArgs([
                 $this->contextMock,
                 $this->storeManagerMock,
@@ -142,12 +167,17 @@ class AttributeTest extends TestCase
                 $this->eavConfigMock,
                 $this->lockValidatorMock,
                 null,
-                $this->removeProductAttributeDataMock
             ])->getMock();
         $attributeModel->expects($this->any())
             ->method('getEntityAttribute')
             ->with($entityAttributeId)
             ->willReturn($result);
+        $metadataPoolMock = $this->getMockBuilder(MetadataPool::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getMetadata'])
+            ->getMock();
+
+        $this->setObjectProperty($attributeModel, 'metadataPool', $metadataPoolMock);
 
         $eavAttributeMock = $this->getMockBuilder(AbstractAttribute::class)
             ->disableOriginalConstructor()
@@ -174,7 +204,7 @@ class AttributeTest extends TestCase
 
         $backendModelMock = $this->getMockBuilder(AbstractBackend::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getBackend', 'getTable'])
+            ->setMethods(['getBackend', 'getTable', 'getEntityIdField'])
             ->getMock();
 
         $abstractAttributeMock = $this->getMockBuilder(AbstractAttribute::class)
@@ -186,10 +216,16 @@ class AttributeTest extends TestCase
         $eavAttributeMock->expects($this->any())->method('getEntity')->willReturn($abstractAttributeMock);
 
         $backendModelMock->expects($this->any())->method('getTable')->willReturn($backendTableName);
+        $backendModelMock->expects($this->once())->method('getEntityIdField')->willReturn($backendFieldName);
 
-        $this->removeProductAttributeDataMock->expects($this->once())
-            ->method('removeData')
-            ->with($abstractModelMock, $result['attribute_set_id']);
+        $metadataPoolMock->expects($this->any())
+            ->method('getMetadata')
+            ->with(ProductInterface::class)
+            ->willReturn($this->entityMetaDataInterfaceMock);
+
+        $this->entityMetaDataInterfaceMock->expects($this->any())
+            ->method('getLinkField')
+            ->willReturn('row_id');
 
         $attributeModel->expects($this->any())->method('getConnection')->willReturn($this->connectionMock);
         $attributeModel->expects($this->any())

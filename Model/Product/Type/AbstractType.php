@@ -9,18 +9,15 @@ namespace Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\App\ObjectManager;
 
 /**
- * Abstract model for product type implementation
- *
- * phpcs:disable Magento2.Classes.AbstractApi
  * @api
- * @since 100.0.2
+ * Abstract model for product type implementation
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @since 100.0.2
  */
 abstract class AbstractType
 {
@@ -210,7 +207,7 @@ abstract class AbstractType
         $this->_filesystem = $filesystem;
         $this->_logger = $logger;
         $this->productRepository = $productRepository;
-        $this->serializer = $serializer ?: ObjectManager::getInstance()
+        $this->serializer = $serializer ?: \Magento\Framework\App\ObjectManager::getInstance()
             ->get(\Magento\Framework\Serialize\Serializer\Json::class);
     }
 
@@ -358,7 +355,6 @@ abstract class AbstractType
 
     /**
      * Prepare product and its configuration to be added to some products list.
-     *
      * Perform standard preparation process and then prepare options belonging to specific product type.
      *
      * @param  \Magento\Framework\DataObject $buyRequest
@@ -444,7 +440,6 @@ abstract class AbstractType
 
     /**
      * Initialize product(s) for add to cart process.
-     *
      * Advanced version of func to prepare product for cart - processMode can be specified there.
      *
      * @param \Magento\Framework\DataObject $buyRequest
@@ -481,7 +476,6 @@ abstract class AbstractType
      * @throws \Magento\Framework\Exception\LocalizedException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
-     * phpcs:disable Generic.Metrics.NestingLevel
      */
     public function processFileQueue()
     {
@@ -498,7 +492,6 @@ abstract class AbstractType
                         /** @var $uploader \Zend_File_Transfer_Adapter_Http */
                         $uploader = isset($queueOptions['uploader']) ? $queueOptions['uploader'] : null;
 
-                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
                         $path = dirname($dst);
 
                         try {
@@ -536,11 +529,9 @@ abstract class AbstractType
 
         return $this;
     }
-    //phpcs:enable
 
     /**
      * Add file to File Queue
-     *
      * @param array $queueOptions Array of File Queue
      *                              (eg. ['operation'=>'move',
      *                                    'src_name'=>'filename',
@@ -581,7 +572,6 @@ abstract class AbstractType
      * @param string $processMode
      * @return array
      * @throws LocalizedException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function _prepareOptions(\Magento\Framework\DataObject $buyRequest, $product, $processMode)
     {
@@ -593,7 +583,6 @@ abstract class AbstractType
         }
         if ($options !== null) {
             $results = [];
-            $optionsFromRequest = $buyRequest->getOptions();
             foreach ($options as $option) {
                 /* @var $option \Magento\Catalog\Model\Product\Option */
                 try {
@@ -601,14 +590,8 @@ abstract class AbstractType
                         ->setOption($option)
                         ->setProduct($product)
                         ->setRequest($buyRequest)
-                        ->setProcessMode($processMode);
-
-                    if ($product->getSkipCheckRequiredOption() !== true) {
-                        $group->validateUserValue($optionsFromRequest);
-                    } elseif ($optionsFromRequest !== null && isset($optionsFromRequest[$option->getId()])) {
-                        $transport->options[$option->getId()] = $optionsFromRequest[$option->getId()];
-                    }
-
+                        ->setProcessMode($processMode)
+                        ->validateUserValue($buyRequest->getOptions());
                 } catch (LocalizedException $e) {
                     $results[] = $e->getMessage();
                     continue;
@@ -660,7 +643,8 @@ abstract class AbstractType
     }
 
     /**
-     * Prepare additional options/information for order item which will be created from this product
+     * Prepare additional options/information for order item which will be
+     * created from this product
      *
      * @param \Magento\Catalog\Model\Product $product
      * @return array
@@ -916,7 +900,7 @@ abstract class AbstractType
     /**
      * Set store filter for associated products
      *
-     * @param int|\Magento\Store\Model\Store $store
+     * @param $store int|\Magento\Store\Model\Store
      * @param \Magento\Catalog\Model\Product $product
      * @return $this
      */
@@ -929,7 +913,6 @@ abstract class AbstractType
 
     /**
      * Allow for updates of children qty's
-     *
      * (applicable for complicated product types. As default returns false)
      *
      * @param \Magento\Catalog\Model\Product $product
@@ -957,7 +940,6 @@ abstract class AbstractType
 
     /**
      * Implementation of product specify logic of which product needs to be assigned to option.
-     *
      * For example if product which was added to option already removed from catalog.
      *
      * @param \Magento\Catalog\Model\Product $optionProduct
@@ -997,7 +979,6 @@ abstract class AbstractType
 
     /**
      * Retrieve additional searchable data from type instance
-     *
      * Using based on product id and store_id data
      *
      * @param \Magento\Catalog\Model\Product $product
@@ -1018,7 +999,6 @@ abstract class AbstractType
 
     /**
      * Retrieve products divided into groups required to purchase
-     *
      * At least one product in each group has to be purchased
      *
      * @param \Magento\Catalog\Model\Product $product
@@ -1112,8 +1092,6 @@ abstract class AbstractType
     }
 
     /**
-     * Get Associated Products
-     *
      * @param \Magento\Catalog\Model\Product\Type\AbstractType $product
      * @return array
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

@@ -38,7 +38,8 @@
         </after>
 
         <!-- Search default simple product in the grid page -->
-        <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="openProductCatalogPage"/>
+        <amOnPage url="{{ProductCatalogPage.url}}" stepKey="OpenProductCatalogPage"/>
+        <waitForPageLoad stepKey="waitForProductCatalogPage"/>
         <actionGroup ref="FilterProductGridBySku2ActionGroup" stepKey="filterProductGrid">
             <argument name="sku" value="$$initialSimpleProduct.sku$$"/>
         </actionGroup>
@@ -51,10 +52,11 @@
         <fillField selector="{{AdminProductFormSection.productPrice}}" userInput="{{simpleProductEnabledFlat.price}}" stepKey="fillSimpleProductPrice"/>
         <selectOption selector="{{AdminProductFormSection.productTaxClass}}" userInput="{{simpleProductEnabledFlat.productTaxClass}}" stepKey="selectProductTaxClass"/>
         <fillField selector="{{AdminProductFormSection.productQuantity}}" userInput="{{simpleProductEnabledFlat.quantity}}" stepKey="fillSimpleProductQuantity"/>
-        <actionGroup ref="AdminClickOnAdvancedInventoryLinkActionGroup" stepKey="clickAdvancedInventoryLink"/>
+        <click selector="{{AdminProductFormSection.advancedInventoryLink}}" stepKey="clickAdvancedInventoryLink"/>
+        <waitForPageLoad stepKey="waitForAdvancedInventoryPage"/>
         <conditionalClick selector="{{AdminProductFormAdvancedInventorySection.useConfigSettings}}" dependentSelector="{{AdminProductFormAdvancedInventorySection.useConfigSettings}}" visible="true" stepKey="checkUseConfigSettingsCheckBox"/>
         <selectOption selector="{{AdminProductFormAdvancedInventorySection.manageStock}}" userInput="No" stepKey="selectManageStock"/>
-        <actionGroup ref="AdminSubmitAdvancedInventoryFormActionGroup" stepKey="clickDoneButtonOnAdvancedInventorySection"/>
+        <click selector="{{AdminProductFormAdvancedInventorySection.doneButton}}" stepKey="clickDoneButtonOnAdvancedInventorySection"/>
         <selectOption selector="{{AdminProductFormSection.stockStatus}}" userInput="{{simpleProductEnabledFlat.status}}" stepKey="selectStockStatusInStock"/>
         <fillField selector="{{AdminProductFormSection.productWeight}}" userInput="{{simpleProductEnabledFlat.weight}}" stepKey="fillSimpleProductWeight"/>
         <selectOption selector="{{AdminProductFormSection.productWeightSelect}}" userInput="{{simpleProductEnabledFlat.weightSelect}}" stepKey="selectProductWeight"/>
@@ -65,18 +67,20 @@
         <fillField selector="{{AdminProductFormSection.searchCategory}}" userInput="$$categoryEntity.name$$" stepKey="fillSearchCategory" />
         <waitForPageLoad stepKey="waitForCategory2"/>
         <click selector="{{AdminProductFormSection.selectCategory($$categoryEntity.name$$)}}" stepKey="clickOnCategory"/>
-        <actionGroup ref="AdminSubmitCategoriesPopupActionGroup" stepKey="clickOnDoneAdvancedCategorySelect"/>
+        <click selector="{{AdminProductFormSection.done}}" stepKey="clickOnDoneAdvancedCategorySelect"/>
         <selectOption selector="{{AdminProductFormSection.visibility}}" userInput="{{simpleProductEnabledFlat.visibility}}" stepKey="selectVisibility"/>
         <click selector="{{AdminProductSEOSection.sectionHeader}}" stepKey="clickAdminProductSEOSection"/>
         <fillField selector="{{AdminProductSEOSection.urlKeyInput}}" userInput="{{simpleProductEnabledFlat.urlKey}}" stepKey="fillUrlKey"/>
         <scrollToTopOfPage stepKey="scrollToTopOfAdminProductFormSection"/>
-        <actionGroup ref="AdminProductFormSaveButtonClickActionGroup" stepKey="clickSaveButton"/>
+        <click selector="{{AdminProductFormSection.save}}" stepKey="clickSaveButton"/>
+        <waitForPageLoad stepKey="waitForSimpleProductSave"/>
 
         <!-- Verify customer see success message -->
         <see selector="{{AdminProductFormSection.successMessage}}" userInput="You saved the product." stepKey="seeAssertSimpleProductSaveSuccessMessage"/>
 
         <!-- Search updated simple product(from above step) in the grid page -->
-        <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="openProductCatalogPageToSearchUpdatedSimpleProduct"/>
+        <amOnPage url="{{ProductCatalogPage.url}}" stepKey="OpenProductCatalogPageToSearchUpdatedSimpleProduct"/>
+        <waitForPageLoad stepKey="waitForProductCatalogPageToLoad"/>
         <conditionalClick selector="{{AdminProductGridFilterSection.clearAll}}" dependentSelector="{{AdminProductGridFilterSection.clearAll}}" visible="true" stepKey="clickClearAll"/>
         <click selector="{{AdminProductGridFilterSection.filters}}" stepKey="clickFiltersButton"/>
         <fillField selector="{{AdminProductGridFilterSection.nameFilter}}" userInput="{{simpleProductEnabledFlat.name}}" stepKey="fillSimpleProductNameInNameFilter"/>
@@ -91,7 +95,8 @@
         <seeInField selector="{{AdminProductFormSection.productPrice}}" userInput="{{simpleProductEnabledFlat.price}}" stepKey="seeSimpleProductPrice"/>
         <seeInField selector="{{AdminProductFormSection.productTaxClass}}" userInput="{{simpleProductEnabledFlat.productTaxClass}}" stepKey="seeProductTaxClass"/>
         <seeInField selector="{{AdminProductFormSection.productQuantity}}" userInput="{{simpleProductEnabledFlat.quantity}}" stepKey="seeSimpleProductQuantity"/>
-        <actionGroup ref="AdminClickOnAdvancedInventoryLinkActionGroup" stepKey="clickTheAdvancedInventoryLink"/>
+        <click selector="{{AdminProductFormSection.advancedInventoryLink}}" stepKey="clickTheAdvancedInventoryLink"/>
+        <waitForPageLoad stepKey="waitForAdvancedInventoryPageLoad"/>
         <see selector="{{AdminProductFormAdvancedInventorySection.manageStock}}" userInput="No" stepKey="seeManageStock"/>
         <click selector="{{AdminProductFormAdvancedInventorySection.advancedInventoryCloseButton}}" stepKey="clickDoneButtonOnAdvancedInventory"/>
         <seeInField selector="{{AdminProductFormSection.productStockStatus}}" userInput="{{simpleProductEnabledFlat.status}}" stepKey="seeSimpleProductStockStatus"/>
@@ -114,9 +119,7 @@
         <waitForPageLoad stepKey="waitForStorefrontProductPageLoad"/>
         <see selector="{{StorefrontProductInfoMainSection.productName}}" userInput="{{simpleProductEnabledFlat.name}}" stepKey="seeSimpleProductNameOnStoreFrontPage"/>
         <see selector="{{StorefrontProductInfoMainSection.productPrice}}" userInput="{{simpleProductEnabledFlat.price}}" stepKey="seeSimpleProductPriceOnStoreFrontPage"/>
-        <actionGroup ref="StorefrontAssertProductSkuOnProductPageActionGroup" stepKey="seeSimpleProductSkuOnStoreFrontPage">
-            <argument name="productSku" value="{{simpleProductEnabledFlat.sku}}"/>
-        </actionGroup>
+        <see selector="{{StorefrontProductInfoMainSection.productSku}}" userInput="{{simpleProductEnabledFlat.sku}}" stepKey="seeSimpleProductSkuOnStoreFrontPage"/>
         <grabTextFrom selector="{{StorefrontProductInfoMainSection.productStockStatus}}" stepKey="productStockAvailableStatus"/>
         <assertEquals stepKey="assertStockAvailableOnProductPage">
             <expectedResult type="string">{{simpleProductEnabledFlat.storefrontStatus}}</expectedResult>

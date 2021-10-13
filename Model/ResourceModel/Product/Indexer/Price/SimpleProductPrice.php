@@ -62,7 +62,7 @@ class SimpleProductPrice implements DimensionalIndexerInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function executeByDimensions(array $dimensions, \Traversable $entityIds)
     {
@@ -81,7 +81,8 @@ class SimpleProductPrice implements DimensionalIndexerInterface
             'tierPriceField' => 'tier_price',
         ]);
         $select = $this->baseFinalPrice->getQuery($dimensions, $this->productType, iterator_to_array($entityIds));
-        $this->tableMaintainer->insertFromSelect($select, $temporaryPriceTable->getTableName(), []);
+        $query = $select->insertFromSelect($temporaryPriceTable->getTableName(), [], false);
+        $this->tableMaintainer->getConnection()->query($query);
 
         $this->basePriceModifier->modifyPrice($temporaryPriceTable, iterator_to_array($entityIds));
     }

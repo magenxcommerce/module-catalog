@@ -3,9 +3,6 @@
  * See COPYING.txt for license details.
  */
 
-/**
- * @deprecated see Magento/Ui/view/base/web/js/grid/filters/elements/ui-select.js
- */
 define([
     'Magento_Ui/js/form/element/ui-select',
     'jquery',

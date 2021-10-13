@@ -7,16 +7,15 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Model\Indexer\Product\Price;
 
-use Magento\Framework\Indexer\Table\StrategyInterface;
-use Magento\Framework\Model\ResourceModel\Db\Context as DbContext;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Search\Request\Dimension;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Search\Request\IndexScopeResolverInterface as TableResolver;
-use Magento\Indexer\Model\ResourceModel\AbstractResource as AbstractIndexerResource;
 
 /**
  * Class encapsulate logic of work with tables per store in Product Price indexer
  */
-class TableMaintainer extends AbstractIndexerResource
+class TableMaintainer
 {
     /**
      * Catalog product price index table name
@@ -24,9 +23,19 @@ class TableMaintainer extends AbstractIndexerResource
     const MAIN_INDEX_TABLE = 'catalog_product_index_price';
 
     /**
+     * @var ResourceConnection
+     */
+    private $resource;
+
+    /**
      * @var TableResolver
      */
     private $tableResolver;
+
+    /**
+     * @var AdapterInterface
+     */
+    private $connection;
 
     /**
      * Catalog tmp category index table name
@@ -44,27 +53,47 @@ class TableMaintainer extends AbstractIndexerResource
     private $mainTmpTable;
 
     /**
-     * @param DbContext $context
-     * @param StrategyInterface $tableStrategy
+     * @var null|string
+     */
+    private $connectionName;
+
+    /**
+     * @param ResourceConnection $resource
      * @param TableResolver $tableResolver
-     * @param string|null $connectionName
+     * @param null $connectionName
      */
     public function __construct(
-        DbContext $context,
-        StrategyInterface $tableStrategy,
+        ResourceConnection $resource,
         TableResolver $tableResolver,
         $connectionName = null
     ) {
-        parent::__construct($context, $tableStrategy, $connectionName);
+        $this->resource = $resource;
         $this->tableResolver = $tableResolver;
+        $this->connectionName = $connectionName;
     }
 
     /**
-     * @inheritDoc
+     * Get connection for work with price indexer
+     *
+     * @return AdapterInterface
      */
-    protected function _construct()
+    public function getConnection(): AdapterInterface
     {
-        $this->_init(self::MAIN_INDEX_TABLE, 'entity_id');
+        if (null === $this->connection) {
+            $this->connection = $this->resource->getConnection($this->connectionName);
+        }
+        return $this->connection;
+    }
+
+    /**
+     * Return validated table name
+     *
+     * @param string $table
+     * @return string
+     */
+    private function getTable(string $table): string
+    {
+        return $this->resource->getTableName($table);
     }
 
     /**
@@ -72,7 +101,9 @@ class TableMaintainer extends AbstractIndexerResource
      *
      * @param string $mainTableName
      * @param string $newTableName
+     *
      * @return void
+     *
      * @throws \Zend_Db_Exception
      */
     private function createTable(string $mainTableName, string $newTableName)
@@ -88,6 +119,7 @@ class TableMaintainer extends AbstractIndexerResource
      * Drop table
      *
      * @param string $tableName
+     *
      * @return void
      */
     private function dropTable(string $tableName)
@@ -101,6 +133,7 @@ class TableMaintainer extends AbstractIndexerResource
      * Truncate table
      *
      * @param string $tableName
+     *
      * @return void
      */
     private function truncateTable(string $tableName)
@@ -114,6 +147,7 @@ class TableMaintainer extends AbstractIndexerResource
      * Get array key for tmp table
      *
      * @param Dimension[] $dimensions
+     *
      * @return string
      */
     private function getArrayKeyForTmpTable(array $dimensions): string
@@ -126,12 +160,13 @@ class TableMaintainer extends AbstractIndexerResource
     }
 
     /**
-     * Return main index table name using dimensions
+     * Return main index table name
      *
      * @param Dimension[] $dimensions
+     *
      * @return string
      */
-    public function getMainTableByDimensions(array $dimensions): string
+    public function getMainTable(array $dimensions): string
     {
         return $this->tableResolver->resolve(self::MAIN_INDEX_TABLE, $dimensions);
     }
@@ -140,12 +175,14 @@ class TableMaintainer extends AbstractIndexerResource
      * Create main and replica index tables for dimensions
      *
      * @param Dimension[] $dimensions
+     *
      * @return void
+     *
      * @throws \Zend_Db_Exception
      */
     public function createTablesForDimensions(array $dimensions)
     {
-        $mainTableName = $this->getMainTableByDimensions($dimensions);
+        $mainTableName = $this->getMainTable($dimensions);
         //Create index table for dimensions based on main replica table
         //Using main replica table is necessary for backward capability and TableResolver plugin work
         $this->createTable(
@@ -153,7 +190,7 @@ class TableMaintainer extends AbstractIndexerResource
             $mainTableName
         );
 
-        $mainReplicaTableName = $this->getMainTableByDimensions($dimensions) . $this->additionalTableSuffix;
+        $mainReplicaTableName = $this->getMainTable($dimensions) . $this->additionalTableSuffix;
         //Create replica table for dimensions based on main replica table
         $this->createTable(
             $this->getTable(self::MAIN_INDEX_TABLE . $this->additionalTableSuffix),
@@ -165,14 +202,15 @@ class TableMaintainer extends AbstractIndexerResource
      * Drop main and replica index tables for dimensions
      *
      * @param Dimension[] $dimensions
+     *
      * @return void
      */
     public function dropTablesForDimensions(array $dimensions)
     {
-        $mainTableName = $this->getMainTableByDimensions($dimensions);
+        $mainTableName = $this->getMainTable($dimensions);
         $this->dropTable($mainTableName);
 
-        $mainReplicaTableName = $this->getMainTableByDimensions($dimensions) . $this->additionalTableSuffix;
+        $mainReplicaTableName = $this->getMainTable($dimensions) . $this->additionalTableSuffix;
         $this->dropTable($mainReplicaTableName);
     }
 
@@ -180,14 +218,15 @@ class TableMaintainer extends AbstractIndexerResource
      * Truncate main and replica index tables for dimensions
      *
      * @param Dimension[] $dimensions
+     *
      * @return void
      */
     public function truncateTablesForDimensions(array $dimensions)
     {
-        $mainTableName = $this->getMainTableByDimensions($dimensions);
+        $mainTableName = $this->getMainTable($dimensions);
         $this->truncateTable($mainTableName);
 
-        $mainReplicaTableName = $this->getMainTableByDimensions($dimensions) . $this->additionalTableSuffix;
+        $mainReplicaTableName = $this->getMainTable($dimensions) . $this->additionalTableSuffix;
         $this->truncateTable($mainReplicaTableName);
     }
 
@@ -195,24 +234,26 @@ class TableMaintainer extends AbstractIndexerResource
      * Return replica index table name
      *
      * @param Dimension[] $dimensions
+     *
      * @return string
      */
     public function getMainReplicaTable(array $dimensions): string
     {
-        return $this->getMainTableByDimensions($dimensions) . $this->additionalTableSuffix;
+        return $this->getMainTable($dimensions) . $this->additionalTableSuffix;
     }
 
     /**
      * Create temporary index table for dimensions
      *
      * @param Dimension[] $dimensions
+     *
      * @return void
      */
     public function createMainTmpTable(array $dimensions)
     {
         // Create temporary table based on template table catalog_product_index_price_tmp without indexes
-        $templateTableName = $this->_resources->getTableName(self::MAIN_INDEX_TABLE . '_tmp');
-        $temporaryTableName = $this->getMainTableByDimensions($dimensions) . $this->tmpTableSuffix;
+        $templateTableName = $this->resource->getTableName(self::MAIN_INDEX_TABLE . '_tmp');
+        $temporaryTableName = $this->getMainTable($dimensions) . $this->tmpTableSuffix;
         $this->getConnection()->createTemporaryTableLike($temporaryTableName, $templateTableName, true);
         $this->mainTmpTable[$this->getArrayKeyForTmpTable($dimensions)] = $temporaryTableName;
     }
@@ -221,7 +262,9 @@ class TableMaintainer extends AbstractIndexerResource
      * Return temporary index table name
      *
      * @param Dimension[] $dimensions
+     *
      * @return string
+     *
      * @throws \LogicException
      */
     public function getMainTmpTable(array $dimensions): string

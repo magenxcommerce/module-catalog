@@ -6,39 +6,25 @@
  */
 namespace Magento\Catalog\Model\Product\Attribute;
 
-use Magento\Catalog\Api\Data\ProductAttributeInterface;
-use Magento\Catalog\Api\ProductAttributeOptionManagementInterface;
-use Magento\Catalog\Api\ProductAttributeOptionUpdateInterface;
-use Magento\Eav\Api\AttributeOptionManagementInterface;
-use Magento\Eav\Api\AttributeOptionUpdateInterface;
-use Magento\Eav\Api\Data\AttributeOptionInterface;
 use Magento\Framework\Exception\InputException;
 
 /**
  * Option management model for product attribute.
  */
-class OptionManagement implements ProductAttributeOptionManagementInterface, ProductAttributeOptionUpdateInterface
+class OptionManagement implements \Magento\Catalog\Api\ProductAttributeOptionManagementInterface
 {
     /**
-     * @var AttributeOptionManagementInterface
+     * @var \Magento\Eav\Api\AttributeOptionManagementInterface
      */
     protected $eavOptionManagement;
 
     /**
-     * @var AttributeOptionUpdateInterface
-     */
-    private $eavOptionUpdate;
-
-    /**
-     * @param AttributeOptionManagementInterface $eavOptionManagement
-     * @param AttributeOptionUpdateInterface $eavOptionUpdate
+     * @param \Magento\Eav\Api\AttributeOptionManagementInterface $eavOptionManagement
      */
     public function __construct(
-        AttributeOptionManagementInterface $eavOptionManagement,
-        AttributeOptionUpdateInterface $eavOptionUpdate
+        \Magento\Eav\Api\AttributeOptionManagementInterface $eavOptionManagement
     ) {
         $this->eavOptionManagement = $eavOptionManagement;
-        $this->eavOptionUpdate = $eavOptionUpdate;
     }
 
     /**
@@ -47,7 +33,7 @@ class OptionManagement implements ProductAttributeOptionManagementInterface, Pro
     public function getItems($attributeCode)
     {
         return $this->eavOptionManagement->getItems(
-            ProductAttributeInterface::ENTITY_TYPE_CODE,
+            \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
             $attributeCode
         );
     }
@@ -58,21 +44,8 @@ class OptionManagement implements ProductAttributeOptionManagementInterface, Pro
     public function add($attributeCode, $option)
     {
         return $this->eavOptionManagement->add(
-            ProductAttributeInterface::ENTITY_TYPE_CODE,
+            \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
             $attributeCode,
-            $option
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update(string $attributeCode, int $optionId, AttributeOptionInterface $option): bool
-    {
-        return $this->eavOptionUpdate->update(
-            ProductAttributeInterface::ENTITY_TYPE_CODE,
-            $attributeCode,
-            $optionId,
             $option
         );
     }
@@ -87,7 +60,7 @@ class OptionManagement implements ProductAttributeOptionManagementInterface, Pro
         }
 
         return $this->eavOptionManagement->delete(
-            ProductAttributeInterface::ENTITY_TYPE_CODE,
+            \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
             $attributeCode,
             $optionId
         );

@@ -425,7 +425,7 @@ class Full extends AbstractAction
         $mainTablesByDimension = [];
 
         foreach ($this->dimensionCollectionFactory->create() as $dimensions) {
-            $mainTablesByDimension[] = $this->dimensionTableMaintainer->getMainTableByDimensions($dimensions);
+            $mainTablesByDimension[] = $this->dimensionTableMaintainer->getMainTable($dimensions);
 
             //Move data from indexers with old realisation
             $this->moveDataFromReplicaTableToReplicaTables($dimensions);

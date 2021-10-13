@@ -91,7 +91,8 @@
         <dontSeeElement selector="{{AdminProductAttributeSetEditSection.attributesInGroup(emptyGroup.name)}}" stepKey="seeNoAttributes"/>
 
         <!-- Navigate to Catalog > Products -->
-        <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="amOnProductPage"/>
+        <amOnPage url="{{AdminProductIndexPage.url}}" stepKey="amOnProductPage"/>
+        <waitForPageLoad stepKey="waitForProductPageLoad"/>
 
         <!-- Start to create a new simple product with the custom attribute set from the preconditions -->
         <click selector="{{AdminProductGridActionSection.addProductBtn}}" stepKey="clickAddProduct"/>

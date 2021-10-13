@@ -27,7 +27,8 @@
             <actionGroup ref="AdminLogoutActionGroup" stepKey="logout"/>
         </after>
 
-        <actionGroup ref="AdminNavigateToNewProductAttributePageActionGroup" stepKey="navigateToNewProductAttributePage"/>
+        <amOnPage url="{{ProductAttributePage.url}}" stepKey="navigateToNewProductAttributePage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
 
         <!-- Set attribute properties -->
         <fillField selector="{{AttributePropertiesSection.DefaultLabel}}"

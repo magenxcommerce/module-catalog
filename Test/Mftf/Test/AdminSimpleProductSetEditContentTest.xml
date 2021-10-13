@@ -34,7 +34,8 @@
         </after>
 
         <!-- Create product -->
-        <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="navigateToProductIndex"/>
+        <amOnPage url="{{AdminProductIndexPage.url}}" stepKey="navigateToProductIndex"/>
+        <waitForPageLoad stepKey="waitForProductIndexPage"/>
         <actionGroup ref="GoToCreateProductPageActionGroup" stepKey="goToCreateProduct">
             <argument name="product" value="SimpleProduct"/>
         </actionGroup>
@@ -50,7 +51,7 @@
         <fillField selector="{{AdminProductContentSection.shortDescriptionTextArea}}" userInput="This is the short description" stepKey="fillShortDescription"/>
 
         <!--save the product-->
-        <actionGroup ref="AdminProductFormSaveActionGroup" stepKey="clickSaveButton"/>
+        <click selector="{{AdminProductFormActionSection.saveButton}}" stepKey="clickSaveButton"/>
         <see selector="{{AdminCategoryMessagesSection.SuccessMessage}}" userInput="You saved the product." stepKey="messageYouSavedTheProductIsShown"/>
 
         <!--Edit content-->
@@ -60,7 +61,7 @@
         <fillField selector="{{AdminProductContentSection.shortDescriptionTextArea}}" userInput="EDIT ~ This is the short description ~ EDIT" stepKey="editShortDescription"/>
 
         <!--save the product-->
-        <actionGroup ref="AdminProductFormSaveActionGroup" stepKey="clickSaveButtonAfterEdit"/>
+        <click selector="{{AdminProductFormActionSection.saveButton}}" stepKey="clickSaveButtonAfterEdit"/>
         <see selector="{{AdminCategoryMessagesSection.SuccessMessage}}" userInput="You saved the product." stepKey="messageYouSavedTheProductIsShownAgain"/>
 
         <!--Checking content admin-->
