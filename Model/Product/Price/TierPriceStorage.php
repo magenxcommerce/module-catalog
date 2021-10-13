@@ -7,15 +7,11 @@
 namespace Magento\Catalog\Model\Product\Price;
 
 use Magento\Catalog\Api\Data\TierPriceInterface;
-use Magento\Catalog\Api\TierPriceStorageInterface;
-use Magento\Catalog\Model\Indexer\Product\Price\Processor as PriceIndexerProcessor;
-use Magento\Catalog\Model\Product\Price\Validation\TierPriceValidator;
-use Magento\Catalog\Model\ProductIdLocatorInterface;
 
 /**
  * Tier price storage.
  */
-class TierPriceStorage implements TierPriceStorageInterface
+class TierPriceStorage implements \Magento\Catalog\Api\TierPriceStorageInterface
 {
     /**
      * Tier price resource model.
@@ -27,7 +23,7 @@ class TierPriceStorage implements TierPriceStorageInterface
     /**
      * Tier price validator.
      *
-     * @var TierPriceValidator
+     * @var \Magento\Catalog\Model\Product\Price\Validation\TierPriceValidator
      */
     private $tierPriceValidator;
 
@@ -39,42 +35,69 @@ class TierPriceStorage implements TierPriceStorageInterface
     private $tierPriceFactory;
 
     /**
-     * Price index processor.
+     * Price indexer.
      *
-     * @var PriceIndexerProcessor
+     * @var \Magento\Catalog\Model\Indexer\Product\Price
      */
-    private $priceIndexProcessor;
+    private $priceIndexer;
 
     /**
      * Product ID locator.
      *
-     * @var ProductIdLocatorInterface
+     * @var \Magento\Catalog\Model\ProductIdLocatorInterface
      */
     private $productIdLocator;
 
     /**
+     * Page cache config.
+     *
+     * @var \Magento\PageCache\Model\Config
+     */
+    private $config;
+
+    /**
+     * Cache type list.
+     *
+     * @var \Magento\Framework\App\Cache\TypeListInterface
+     */
+    private $typeList;
+
+    /**
+     * Indexer chunk value.
+     *
+     * @var int
+     */
+    private $indexerChunkValue = 500;
+
+    /**
      * @param TierPricePersistence $tierPricePersistence
-     * @param TierPriceValidator $tierPriceValidator
+     * @param \Magento\Catalog\Model\Product\Price\Validation\TierPriceValidator $tierPriceValidator
      * @param TierPriceFactory $tierPriceFactory
-     * @param PriceIndexerProcessor $priceIndexProcessor
-     * @param ProductIdLocatorInterface $productIdLocator
+     * @param \Magento\Catalog\Model\Indexer\Product\Price $priceIndexer
+     * @param \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator
+     * @param \Magento\PageCache\Model\Config $config
+     * @param \Magento\Framework\App\Cache\TypeListInterface $typeList
      */
     public function __construct(
         TierPricePersistence $tierPricePersistence,
-        TierPriceValidator $tierPriceValidator,
+        \Magento\Catalog\Model\Product\Price\Validation\TierPriceValidator $tierPriceValidator,
         TierPriceFactory $tierPriceFactory,
-        PriceIndexerProcessor $priceIndexProcessor,
-        ProductIdLocatorInterface $productIdLocator
+        \Magento\Catalog\Model\Indexer\Product\Price $priceIndexer,
+        \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator,
+        \Magento\PageCache\Model\Config $config,
+        \Magento\Framework\App\Cache\TypeListInterface $typeList
     ) {
         $this->tierPricePersistence = $tierPricePersistence;
         $this->tierPriceValidator = $tierPriceValidator;
         $this->tierPriceFactory = $tierPriceFactory;
-        $this->priceIndexProcessor = $priceIndexProcessor;
+        $this->priceIndexer = $priceIndexer;
         $this->productIdLocator = $productIdLocator;
+        $this->config = $config;
+        $this->typeList = $typeList;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(array $skus)
     {
@@ -84,30 +107,28 @@ class TierPriceStorage implements TierPriceStorageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update(array $prices)
     {
         $affectedIds = $this->retrieveAffectedProductIdsForPrices($prices);
         $skus = array_unique(
-            array_map(
-                function (TierPriceInterface $price) {
-                    return $price->getSku();
-                },
-                $prices
-            )
+            array_map(function ($price) {
+                return $price->getSku();
+            }, $prices)
         );
         $result = $this->tierPriceValidator->retrieveValidationResult($prices, $this->getExistingPrices($skus, true));
         $prices = $this->removeIncorrectPrices($prices, $result->getFailedRowIds());
         $formattedPrices = $this->retrieveFormattedPrices($prices);
         $this->tierPricePersistence->update($formattedPrices);
         $this->reindexPrices($affectedIds);
+        $this->invalidateFullPageCache();
 
         return $result->getFailedItems();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function replace(array $prices)
     {
@@ -117,12 +138,13 @@ class TierPriceStorage implements TierPriceStorageInterface
         $formattedPrices = $this->retrieveFormattedPrices($prices);
         $this->tierPricePersistence->replace($formattedPrices, $affectedIds);
         $this->reindexPrices($affectedIds);
+        $this->invalidateFullPageCache();
 
         return $result->getFailedItems();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete(array $prices)
     {
@@ -132,6 +154,7 @@ class TierPriceStorage implements TierPriceStorageInterface
         $priceIds = $this->retrieveAffectedPriceIds($prices);
         $this->tierPricePersistence->delete($priceIds);
         $this->reindexPrices($affectedIds);
+        $this->invalidateFullPageCache();
 
         return $result->getFailedItems();
     }
@@ -143,22 +166,21 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param bool $groupBySku [optional]
      * @return array
      */
-    private function getExistingPrices(array $skus, bool $groupBySku = false): array
+    private function getExistingPrices(array $skus, $groupBySku = false)
     {
         $ids = $this->retrieveAffectedIds($skus);
         $rawPrices = $this->tierPricePersistence->get($ids);
         $prices = [];
-        if ($rawPrices) {
-            $linkField = $this->tierPricePersistence->getEntityLinkField();
-            $skuByIdLookup = $this->buildSkuByIdLookup($skus);
-            foreach ($rawPrices as $rawPrice) {
-                $sku = $skuByIdLookup[$rawPrice[$linkField]];
-                $price = $this->tierPriceFactory->create($rawPrice, $sku);
-                if ($groupBySku) {
-                    $prices[$sku][] = $price;
-                } else {
-                    $prices[] = $price;
-                }
+
+        $linkField = $this->tierPricePersistence->getEntityLinkField();
+        $skuByIdLookup = $this->buildSkuByIdLookup($skus);
+        foreach ($rawPrices as $rawPrice) {
+            $sku = $skuByIdLookup[$rawPrice[$linkField]];
+            $price = $this->tierPriceFactory->create($rawPrice, $sku);
+            if ($groupBySku) {
+                $prices[$sku][] = $price;
+            } else {
+                $prices[] = $price;
             }
         }
 
@@ -171,7 +193,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $prices
      * @return array
      */
-    private function retrieveFormattedPrices(array $prices): array
+    private function retrieveFormattedPrices(array $prices)
     {
         $formattedPrices = [];
 
@@ -192,15 +214,12 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param TierPriceInterface[] $prices
      * @return array
      */
-    private function retrieveAffectedProductIdsForPrices(array $prices): array
+    private function retrieveAffectedProductIdsForPrices(array $prices)
     {
         $skus = array_unique(
-            array_map(
-                function (TierPriceInterface $price) {
-                    return $price->getSku();
-                },
-                $prices
-            )
+            array_map(function ($price) {
+                return $price->getSku();
+            }, $prices)
         );
 
         return $this->retrieveAffectedIds($skus);
@@ -212,15 +231,15 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $skus
      * @return array
      */
-    private function retrieveAffectedIds(array $skus): array
+    private function retrieveAffectedIds(array $skus)
     {
         $affectedIds = [];
 
         foreach ($this->productIdLocator->retrieveProductIdsBySkus($skus) as $productId) {
-            $affectedIds[] = array_keys($productId);
+            $affectedIds = array_merge($affectedIds, array_keys($productId));
         }
 
-        return $affectedIds ? array_unique(array_merge(...$affectedIds)) : [];
+        return array_unique($affectedIds);
     }
 
     /**
@@ -229,7 +248,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $prices
      * @return array
      */
-    private function retrieveAffectedPriceIds(array $prices): array
+    private function retrieveAffectedPriceIds(array $prices)
     {
         $affectedIds = $this->retrieveAffectedProductIdsForPrices($prices);
         $formattedPrices = $this->retrieveFormattedPrices($prices);
@@ -250,7 +269,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $existingPrices
      * @return int|null
      */
-    private function retrievePriceId(array $price, array $existingPrices): ?int
+    private function retrievePriceId(array $price, array $existingPrices)
     {
         $linkField = $this->tierPricePersistence->getEntityLinkField();
 
@@ -261,7 +280,7 @@ class TierPriceStorage implements TierPriceStorageInterface
                 && $this->isCorrectPriceValue($existingPrice, $price)
                 && $existingPrice[$linkField] == $price[$linkField]
             ) {
-                return (int) $existingPrice['value_id'];
+                return $existingPrice['value_id'];
             }
         }
 
@@ -275,7 +294,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $price
      * @return bool
      */
-    private function isCorrectPriceValue(array $existingPrice, array $price): bool
+    private function isCorrectPriceValue(array $existingPrice, array $price)
     {
         return ($existingPrice['value'] != 0 && $existingPrice['value'] == $price['value'])
             || ($existingPrice['percentage_value'] !== null
@@ -288,7 +307,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $skus
      * @return array
      */
-    private function buildSkuByIdLookup(array $skus): array
+    private function buildSkuByIdLookup($skus)
     {
         $lookup = [];
         foreach ($this->productIdLocator->retrieveProductIdsBySkus($skus) as $sku => $ids) {
@@ -301,15 +320,27 @@ class TierPriceStorage implements TierPriceStorageInterface
     }
 
     /**
+     * Invalidate full page cache.
+     *
+     * @return void
+     */
+    private function invalidateFullPageCache()
+    {
+        if ($this->config->isEnabled()) {
+            $this->typeList->invalidate('full_page');
+        }
+    }
+
+    /**
      * Reindex prices.
      *
      * @param array $ids
      * @return void
      */
-    private function reindexPrices(array $ids): void
+    private function reindexPrices(array $ids)
     {
-        if (!empty($ids)) {
-            $this->priceIndexProcessor->reindexList($ids);
+        foreach (array_chunk($ids, $this->indexerChunkValue) as $affectedIds) {
+            $this->priceIndexer->execute($affectedIds);
         }
     }
 
@@ -320,7 +351,7 @@ class TierPriceStorage implements TierPriceStorageInterface
      * @param array $ids
      * @return array
      */
-    private function removeIncorrectPrices(array $prices, array $ids): array
+    private function removeIncorrectPrices(array $prices, array $ids)
     {
         foreach ($ids as $id) {
             unset($prices[$id]);

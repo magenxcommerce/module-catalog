@@ -15,8 +15,6 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\TemporaryStateExceptionInterface;
 
 /**
- * Product tier price management
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class TierPriceManagement implements \Magento\Catalog\Api\ProductTierPriceManagementInterface
@@ -84,17 +82,13 @@ class TierPriceManagement implements \Magento\Catalog\Api\ProductTierPriceManage
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function add($sku, $customerGroupId, $price, $qty)
     {
-        if (!is_float($price) && !is_int($price) && !\Zend_Validate::is((string)$price, 'Float')
-            || !is_float($qty) && !is_int($qty) && !\Zend_Validate::is((string)$qty, 'Float')
-            || $price <= 0
-            || $qty <= 0
-        ) {
+        if (!\Zend_Validate::is($price, 'Float') || $price <= 0 || !\Zend_Validate::is($qty, 'Float') || $qty <= 0) {
             throw new InputException(__('The data was invalid. Verify the data and try again.'));
         }
         $product = $this->productRepository->get($sku, ['edit_mode' => true]);
@@ -154,7 +148,7 @@ class TierPriceManagement implements \Magento\Catalog\Api\ProductTierPriceManage
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function remove($sku, $customerGroupId, $qty)
     {
@@ -169,7 +163,7 @@ class TierPriceManagement implements \Magento\Catalog\Api\ProductTierPriceManage
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getList($sku, $customerGroupId)
     {
@@ -186,19 +180,16 @@ class TierPriceManagement implements \Magento\Catalog\Api\ProductTierPriceManage
             : $customerGroupId);
 
         $prices = [];
-        $tierPrices = $product->getData('tier_price');
-        if ($tierPrices !== null) {
-            foreach ($tierPrices as $price) {
-                if ((is_numeric($customerGroupId) && (int) $price['cust_group'] === (int) $customerGroupId)
-                    || ($customerGroupId === 'all' && $price['all_groups'])
-                ) {
-                    /** @var \Magento\Catalog\Api\Data\ProductTierPriceInterface $tierPrice */
-                    $tierPrice = $this->priceFactory->create();
-                    $tierPrice->setValue($price[$priceKey])
-                        ->setQty($price['price_qty'])
-                        ->setCustomerGroupId($cgi);
-                    $prices[] = $tierPrice;
-                }
+        foreach ($product->getData('tier_price') as $price) {
+            if ((is_numeric($customerGroupId) && intval($price['cust_group']) === intval($customerGroupId))
+                || ($customerGroupId === 'all' && $price['all_groups'])
+            ) {
+                /** @var \Magento\Catalog\Api\Data\ProductTierPriceInterface $tierPrice */
+                $tierPrice = $this->priceFactory->create();
+                $tierPrice->setValue($price[$priceKey])
+                    ->setQty($price['price_qty'])
+                    ->setCustomerGroupId($cgi);
+                $prices[] = $tierPrice;
             }
         }
         return $prices;

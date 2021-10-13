@@ -1,55 +1,55 @@
 <?php
 /**
+ * Depersonalize catalog session data
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Model\Layout;
 
-use Magento\Catalog\Model\Session as CatalogSession;
-use Magento\Framework\View\LayoutInterface;
 use Magento\PageCache\Model\DepersonalizeChecker;
 
 /**
- * Depersonalize customer data.
- *
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ * Class DepersonalizePlugin
  */
 class DepersonalizePlugin
 {
     /**
      * @var DepersonalizeChecker
      */
-    private $depersonalizeChecker;
+    protected $depersonalizeChecker;
 
     /**
-     * @var CatalogSession
+     * Catalog session
+     *
+     * @var \Magento\Catalog\Model\Session
      */
-    private $catalogSession;
+    protected $catalogSession;
 
     /**
      * @param DepersonalizeChecker $depersonalizeChecker
-     * @param CatalogSession $catalogSession
+     * @param \Magento\Catalog\Model\Session $catalogSession
      */
     public function __construct(
         DepersonalizeChecker $depersonalizeChecker,
-        CatalogSession $catalogSession
+        \Magento\Catalog\Model\Session $catalogSession
     ) {
-        $this->depersonalizeChecker = $depersonalizeChecker;
         $this->catalogSession = $catalogSession;
+        $this->depersonalizeChecker = $depersonalizeChecker;
     }
 
     /**
-     * Change sensitive customer data if the depersonalization is needed.
+     * After generate Xml
      *
-     * @param LayoutInterface $subject
-     * @return void
+     * @param \Magento\Framework\View\LayoutInterface $subject
+     * @param \Magento\Framework\View\LayoutInterface $result
+     * @return \Magento\Framework\View\LayoutInterface
      */
-    public function afterGenerateElements(LayoutInterface $subject)
+    public function afterGenerateXml(\Magento\Framework\View\LayoutInterface $subject, $result)
     {
         if ($this->depersonalizeChecker->checkIfDepersonalize($subject)) {
             $this->catalogSession->clearStorage();
         }
+        return $result;
     }
 }

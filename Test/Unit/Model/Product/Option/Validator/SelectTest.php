@@ -3,45 +3,29 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Catalog\Test\Unit\Model\Product\Option\Validator;
 
-use Magento\Catalog\Model\Config\Source\Product\Options\Price;
-use Magento\Catalog\Model\Product\Option;
-use Magento\Catalog\Model\Product\Option\Validator\Select;
-use Magento\Catalog\Model\ProductOptions\ConfigInterface;
-use Magento\Framework\Locale\FormatInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-
-class SelectTest extends TestCase
+class SelectTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Select
+     * @var \Magento\Catalog\Model\Product\Option\Validator\Select
      */
     protected $validator;
 
     /**
-     * @var MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $valueMock;
 
     /**
-     * @var MockObject
-     */
-    protected $localeFormatMock;
-
-    /**
      * @inheritdoc
      */
-    protected function setUp(): void
+    protected function setUp()
     {
-        $configMock = $this->getMockForAbstractClass(ConfigInterface::class);
-        $storeManagerMock = $this->getMockForAbstractClass(StoreManagerInterface::class);
-        $priceConfigMock = new Price($storeManagerMock);
-        $this->localeFormatMock = $this->getMockForAbstractClass(FormatInterface::class);
+        $configMock = $this->createMock(\Magento\Catalog\Model\ProductOptions\ConfigInterface::class);
+        $storeManagerMock = $this->createMock(\Magento\Store\Model\StoreManagerInterface::class);
+        $priceConfigMock = new \Magento\Catalog\Model\Config\Source\Product\Options\Price($storeManagerMock);
         $config = [
             [
                 'label' => 'group label 1',
@@ -64,13 +48,12 @@ class SelectTest extends TestCase
                 ]
             ],
         ];
-        $configMock->expects($this->once())->method('getAll')->willReturn($config);
-        $methods = ['getTitle', 'getType', 'getPriceType', 'getPrice', 'getData'];
-        $this->valueMock = $this->createPartialMock(Option::class, $methods, []);
-        $this->validator = new Select(
+        $configMock->expects($this->once())->method('getAll')->will($this->returnValue($config));
+        $methods = ['getTitle', 'getType', 'getPriceType', 'getPrice', '__wakeup', 'getData'];
+        $this->valueMock = $this->createPartialMock(\Magento\Catalog\Model\Product\Option::class, $methods, []);
+        $this->validator = new \Magento\Catalog\Model\Product\Option\Validator\Select(
             $configMock,
-            $priceConfigMock,
-            $this->localeFormatMock
+            $priceConfigMock
         );
     }
 
@@ -81,17 +64,11 @@ class SelectTest extends TestCase
      */
     public function testIsValidSuccess($expectedResult, array $value)
     {
-        $this->valueMock->expects($this->once())->method('getTitle')->willReturn('option_title');
-        $this->valueMock->expects($this->exactly(2))->method('getType')->willReturn('name 1.1');
+        $this->valueMock->expects($this->once())->method('getTitle')->will($this->returnValue('option_title'));
+        $this->valueMock->expects($this->exactly(2))->method('getType')->will($this->returnValue('name 1.1'));
         $this->valueMock->expects($this->never())->method('getPriceType');
         $this->valueMock->expects($this->never())->method('getPrice');
-        $this->valueMock->expects($this->any())->method('getData')->with('values')->willReturn([$value]);
-        if (isset($value['price'])) {
-            $this->localeFormatMock
-                ->expects($this->once())
-                ->method('getNumber')
-                ->willReturn($value['price']);
-        }
+        $this->valueMock->expects($this->any())->method('getData')->with('values')->will($this->returnValue([$value]));
         $this->assertEquals($expectedResult, $this->validator->isValid($this->valueMock));
     }
 
@@ -131,16 +108,15 @@ class SelectTest extends TestCase
      */
     public function testIsValidateWithInvalidOptionValues()
     {
-        $this->valueMock->expects($this->once())->method('getTitle')->willReturn('option_title');
-        $this->valueMock->expects($this->exactly(2))->method('getType')->willReturn('name 1.1');
+        $this->valueMock->expects($this->once())->method('getTitle')->will($this->returnValue('option_title'));
+        $this->valueMock->expects($this->exactly(2))->method('getType')->will($this->returnValue('name 1.1'));
         $this->valueMock->expects($this->never())->method('getPriceType');
         $this->valueMock->expects($this->never())->method('getPrice');
         $this->valueMock
             ->expects($this->once())
             ->method('getData')
             ->with('values')
-            ->willReturn('invalid_data');
-
+            ->will($this->returnValue('invalid_data'));
         $messages = [
             'option values' => 'Invalid option value',
         ];
@@ -153,11 +129,11 @@ class SelectTest extends TestCase
      */
     public function testIsValidateWithEmptyValues()
     {
-        $this->valueMock->expects($this->once())->method('getTitle')->willReturn('option_title');
-        $this->valueMock->expects($this->exactly(2))->method('getType')->willReturn('name 1.1');
+        $this->valueMock->expects($this->once())->method('getTitle')->will($this->returnValue('option_title'));
+        $this->valueMock->expects($this->exactly(2))->method('getType')->will($this->returnValue('name 1.1'));
         $this->valueMock->expects($this->never())->method('getPriceType');
         $this->valueMock->expects($this->never())->method('getPrice');
-        $this->valueMock->expects($this->any())->method('getData')->with('values')->willReturn([]);
+        $this->valueMock->expects($this->any())->method('getData')->with('values')->will($this->returnValue([]));
         $messages = [
             'option values' => 'Invalid option value',
         ];
@@ -178,12 +154,11 @@ class SelectTest extends TestCase
             'price' => $price,
             'title' => $title,
         ];
-        $this->valueMock->expects($this->once())->method('getTitle')->willReturn('option_title');
-        $this->valueMock->expects($this->exactly(2))->method('getType')->willReturn('name 1.1');
+        $this->valueMock->expects($this->once())->method('getTitle')->will($this->returnValue('option_title'));
+        $this->valueMock->expects($this->exactly(2))->method('getType')->will($this->returnValue('name 1.1'));
         $this->valueMock->expects($this->never())->method('getPriceType');
         $this->valueMock->expects($this->never())->method('getPrice');
-        $this->valueMock->expects($this->any())->method('getData')->with('values')->willReturn([$value]);
-        $this->localeFormatMock->expects($this->any())->method('getNumber')->willReturn($price);
+        $this->valueMock->expects($this->any())->method('getData')->with('values')->will($this->returnValue([$value]));
         $messages = [
             'option values' => 'Invalid option value',
         ];

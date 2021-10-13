@@ -68,35 +68,25 @@ class ImageFactory
     }
 
     /**
-     * Remove class from custom attributes
-     *
-     * @param array $attributes
-     * @return array
-     */
-    private function filterCustomAttributes(array $attributes): array
-    {
-        if (isset($attributes['class'])) {
-            unset($attributes['class']);
-        }
-        return $attributes;
-    }
-
-    /**
-     * Retrieve image class for HTML element
+     * Retrieve image custom attributes for HTML element
      *
      * @param array $attributes
      * @return string
      */
-    private function getClass(array $attributes): string
+    private function getStringCustomAttributes(array $attributes): string
     {
-        return $attributes['class'] ?? 'product-image-photo';
+        $result = [];
+        foreach ($attributes as $name => $value) {
+            $result[] = $name . '="' . $value . '"';
+        }
+        return !empty($result) ? implode(' ', $result) : '';
     }
 
     /**
      * Calculate image ratio
      *
-     * @param int $width
-     * @param int $height
+     * @param $width
+     * @param $height
      * @return float
      */
     private function getRatio(int $width, int $height): float
@@ -108,9 +98,8 @@ class ImageFactory
     }
 
     /**
-     * Get image label
-     *
      * @param Product $product
+     *
      * @param string $imageType
      * @return string
      */
@@ -120,12 +109,11 @@ class ImageFactory
         if (empty($label)) {
             $label = $product->getName();
         }
-        return (string)$label;
+        return (string) $label;
     }
 
     /**
      * Create image block from product
-     *
      * @param Product $product
      * @param string $imageId
      * @param array|null $attributes
@@ -157,8 +145,6 @@ class ImageFactory
             );
         }
 
-        $attributes = $attributes === null ? [] : $attributes;
-
         $data = [
             'data' => [
                 'template' => 'Magento_Catalog::product/image_with_borders.phtml',
@@ -166,9 +152,8 @@ class ImageFactory
                 'width' => $imageMiscParams['image_width'],
                 'height' => $imageMiscParams['image_height'],
                 'label' => $this->getLabel($product, $imageMiscParams['image_type']),
-                'ratio' => $this->getRatio($imageMiscParams['image_width'] ?? 0, $imageMiscParams['image_height'] ?? 0),
-                'custom_attributes' => $this->filterCustomAttributes($attributes),
-                'class' => $this->getClass($attributes),
+                'ratio' => $this->getRatio($imageMiscParams['image_width'], $imageMiscParams['image_height']),
+                'custom_attributes' => $this->getStringCustomAttributes($attributes),
                 'product_id' => $product->getId()
             ],
         ];

@@ -30,7 +30,7 @@ class TemporaryTableStrategy implements \Magento\Framework\Indexer\Table\Strateg
 
     /**
      * TemporaryTableStrategy constructor.
-     * @param \Magento\Framework\Indexer\Table\StrategyInterface $strategy
+     * @param \Magento\Framework\Indexer\Table\Strategy $strategy
      * @param \Magento\Framework\App\ResourceConnection $resource
      */
     public function __construct(
@@ -66,10 +66,9 @@ class TemporaryTableStrategy implements \Magento\Framework\Indexer\Table\Strateg
     }
 
     /**
-     * Create temporary index table based on memory table{@inheritdoc}
+     * Create temporary index table based on memory table
      *
-     * @param string $tablePrefix
-     * @return string
+     * {@inheritdoc}
      */
     public function prepareTableName($tablePrefix)
     {

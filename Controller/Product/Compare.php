@@ -6,7 +6,6 @@
 namespace Magento\Catalog\Controller\Product;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Magento\Framework\View\Result\PageFactory;
 
@@ -16,7 +15,7 @@ use Magento\Framework\View\Result\PageFactory;
  * @SuppressWarnings(PHPMD.LongVariable)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-abstract class Compare extends \Magento\Framework\App\Action\Action implements HttpGetActionInterface
+abstract class Compare extends \Magento\Framework\App\Action\Action
 {
     /**
      * Customer id
@@ -139,16 +138,5 @@ abstract class Compare extends \Magento\Framework\App\Action\Action implements H
     {
         $this->_customerId = $customerId;
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function execute()
-    {
-        $resultRedirect = $this->resultRedirectFactory->create();
-        $resultRedirect->setPath('catalog/product_compare');
-
-        return $resultRedirect;
     }
 }

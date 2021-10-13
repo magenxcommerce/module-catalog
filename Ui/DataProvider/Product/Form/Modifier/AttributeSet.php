@@ -78,13 +78,11 @@ class AttributeSet extends AbstractModifier
                 \Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\Collection::SORT_ORDER_ASC
             );
 
-        $collectionData = $collection->getData() ?? [];
-
-        return $collectionData;
+        return $collection->getData();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyMeta(array $meta)
@@ -118,20 +116,17 @@ class AttributeSet extends AbstractModifier
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyData(array $data)
     {
-        return array_replace_recursive(
-            $data,
-            [
-                $this->locator->getProduct()->getId() => [
-                    self::DATA_SOURCE_DEFAULT => [
-                        'attribute_set_id' => $this->locator->getProduct()->getAttributeSetId()
-                    ],
-                ]
+        return array_replace_recursive($data, [
+            $this->locator->getProduct()->getId() => [
+                self::DATA_SOURCE_DEFAULT => [
+                    'attribute_set_id' => $this->locator->getProduct()->getAttributeSetId()
+                ],
             ]
-        );
+        ]);
     }
 }

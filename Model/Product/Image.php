@@ -15,8 +15,6 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Catalog\Model\Product\Image\ParamsBuilder;
 
 /**
- * Image operations
- *
  * @method string getFile()
  * @method string getLabel()
  * @method string getPosition()
@@ -26,11 +24,6 @@ use Magento\Catalog\Model\Product\Image\ParamsBuilder;
  */
 class Image extends \Magento\Framework\Model\AbstractModel
 {
-    /**
-     * Config path for the jpeg image quality value
-     */
-    const XML_PATH_JPEG_QUALITY = 'system/upload_configuration/jpeg_quality';
-
     /**
      * @var int
      */
@@ -45,9 +38,8 @@ class Image extends \Magento\Framework\Model\AbstractModel
      * Default quality value (for JPEG images only).
      *
      * @var int
-     * @deprecated 103.0.1 use config setting with path self::XML_PATH_JPEG_QUALITY
      */
-    protected $_quality = null;
+    protected $_quality = 80;
 
     /**
      * @var bool
@@ -211,13 +203,13 @@ class Image extends \Magento\Framework\Model\AbstractModel
      * @param \Magento\Framework\Image\Factory $imageFactory
      * @param \Magento\Framework\View\Asset\Repository $assetRepo
      * @param \Magento\Framework\View\FileSystem $viewFileSystem
-     * @param ImageFactory $viewAssetImageFactory
-     * @param PlaceholderFactory $viewAssetPlaceholderFactory
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
-     * @param SerializerInterface $serializer
+     * @param ImageFactory|null $viewAssetImageFactory
+     * @param PlaceholderFactory|null $viewAssetPlaceholderFactory
+     * @param SerializerInterface|null $serializer
      * @param ParamsBuilder $paramsBuilder
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
@@ -257,8 +249,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set image width property
-     *
      * @param int $width
      * @return $this
      */
@@ -269,8 +259,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get image width property
-     *
      * @return int
      */
     public function getWidth()
@@ -279,8 +267,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set image height property
-     *
      * @param int $height
      * @return $this
      */
@@ -291,8 +277,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get image height property
-     *
      * @return int
      */
     public function getHeight()
@@ -305,7 +289,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
      *
      * @param int $quality
      * @return $this
-     * @deprecated 103.0.1 use config setting with path self::XML_PATH_JPEG_QUALITY
      */
     public function setQuality($quality)
     {
@@ -320,14 +303,10 @@ class Image extends \Magento\Framework\Model\AbstractModel
      */
     public function getQuality()
     {
-        return $this->_quality === null
-            ? $this->_scopeConfig->getValue(self::XML_PATH_JPEG_QUALITY)
-            : $this->_quality;
+        return $this->_quality;
     }
 
     /**
-     * Set _keepAspectRatio property
-     *
      * @param bool $keep
      * @return $this
      */
@@ -338,8 +317,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set _keepFrame property
-     *
      * @param bool $keep
      * @return $this
      */
@@ -350,8 +327,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set _keepTransparency
-     *
      * @param bool $keep
      * @return $this
      */
@@ -362,8 +337,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set _constrainOnly
-     *
      * @param bool $flag
      * @return $this
      */
@@ -374,8 +347,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set background color
-     *
      * @param int[] $rgbArray
      * @return $this
      */
@@ -386,8 +357,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set size
-     *
      * @param string $size
      * @return $this
      */
@@ -442,8 +411,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get base filename
-     *
      * @return string
      */
     public function getBaseFile()
@@ -452,8 +419,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get new file
-     *
      * @deprecated 102.0.0
      * @return bool|string
      */
@@ -473,8 +438,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set image processor
-     *
      * @param MagentoImage $processor
      * @return $this
      */
@@ -485,8 +448,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get image processor
-     *
      * @return MagentoImage
      */
     public function getImageProcessor()
@@ -500,13 +461,11 @@ class Image extends \Magento\Framework\Model\AbstractModel
         $this->_processor->keepTransparency($this->_keepTransparency);
         $this->_processor->constrainOnly($this->_constrainOnly);
         $this->_processor->backgroundColor($this->_backgroundColor);
-        $this->_processor->quality($this->getQuality());
+        $this->_processor->quality($this->_quality);
         return $this->_processor;
     }
 
     /**
-     * Resize image
-     *
      * @see \Magento\Framework\Image\Adapter\AbstractAdapter
      * @return $this
      */
@@ -520,8 +479,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Rotate image
-     *
      * @param int $angle
      * @return $this
      */
@@ -548,8 +505,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Add watermark to image
-     *
-     * Size param in format 100x200
+     * size param in format 100x200
      *
      * @param string $file
      * @param string $position
@@ -608,8 +564,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Save file
-     *
      * @return $this
      */
     public function saveFile()
@@ -624,8 +578,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get url
-     *
      * @return string
      */
     public function getUrl()
@@ -634,8 +586,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set destination subdir
-     *
      * @param string $dir
      * @return $this
      */
@@ -646,8 +596,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Get destination subdir
-     *
      * @return string
      */
     public function getDestinationSubdir()
@@ -656,8 +604,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Check is image cached
-     *
      * @return bool
      */
     public function isCached()
@@ -690,8 +636,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Get relative watermark file path
-     *
-     * Return false if file not found
+     * or false if file not found
      *
      * @return string | bool
      */
@@ -826,10 +771,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Clear cache
-     *
      * @return void
-     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function clearCache()
     {
@@ -842,7 +784,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
 
     /**
      * First check this file on FS
-     *
      * If it doesn't exist - try to download it from DB
      *
      * @param string $filename
@@ -861,7 +802,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Return resized product image information
-     *
      * @return array
      * @throws NotLoadInfoImageException
      */
@@ -903,7 +843,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
                 'transparency' => $this->_keepTransparency,
                 'background' => $this->_backgroundColor,
                 'angle' => $this->_angle,
-                'quality' => $this->getQuality()
+                'quality' => $this->_quality
             ]
         );
     }

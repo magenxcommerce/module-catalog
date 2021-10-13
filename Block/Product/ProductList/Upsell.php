@@ -6,16 +6,7 @@
 
 namespace Magento\Catalog\Block\Product\ProductList;
 
-use Magento\Catalog\Block\Product\AbstractProduct;
-use Magento\Catalog\Block\Product\Context;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Visibility as ProductVisibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
-use Magento\Checkout\Model\ResourceModel\Cart as CartResourceModel;
-use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Framework\DataObject;
-use Magento\Framework\DataObject\IdentityInterface;
-use Magento\Framework\Module\Manager;
 
 /**
  * Catalog product upsell items block
@@ -24,7 +15,8 @@ use Magento\Framework\Module\Manager;
  * @SuppressWarnings(PHPMD.LongVariable)
  * @since 100.0.2
  */
-class Upsell extends AbstractProduct implements IdentityInterface
+class Upsell extends \Magento\Catalog\Block\Product\AbstractProduct implements
+    \Magento\Framework\DataObject\IdentityInterface
 {
     /**
      * @var int
@@ -32,7 +24,7 @@ class Upsell extends AbstractProduct implements IdentityInterface
     protected $_columnCount = 4;
 
     /**
-     * @var  DataObject[]
+     * @var  \Magento\Framework\DataObject[]
      */
     protected $_items;
 
@@ -49,61 +41,62 @@ class Upsell extends AbstractProduct implements IdentityInterface
     /**
      * Checkout session
      *
-     * @var CheckoutSession
+     * @var \Magento\Checkout\Model\Session
      */
     protected $_checkoutSession;
 
     /**
      * Catalog product visibility
      *
-     * @var ProductVisibility
+     * @var \Magento\Catalog\Model\Product\Visibility
      */
     protected $_catalogProductVisibility;
 
     /**
      * Checkout cart
      *
-     * @var CartResourceModel
+     * @var \Magento\Checkout\Model\ResourceModel\Cart
      */
     protected $_checkoutCart;
 
     /**
-     * @var Manager
+     * @var \Magento\Framework\Module\Manager
      */
     protected $moduleManager;
 
     /**
-     * @param Context $context
-     * @param CartResourceModel $checkoutCart
-     * @param ProductVisibility $catalogProductVisibility
-     * @param CheckoutSession $checkoutSession
-     * @param Manager $moduleManager
+     * @param \Magento\Catalog\Block\Product\Context $context
+     * @param \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart
+     * @param \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Framework\Module\Manager $moduleManager
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        CartResourceModel $checkoutCart,
-        ProductVisibility $catalogProductVisibility,
-        CheckoutSession $checkoutSession,
-        Manager $moduleManager,
+        \Magento\Catalog\Block\Product\Context $context,
+        \Magento\Checkout\Model\ResourceModel\Cart $checkoutCart,
+        \Magento\Catalog\Model\Product\Visibility $catalogProductVisibility,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Framework\Module\Manager $moduleManager,
         array $data = []
     ) {
         $this->_checkoutCart = $checkoutCart;
         $this->_catalogProductVisibility = $catalogProductVisibility;
         $this->_checkoutSession = $checkoutSession;
         $this->moduleManager = $moduleManager;
-        parent::__construct($context, $data);
+        parent::__construct(
+            $context,
+            $data
+        );
     }
 
     /**
-     * Prepare data
-     *
      * @return $this
      */
     protected function _prepareData()
     {
-        $product = $this->getProduct();
-        /* @var $product Product */
+        $product = $this->_coreRegistry->registry('product');
+        /* @var $product \Magento\Catalog\Model\Product */
         $this->_itemCollection = $product->getUpSellProductCollection()->setPositionOrder()->addStoreFilter();
         if ($this->moduleManager->isEnabled('Magento_Checkout')) {
             $this->_addProductAttributesAndPrices($this->_itemCollection);
@@ -128,8 +121,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Before to html handler
-     *
      * @return $this
      */
     protected function _beforeToHtml()
@@ -139,8 +130,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Get items collection
-     *
      * @return Collection
      */
     public function getItemCollection()
@@ -156,8 +145,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Get collection items
-     *
      * @return \Magento\Framework\DataObject[]
      */
     public function getItems()
@@ -169,8 +156,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Get row count
-     *
      * @return float
      */
     public function getRowCount()
@@ -179,22 +164,18 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Set column count
-     *
      * @param string $columns
      * @return $this
      */
     public function setColumnCount($columns)
     {
-        if ((int)$columns > 0) {
-            $this->_columnCount = (int)$columns;
+        if ((int) $columns > 0) {
+            $this->_columnCount = (int) $columns;
         }
         return $this;
     }
 
     /**
-     * Get column count
-     *
      * @return int
      */
     public function getColumnCount()
@@ -203,8 +184,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Reset items iterator
-     *
      * @return void
      */
     public function resetItemsIterator()
@@ -214,8 +193,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
     }
 
     /**
-     * Get iterable item
-     *
      * @return mixed
      */
     public function getIterableItem()
@@ -227,7 +204,6 @@ class Upsell extends AbstractProduct implements IdentityInterface
 
     /**
      * Set how many items we need to show in upsell block
-     *
      * Notice: this parameter will be also applied
      *
      * @param string $type
@@ -236,15 +212,13 @@ class Upsell extends AbstractProduct implements IdentityInterface
      */
     public function setItemLimit($type, $limit)
     {
-        if ((int)$limit > 0) {
-            $this->_itemLimits[$type] = (int)$limit;
+        if ((int) $limit > 0) {
+            $this->_itemLimits[$type] = (int) $limit;
         }
         return $this;
     }
 
     /**
-     * Get item limit
-     *
      * @param string $type
      * @return array|int
      */
@@ -255,9 +229,9 @@ class Upsell extends AbstractProduct implements IdentityInterface
         }
         if (isset($this->_itemLimits[$type])) {
             return $this->_itemLimits[$type];
+        } else {
+            return 0;
         }
-
-        return 0;
     }
 
     /**
@@ -267,10 +241,10 @@ class Upsell extends AbstractProduct implements IdentityInterface
      */
     public function getIdentities()
     {
-        $identities = array_map(function (DataObject $item) {
-            return $item->getIdentities();
-        }, $this->getItems()) ?: [[]];
-
-        return array_merge(...$identities);
+        $identities = [];
+        foreach ($this->getItems() as $item) {
+            $identities = array_merge($identities, $item->getIdentities());
+        }
+        return $identities;
     }
 }

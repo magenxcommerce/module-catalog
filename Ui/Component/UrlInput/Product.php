@@ -10,9 +10,6 @@ namespace Magento\Catalog\Ui\Component\UrlInput;
 
 use Magento\Framework\UrlInterface;
 
-/**
- * Returns configuration for product Url Input type
- */
 class Product implements \Magento\Ui\Model\UrlInput\ConfigInterface
 {
     /**
@@ -30,7 +27,7 @@ class Product implements \Magento\Ui\Model\UrlInput\ConfigInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getConfig(): array
     {
@@ -49,7 +46,6 @@ class Product implements \Magento\Ui\Model\UrlInput\ConfigInterface
             'template' => 'ui/grid/filters/elements/ui-select',
             'searchUrl' => $this->urlBuilder->getUrl('catalog/product/search'),
             'filterPlaceholder' => __('Product Name or SKU'),
-            'filterRateLimitMethod' => 'notifyWhenChangesStop',
             'isDisplayEmptyPlaceholder' => true,
             'emptyOptionsHtml' => __('Start typing to find products'),
             'missingValuePlaceholder' => __('Product with ID: %s doesn\'t exist'),

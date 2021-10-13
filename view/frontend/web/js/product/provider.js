@@ -5,13 +5,11 @@
 
 define([
     'underscore',
-    'jquery',
     'mageUtils',
     'uiElement',
     'Magento_Catalog/js/product/storage/storage-service',
-    'Magento_Customer/js/customer-data',
-    'Magento_Catalog/js/product/view/product-ids-resolver'
-], function (_, $, utils, Element, storage, customerData, productResolver) {
+    'Magento_Customer/js/customer-data'
+], function (_, utils, Element, storage, customerData) {
     'use strict';
 
     return Element.extend({
@@ -137,21 +135,11 @@ define([
          */
         filterIds: function (ids) {
             var _ids = {},
-                currentTime = new Date().getTime() / 1000,
-                currentProductIds = productResolver($('#product_addtocart_form')),
-                productCurrentScope = this.data.productCurrentScope,
-                scopeId = productCurrentScope === 'store' ? window.checkout.storeId :
-                productCurrentScope === 'group' ? window.checkout.storeGroupId :
-                    window.checkout.websiteId;
+                currentTime = new Date().getTime() / 1000;
 
-            _.each(ids, function (id, key) {
-                if (
-                    currentTime - ids[key]['added_at'] < ~~this.idsStorage.lifetime &&
-                    !_.contains(currentProductIds, ids[key]['product_id']) &&
-                    (!id.hasOwnProperty('scope_id') || ids[key]['scope_id'] === scopeId)
-                ) {
+            _.each(ids, function (id) {
+                if (currentTime - id['added_at'] < ~~this.idsStorage.lifetime) {
                     _ids[id['product_id']] = id;
-
                 }
             }, this);
 

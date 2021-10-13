@@ -5,17 +5,12 @@
  */
 namespace Magento\Catalog\Controller\Index;
 
-use Magento\Framework\App\Action\HttpGetActionInterface;
-
-/**
- * Catalog index page controller.
- */
-class Index extends \Magento\Framework\App\Action\Action implements HttpGetActionInterface
+class Index extends \Magento\Framework\App\Action\Action
 {
     /**
      * Index action
      *
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return $this
      */
     public function execute()
     {

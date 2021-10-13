@@ -206,7 +206,7 @@ class ProductRender extends \Magento\Framework\Model\AbstractExtensibleModel imp
      * Set an extension attributes object.
      *
      * @param \Magento\Catalog\Api\Data\ProductRenderExtensionInterface $extensionAttributes
-     * @return void
+     * @return $this
      */
     public function setExtensionAttributes(
         \Magento\Catalog\Api\Data\ProductRenderExtensionInterface $extensionAttributes

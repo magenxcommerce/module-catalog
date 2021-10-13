@@ -3,16 +3,11 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Model\Product\Gallery;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\EntityManager\Operation\ExtensionInterface;
 use Magento\MediaStorage\Model\File\Uploader as FileUploader;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Create handler for catalog product gallery
@@ -80,16 +75,6 @@ class CreateHandler implements ExtensionInterface
     private $mediaAttributeCodes;
 
     /**
-     * @var array
-     */
-    private $imagesGallery;
-
-    /**
-     * @var  \Magento\Store\Model\StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
      * @param \Magento\Framework\EntityManager\MetadataPool $metadataPool
      * @param \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository
      * @param \Magento\Catalog\Model\ResourceModel\Product\Gallery $resourceModel
@@ -97,8 +82,6 @@ class CreateHandler implements ExtensionInterface
      * @param \Magento\Catalog\Model\Product\Media\Config $mediaConfig
      * @param \Magento\Framework\Filesystem $filesystem
      * @param \Magento\MediaStorage\Helper\File\Storage\Database $fileStorageDb
-     * @param \Magento\Store\Model\StoreManagerInterface|null $storeManager
-     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
         \Magento\Framework\EntityManager\MetadataPool $metadataPool,
@@ -107,8 +90,7 @@ class CreateHandler implements ExtensionInterface
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Catalog\Model\Product\Media\Config $mediaConfig,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\MediaStorage\Helper\File\Storage\Database $fileStorageDb,
-        \Magento\Store\Model\StoreManagerInterface $storeManager = null
+        \Magento\MediaStorage\Helper\File\Storage\Database $fileStorageDb
     ) {
         $this->metadata = $metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
         $this->attributeRepository = $attributeRepository;
@@ -117,7 +99,6 @@ class CreateHandler implements ExtensionInterface
         $this->mediaConfig = $mediaConfig;
         $this->mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
         $this->fileStorageDb = $fileStorageDb;
-        $this->storeManager = $storeManager ?: ObjectManager::getInstance()->get(StoreManagerInterface::class);
     }
 
     /**
@@ -156,13 +137,9 @@ class CreateHandler implements ExtensionInterface
 
         if ($product->getIsDuplicate() != true) {
             foreach ($value['images'] as &$image) {
-                if (!empty($image['removed']) && !$this->canRemoveImage($product, $image['file'])) {
-                    $image['removed'] = '';
-                }
-
                 if (!empty($image['removed'])) {
                     $clearImages[] = $image['file'];
-                } elseif (empty($image['value_id']) || !empty($image['recreate'])) {
+                } elseif (empty($image['value_id'])) {
                     $newFile = $this->moveImageFromTmp($image['file']);
                     $image['new_file'] = $newFile;
                     $newImages[$image['file']] = $image;
@@ -175,10 +152,6 @@ class CreateHandler implements ExtensionInterface
             // For duplicating we need copy original images.
             $duplicate = [];
             foreach ($value['images'] as &$image) {
-                if (!empty($image['removed']) && !$this->canRemoveImage($product, $image['file'])) {
-                    $image['removed'] = '';
-                }
-
                 if (empty($image['value_id']) || !empty($image['removed'])) {
                     continue;
                 }
@@ -233,7 +206,7 @@ class CreateHandler implements ExtensionInterface
     }
 
     /**
-     * Returns media gallery attribute instance
+     * Returns media gallery atribute instance
      *
      * @return \Magento\Catalog\Api\Data\ProductAttributeInterface
      * @since 101.0.0
@@ -257,7 +230,6 @@ class CreateHandler implements ExtensionInterface
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @since 101.0.0
-     * phpcs:disable Magento2.CodeAnalysis.EmptyBlock
      */
     protected function processDeletedImages($product, array &$images)
     {
@@ -346,7 +318,7 @@ class CreateHandler implements ExtensionInterface
 
         $this->resourceModel->duplicate(
             $this->getAttribute()->getAttributeId(),
-            $mediaGalleryData['duplicate'] ?? [],
+            isset($mediaGalleryData['duplicate']) ? $mediaGalleryData['duplicate'] : [],
             $product->getOriginalLinkId(),
             $product->getData($this->metadata->getLinkField())
         );
@@ -428,7 +400,6 @@ class CreateHandler implements ExtensionInterface
             $destinationFile = $forTmp
                 ? $this->mediaDirectory->getAbsolutePath($this->mediaConfig->getTmpMediaPath($file))
                 : $this->mediaDirectory->getAbsolutePath($this->mediaConfig->getMediaPath($file));
-            // phpcs:disable Magento2.Functions.DiscouragedFunction
             $destFile = dirname($file) . '/' . FileUploader::getNewFileName($destinationFile);
         }
 
@@ -449,7 +420,6 @@ class CreateHandler implements ExtensionInterface
             $destinationFile = $this->getUniqueFileName($file);
 
             if (!$this->mediaDirectory->isFile($this->mediaConfig->getMediaPath($file))) {
-                // phpcs:ignore Magento2.Exceptions.DirectThrow
                 throw new \Exception();
             }
 
@@ -467,7 +437,6 @@ class CreateHandler implements ExtensionInterface
             }
 
             return str_replace('\\', '/', $destinationFile);
-            // phpcs:ignore Magento2.Exceptions.ThrowCatch
         } catch (\Exception $e) {
             $file = $this->mediaConfig->getMediaPath($file);
             throw new \Magento\Framework\Exception\LocalizedException(
@@ -564,47 +533,5 @@ class CreateHandler implements ExtensionInterface
                 $product->getStoreId()
             );
         }
-    }
-
-    /**
-     * Get product images for all stores
-     *
-     * @param ProductInterface $product
-     * @return array
-     */
-    private function getImagesForAllStores(ProductInterface $product)
-    {
-        if ($this->imagesGallery ===  null) {
-            $storeIds = array_keys($this->storeManager->getStores());
-            $storeIds[] = 0;
-
-            $this->imagesGallery = $this->resourceModel->getProductImages($product, $storeIds);
-        }
-
-        return $this->imagesGallery;
-    }
-
-    /**
-     * Check possibility to remove image
-     *
-     * @param ProductInterface $product
-     * @param string $imageFile
-     * @return bool
-     */
-    private function canRemoveImage(ProductInterface $product, string $imageFile) :bool
-    {
-        $canRemoveImage = true;
-        $gallery = $this->getImagesForAllStores($product);
-        $storeId = $product->getStoreId();
-
-        if (!empty($gallery)) {
-            foreach ($gallery as $image) {
-                if ($image['filepath'] === $imageFile && (int) $image['store_id'] !== $storeId) {
-                    $canRemoveImage = false;
-                }
-            }
-        }
-
-        return $canRemoveImage;
     }
 }

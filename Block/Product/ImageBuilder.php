@@ -11,7 +11,7 @@ use Magento\Catalog\Helper\ImageFactory as HelperFactory;
 use Magento\Catalog\Model\Product;
 
 /**
- * @deprecated 103.0.0
+ * @deprecated
  * @see ImageFactory
  */
 class ImageBuilder

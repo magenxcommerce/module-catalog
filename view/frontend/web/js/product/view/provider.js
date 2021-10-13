@@ -85,17 +85,12 @@ define([
          * @returns {Object}
          */
         getIdentifiers: function () {
-            var result = {},
-                productCurrentScope = this.data.productCurrentScope,
-                scopeId = productCurrentScope === 'store' ? window.checkout.storeId :
-                    productCurrentScope === 'group' ? window.checkout.storeGroupId :
-                        window.checkout.websiteId;
+            var result = {};
 
             _.each(this.data.items, function (item, key) {
-                result[productCurrentScope + '-' + scopeId + '-' + key] = {
+                result[key] = {
                     'added_at': new Date().getTime() / 1000,
-                    'product_id': key,
-                    'scope_id': scopeId
+                    'product_id': key
                 };
             }, this);
 

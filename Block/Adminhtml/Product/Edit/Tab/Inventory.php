@@ -79,8 +79,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get backorder option.
-     *
      * @return array
      */
     public function getBackordersOption()
@@ -130,8 +128,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get field value.
-     *
      * @param string $field
      * @return string|null
      */
@@ -149,8 +145,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get config field value.
-     *
      * @param string $field
      * @return string|null
      */
@@ -169,8 +163,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get default config value.
-     *
      * @param string $field
      * @return string|null
      */
@@ -190,8 +182,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Is new.
-     *
      * @return bool
      */
     public function isNew()
@@ -203,8 +193,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get field suffix.
-     *
      * @return string
      */
     public function getFieldSuffix()
@@ -233,8 +221,6 @@ class Inventory extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Is single store mode enabled.
-     *
      * @return bool
      */
     public function isSingleStoreMode()

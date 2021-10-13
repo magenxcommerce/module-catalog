@@ -5,16 +5,7 @@
  */
 namespace Magento\Catalog\Model\Category;
 
-use Magento\Catalog\Api\Data\CategoryTreeInterface;
-use Magento\Catalog\Api\Data\CategoryTreeInterfaceFactory;
-use Magento\Catalog\Model\Category;
-use Magento\Catalog\Model\ResourceModel\Category\Collection;
-use Magento\Catalog\Model\ResourceModel\Category\TreeFactory;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Data\Tree\Node;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Retrieve category data represented in tree structure
@@ -27,54 +18,41 @@ class Tree
     protected $categoryTree;
 
     /**
-     * @var StoreManagerInterface
+     * @var \Magento\Store\Model\StoreManagerInterface
      */
     protected $storeManager;
 
     /**
-     * @var Collection
+     * @var \Magento\Catalog\Model\ResourceModel\Category\Collection
      */
     protected $categoryCollection;
 
     /**
-     * @var CategoryTreeInterfaceFactory
+     * @var \Magento\Catalog\Api\Data\CategoryTreeInterfaceFactory
      */
     protected $treeFactory;
 
     /**
-     * @var TreeFactory
-     */
-    private $treeResourceFactory;
-
-    /**
      * @param \Magento\Catalog\Model\ResourceModel\Category\Tree $categoryTree
-     * @param StoreManagerInterface $storeManager
-     * @param Collection $categoryCollection
-     * @param CategoryTreeInterfaceFactory $treeFactory
-     * @param TreeFactory|null $treeResourceFactory
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Catalog\Model\ResourceModel\Category\Collection $categoryCollection
+     * @param \Magento\Catalog\Api\Data\CategoryTreeInterfaceFactory $treeFactory
      */
     public function __construct(
         \Magento\Catalog\Model\ResourceModel\Category\Tree $categoryTree,
-        StoreManagerInterface $storeManager,
-        Collection $categoryCollection,
-        CategoryTreeInterfaceFactory $treeFactory,
-        TreeFactory $treeResourceFactory = null
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Catalog\Model\ResourceModel\Category\Collection $categoryCollection,
+        \Magento\Catalog\Api\Data\CategoryTreeInterfaceFactory $treeFactory
     ) {
         $this->categoryTree = $categoryTree;
         $this->storeManager = $storeManager;
         $this->categoryCollection = $categoryCollection;
         $this->treeFactory = $treeFactory;
-        $this->treeResourceFactory = $treeResourceFactory ?? ObjectManager::getInstance()
-                ->get(TreeFactory::class);
     }
 
     /**
-     * Get root node by category.
-     *
-     * @param Category|null $category
+     * @param \Magento\Catalog\Model\Category|null $category
      * @return Node|null
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
     public function getRootNode($category = null)
     {
@@ -93,30 +71,21 @@ class Tree
     }
 
     /**
-     * Get node by category.
-     *
-     * @param Category $category
+     * @param \Magento\Catalog\Model\Category $category
      * @return Node
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
-    protected function getNode(Category $category)
+    protected function getNode(\Magento\Catalog\Model\Category $category)
     {
         $nodeId = $category->getId();
-        $categoryTree = $this->treeResourceFactory->create();
-        $node = $categoryTree->loadNode($nodeId);
+        $node = $this->categoryTree->loadNode($nodeId);
         $node->loadChildren();
         $this->prepareCollection();
-        $categoryTree->addCollectionData($this->categoryCollection);
+        $this->categoryTree->addCollectionData($this->categoryCollection);
         return $node;
     }
 
     /**
-     * Prepare category collection.
-     *
      * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
      */
     protected function prepareCollection()
     {
@@ -135,18 +104,16 @@ class Tree
     }
 
     /**
-     * Get tree by node.
-     *
-     * @param Node $node
+     * @param \Magento\Framework\Data\Tree\Node $node
      * @param int $depth
      * @param int $currentLevel
-     * @return CategoryTreeInterface
+     * @return \Magento\Catalog\Api\Data\CategoryTreeInterface
      */
     public function getTree($node, $depth = null, $currentLevel = 0)
     {
-        /** @var CategoryTreeInterface[] $children */
+        /** @var \Magento\Catalog\Api\Data\CategoryTreeInterface[] $children */
         $children = $this->getChildren($node, $depth, $currentLevel);
-        /** @var CategoryTreeInterface $tree */
+        /** @var \Magento\Catalog\Api\Data\CategoryTreeInterface $tree */
         $tree = $this->treeFactory->create();
         $tree->setId($node->getId())
             ->setParentId($node->getParentId())
@@ -160,12 +127,10 @@ class Tree
     }
 
     /**
-     * Get node children.
-     *
-     * @param Node $node
+     * @param \Magento\Framework\Data\Tree\Node $node
      * @param int $depth
      * @param int $currentLevel
-     * @return CategoryTreeInterface[]|[]
+     * @return \Magento\Catalog\Api\Data\CategoryTreeInterface[]|[]
      */
     protected function getChildren($node, $depth, $currentLevel)
     {

@@ -10,8 +10,6 @@ use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Catalog product option select type
- *
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class Select extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
 {
@@ -33,34 +31,22 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
     protected $string;
 
     /**
-     * @var array
-     */
-    private $singleSelectionTypes;
-
-    /**
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Framework\Stdlib\StringUtils $string
      * @param \Magento\Framework\Escaper $escaper
      * @param array $data
-     * @param array $singleSelectionTypes
      */
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\Stdlib\StringUtils $string,
         \Magento\Framework\Escaper $escaper,
-        array $data = [],
-        array $singleSelectionTypes = []
+        array $data = []
     ) {
         $this->string = $string;
         $this->_escaper = $escaper;
         parent::__construct($checkoutSession, $scopeConfig, $data);
-
-        $this->singleSelectionTypes = $singleSelectionTypes ?: [
-            'drop_down' => \Magento\Catalog\Api\Data\ProductCustomOptionInterface::OPTION_TYPE_DROP_DOWN,
-            'radio' => \Magento\Catalog\Api\Data\ProductCustomOptionInterface::OPTION_TYPE_RADIO,
-        ];
     }
 
     /**
@@ -84,11 +70,8 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
             );
         }
         if (!$this->_isSingleSelection()) {
-            if (is_string($value)) {
-                $value = explode(',', $value);
-            }
             $valuesCollection = $option->getOptionValuesByOptionId($value, $this->getProduct()->getStoreId())->load();
-            $valueCount = is_array($value) ? count($value) : 0;
+            $valueCount = is_array($value) ? count($value) : 1;
             if ($valuesCollection->count() != $valueCount) {
                 $this->setIsValid(false);
                 throw new LocalizedException(
@@ -327,6 +310,10 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\DefaultType
      */
     protected function _isSingleSelection()
     {
-        return in_array($this->getOption()->getType(), $this->singleSelectionTypes, true);
+        $single = [
+            \Magento\Catalog\Api\Data\ProductCustomOptionInterface::OPTION_TYPE_DROP_DOWN,
+            \Magento\Catalog\Api\Data\ProductCustomOptionInterface::OPTION_TYPE_RADIO,
+        ];
+        return in_array($this->getOption()->getType(), $single);
     }
 }

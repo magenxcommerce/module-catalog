@@ -13,8 +13,7 @@ define([
     $.widget('mage.productValidate', {
         options: {
             bindSubmit: false,
-            radioCheckboxClosest: '.nested',
-            addToCartButtonSelector: '.action.tocart'
+            radioCheckboxClosest: '.nested'
         },
 
         /**
@@ -42,7 +41,6 @@ define([
                     return false;
                 }
             });
-            $(this.options.addToCartButtonSelector).attr('disabled', false);
         }
     });
 

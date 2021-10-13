@@ -10,9 +10,7 @@ namespace Magento\Catalog\Model\ProductLink;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 
-/**
- * Returns collection of product visible in catalog by search key
- */
+/** Returns collection of product visible in catalog by search key */
 class Search
 {
     /**
@@ -60,6 +58,7 @@ class Search
     ): \Magento\Catalog\Model\ResourceModel\Product\Collection {
         $productCollection = $this->productCollectionFactory->create();
         $productCollection->addAttributeToSelect(ProductInterface::NAME);
+        $productCollection->setVisibility($this->catalogVisibility->getVisibleInCatalogIds());
         $productCollection->setPage($pageNum, $limit);
         $this->filter->addFilter($productCollection, 'fulltext', ['fulltext' => $searchKey]);
         $productCollection->setPage($pageNum, $limit);

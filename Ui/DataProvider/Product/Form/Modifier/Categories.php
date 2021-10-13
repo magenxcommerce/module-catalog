@@ -3,8 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Ui\DataProvider\Product\Form\Modifier;
 
 use Magento\Catalog\Model\Locator\LocatorInterface;
@@ -13,16 +11,15 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\DB\Helper as DbHelper;
 use Magento\Catalog\Model\Category as CategoryModel;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Stdlib\ArrayManager;
-use Magento\Framework\AuthorizationInterface;
 
 /**
  * Data provider for categories field of product page
  *
  * @api
+ *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @since 101.0.0
  */
@@ -82,18 +79,12 @@ class Categories extends AbstractModifier
     private $serializer;
 
     /**
-     * @var AuthorizationInterface
-     */
-    private $authorization;
-
-    /**
      * @param LocatorInterface $locator
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param DbHelper $dbHelper
      * @param UrlInterface $urlBuilder
      * @param ArrayManager $arrayManager
      * @param SerializerInterface $serializer
-     * @param AuthorizationInterface $authorization
      */
     public function __construct(
         LocatorInterface $locator,
@@ -101,8 +92,7 @@ class Categories extends AbstractModifier
         DbHelper $dbHelper,
         UrlInterface $urlBuilder,
         ArrayManager $arrayManager,
-        SerializerInterface $serializer = null,
-        AuthorizationInterface $authorization = null
+        SerializerInterface $serializer = null
     ) {
         $this->locator = $locator;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
@@ -110,7 +100,6 @@ class Categories extends AbstractModifier
         $this->urlBuilder = $urlBuilder;
         $this->arrayManager = $arrayManager;
         $this->serializer = $serializer ?: ObjectManager::getInstance()->get(SerializerInterface::class);
-        $this->authorization = $authorization ?: ObjectManager::getInstance()->get(AuthorizationInterface::class);
     }
 
     /**
@@ -119,7 +108,7 @@ class Categories extends AbstractModifier
      * @return CacheInterface
      * @deprecated 101.0.3
      */
-    private function getCacheManager(): CacheInterface
+    private function getCacheManager()
     {
         if (!$this->cacheManager) {
             $this->cacheManager = ObjectManager::getInstance()
@@ -129,31 +118,19 @@ class Categories extends AbstractModifier
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyMeta(array $meta)
     {
-        if ($this->isAllowed()) {
-            $meta = $this->createNewCategoryModal($meta);
-        }
+        $meta = $this->createNewCategoryModal($meta);
         $meta = $this->customizeCategoriesField($meta);
 
         return $meta;
     }
 
     /**
-     * Check current user permission on category resource
-     *
-     * @return bool
-     */
-    private function isAllowed(): bool
-    {
-        return (bool) $this->authorization->isAllowed('Magento_Catalog::categories');
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyData(array $data)
@@ -210,7 +187,6 @@ class Categories extends AbstractModifier
                                     'ns' => 'new_category_form',
                                     'externalProvider' => 'new_category_form.new_category_form_data_source',
                                     'toolbarContainer' => '${ $.parentName }',
-                                    '__disableTmpl' => ['toolbarContainer' => false],
                                     'formSubmitType' => 'ajax',
                                 ],
                             ],
@@ -226,7 +202,6 @@ class Categories extends AbstractModifier
      *
      * @param array $meta
      * @return array
-     * @throws LocalizedException
      * @since 101.0.0
      */
     protected function customizeCategoriesField(array $meta)
@@ -234,96 +209,93 @@ class Categories extends AbstractModifier
         $fieldCode = 'category_ids';
         $elementPath = $this->arrayManager->findPath($fieldCode, $meta, null, 'children');
         $containerPath = $this->arrayManager->findPath(static::CONTAINER_PREFIX . $fieldCode, $meta, null, 'children');
-        $fieldIsDisabled = $this->locator->getProduct()->isLockedAttribute($fieldCode);
 
         if (!$elementPath) {
             return $meta;
         }
 
-        $value = [
-            'arguments' => [
-                'data' => [
-                    'config' => [
-                        'label' => false,
-                        'required' => false,
-                        'dataScope' => '',
-                        'breakLine' => false,
-                        'formElement' => 'container',
-                        'componentType' => 'container',
-                        'component' => 'Magento_Ui/js/form/components/group',
-                        'disabled' => $this->locator->getProduct()->isLockedAttribute($fieldCode),
-                    ],
-                ],
-            ],
-            'children' => [
-                $fieldCode => [
-                    'arguments' => [
-                        'data' => [
-                            'config' => [
-                                'formElement' => 'select',
-                                'componentType' => 'field',
-                                'component' => 'Magento_Catalog/js/components/new-category',
-                                'filterOptions' => true,
-                                'chipsEnabled' => true,
-                                'disableLabel' => true,
-                                'levelsVisibility' => '1',
-                                'disabled' => $fieldIsDisabled,
-                                'elementTmpl' => 'ui/grid/filters/elements/ui-select',
-                                'options' => $this->getCategoriesTree(),
-                                'listens' => [
-                                    'index=create_category:responseData' => 'setParsed',
-                                    'newOption' => 'toggleOptionSelected'
-                                ],
-                                'config' => [
-                                    'dataScope' => $fieldCode,
-                                    'sortOrder' => 10,
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ]
-        ];
-        if ($this->isAllowed()) {
-            $value['children']['create_category_button'] = [
+        $meta = $this->arrayManager->merge(
+            $containerPath,
+            $meta,
+            [
                 'arguments' => [
                     'data' => [
                         'config' => [
-                            'title' => __('New Category'),
+                            'label' => __('Categories'),
+                            'dataScope' => '',
+                            'breakLine' => false,
                             'formElement' => 'container',
-                            'additionalClasses' => 'admin__field-small',
                             'componentType' => 'container',
-                            'disabled' => $fieldIsDisabled,
-                            'component' => 'Magento_Ui/js/form/components/button',
-                            'template' => 'ui/form/components/button/container',
-                            'actions' => [
-                                [
-                                    'targetName' => 'product_form.product_form.create_category_modal',
-                                    'actionName' => 'toggleModal',
-                                ],
-                                [
-                                    'targetName' =>
-                                        'product_form.product_form.create_category_modal.create_category',
-                                    'actionName' => 'render'
-                                ],
-                                [
-                                    'targetName' =>
-                                        'product_form.product_form.create_category_modal.create_category',
-                                    'actionName' => 'resetForm'
-                                ]
-                            ],
-                            'additionalForGroup' => true,
-                            'provider' => false,
-                            'source' => 'product_details',
-                            'displayArea' => 'insideGroup',
-                            'sortOrder' => 20,
-                            'dataScope'  => $fieldCode,
+                            'component' => 'Magento_Ui/js/form/components/group',
+                            'scopeLabel' => __('[GLOBAL]'),
+                            'disabled' => $this->locator->getProduct()->isLockedAttribute($fieldCode),
                         ],
                     ],
+                ],
+                'children' => [
+                    $fieldCode => [
+                        'arguments' => [
+                            'data' => [
+                                'config' => [
+                                    'formElement' => 'select',
+                                    'componentType' => 'field',
+                                    'component' => 'Magento_Catalog/js/components/new-category',
+                                    'filterOptions' => true,
+                                    'chipsEnabled' => true,
+                                    'disableLabel' => true,
+                                    'levelsVisibility' => '1',
+                                    'elementTmpl' => 'ui/grid/filters/elements/ui-select',
+                                    'options' => $this->getCategoriesTree(),
+                                    'listens' => [
+                                        'index=create_category:responseData' => 'setParsed',
+                                        'newOption' => 'toggleOptionSelected'
+                                    ],
+                                    'config' => [
+                                        'dataScope' => $fieldCode,
+                                        'sortOrder' => 10,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'create_category_button' => [
+                        'arguments' => [
+                            'data' => [
+                                'config' => [
+                                    'title' => __('New Category'),
+                                    'formElement' => 'container',
+                                    'additionalClasses' => 'admin__field-small',
+                                    'componentType' => 'container',
+                                    'component' => 'Magento_Ui/js/form/components/button',
+                                    'template' => 'ui/form/components/button/container',
+                                    'actions' => [
+                                        [
+                                            'targetName' => 'product_form.product_form.create_category_modal',
+                                            'actionName' => 'toggleModal',
+                                        ],
+                                        [
+                                            'targetName' =>
+                                                'product_form.product_form.create_category_modal.create_category',
+                                            'actionName' => 'render'
+                                        ],
+                                        [
+                                            'targetName' =>
+                                                'product_form.product_form.create_category_modal.create_category',
+                                            'actionName' => 'resetForm'
+                                        ]
+                                    ],
+                                    'additionalForGroup' => true,
+                                    'provider' => false,
+                                    'source' => 'product_details',
+                                    'displayArea' => 'insideGroup',
+                                    'sortOrder' => 20,
+                                ],
+                            ],
+                        ]
+                    ]
                 ]
-            ];
-        }
-        $meta = $this->arrayManager->merge($containerPath, $meta, $value);
+            ]
+        );
 
         return $meta;
     }
@@ -333,64 +305,20 @@ class Categories extends AbstractModifier
      *
      * @param string|null $filter
      * @return array
-     * @throws LocalizedException
      * @since 101.0.0
      */
     protected function getCategoriesTree($filter = null)
     {
-        $storeId = (int) $this->locator->getStore()->getId();
-
-        $cachedCategoriesTree = $this->getCacheManager()
-            ->load($this->getCategoriesTreeCacheId($storeId, (string) $filter));
-        if (!empty($cachedCategoriesTree)) {
-            return $this->serializer->unserialize($cachedCategoriesTree);
+        $categoryTree = $this->getCacheManager()->load(self::CATEGORY_TREE_ID . '_' . $filter);
+        if ($categoryTree) {
+            return $this->serializer->unserialize($categoryTree);
         }
 
-        $categoriesTree = $this->retrieveCategoriesTree(
-            $storeId,
-            $this->retrieveShownCategoriesIds($storeId, (string) $filter)
-        );
-
-        $this->getCacheManager()->save(
-            $this->serializer->serialize($categoriesTree),
-            $this->getCategoriesTreeCacheId($storeId, (string) $filter),
-            [
-                \Magento\Catalog\Model\Category::CACHE_TAG,
-                \Magento\Framework\App\Cache\Type\Block::CACHE_TAG
-            ]
-        );
-
-        return $categoriesTree;
-    }
-
-    /**
-     * Get cache id for categories tree.
-     *
-     * @param int $storeId
-     * @param string $filter
-     * @return string
-     */
-    private function getCategoriesTreeCacheId(int $storeId, string $filter = '') : string
-    {
-        return self::CATEGORY_TREE_ID
-            . '_' . (string) $storeId
-            . '_' . $filter;
-    }
-
-    /**
-     * Retrieve filtered list of categories id.
-     *
-     * @param int $storeId
-     * @param string $filter
-     * @return array
-     * @throws LocalizedException
-     */
-    private function retrieveShownCategoriesIds(int $storeId, string $filter = '') : array
-    {
+        $storeId = $this->locator->getStore()->getId();
         /* @var $matchingNamesCollection \Magento\Catalog\Model\ResourceModel\Category\Collection */
         $matchingNamesCollection = $this->categoryCollectionFactory->create();
 
-        if (!empty($filter)) {
+        if ($filter !== null) {
             $matchingNamesCollection->addAttributeToFilter(
                 'name',
                 ['like' => $this->dbHelper->addLikeEscape($filter, ['position' => 'any'])]
@@ -410,19 +338,6 @@ class Categories extends AbstractModifier
             }
         }
 
-        return $shownCategoriesIds;
-    }
-
-    /**
-     * Retrieve tree of categories with attributes.
-     *
-     * @param int $storeId
-     * @param array $shownCategoriesIds
-     * @return array|null
-     * @throws LocalizedException
-     */
-    private function retrieveCategoriesTree(int $storeId, array $shownCategoriesIds) : ?array
-    {
         /* @var $collection \Magento\Catalog\Model\ResourceModel\Category\Collection */
         $collection = $this->categoryCollectionFactory->create();
 
@@ -446,9 +361,17 @@ class Categories extends AbstractModifier
 
             $categoryById[$category->getId()]['is_active'] = $category->getIsActive();
             $categoryById[$category->getId()]['label'] = $category->getName();
-            $categoryById[$category->getId()]['__disableTmpl'] = true;
             $categoryById[$category->getParentId()]['optgroup'][] = &$categoryById[$category->getId()];
         }
+
+        $this->getCacheManager()->save(
+            $this->serializer->serialize($categoryById[CategoryModel::TREE_ROOT_ID]['optgroup']),
+            self::CATEGORY_TREE_ID . '_' . $filter,
+            [
+                \Magento\Catalog\Model\Category::CACHE_TAG,
+                \Magento\Framework\App\Cache\Type\Block::CACHE_TAG
+            ]
+        );
 
         return $categoryById[CategoryModel::TREE_ROOT_ID]['optgroup'];
     }

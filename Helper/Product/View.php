@@ -6,15 +6,11 @@
 
 namespace Magento\Catalog\Helper\Product;
 
-use Magento\Catalog\Model\Product\Attribute\LayoutUpdateManager;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\View\Result\Page as ResultPage;
 
 /**
  * Catalog category helper
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class View extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -69,11 +65,6 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
     private $string;
 
     /**
-     * @var LayoutUpdateManager
-     */
-    private $layoutUpdateManager;
-
-    /**
      * Constructor
      *
      * @param \Magento\Framework\App\Helper\Context $context
@@ -85,8 +76,6 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator $categoryUrlPathGenerator
      * @param array $messageGroups
      * @param \Magento\Framework\Stdlib\StringUtils|null $string
-     * @param LayoutUpdateManager|null $layoutUpdateManager
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -97,8 +86,7 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Magento\CatalogUrlRewrite\Model\CategoryUrlPathGenerator $categoryUrlPathGenerator,
         array $messageGroups = [],
-        \Magento\Framework\Stdlib\StringUtils $string = null,
-        ?LayoutUpdateManager $layoutUpdateManager = null
+        \Magento\Framework\Stdlib\StringUtils $string = null
     ) {
         $this->_catalogSession = $catalogSession;
         $this->_catalogDesign = $catalogDesign;
@@ -107,9 +95,8 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
         $this->messageGroups = $messageGroups;
         $this->messageManager = $messageManager;
         $this->categoryUrlPathGenerator = $categoryUrlPathGenerator;
-        $this->string = $string ?: ObjectManager::getInstance()->get(\Magento\Framework\Stdlib\StringUtils::class);
-        $this->layoutUpdateManager = $layoutUpdateManager
-            ?? ObjectManager::getInstance()->get(LayoutUpdateManager::class);
+        $this->string = $string ?: \Magento\Framework\App\ObjectManager::getInstance()
+            ->get(\Magento\Framework\Stdlib\StringUtils::class);
         parent::__construct($context);
     }
 
@@ -118,7 +105,7 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @param \Magento\Framework\View\Result\Page $resultPage
      * @param \Magento\Catalog\Model\Product $product
-     * @return $this
+     * @return \Magento\Framework\View\Result\Page
      */
     private function preparePageMetadata(ResultPage $resultPage, $product)
     {
@@ -213,9 +200,6 @@ class View extends \Magento\Framework\App\Helper\AbstractHelper
                     $update->addUpdate($layoutUpdate);
                 }
             }
-        }
-        if ($settings->getPageLayoutHandles()) {
-            $resultPage->addPageLayoutHandles($settings->getPageLayoutHandles());
         }
 
         $currentCategory = $this->_coreRegistry->registry('current_category');

@@ -10,7 +10,6 @@ use Magento\Framework\Indexer\DimensionalIndexerInterface;
 
 /**
  * Default Product Type Price Indexer Resource model
- *
  * For correctly work need define product type id
  *
  * @api
@@ -209,8 +208,6 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
     }
 
     /**
-     * Reindex prices.
-     *
      * @param null|int|array $entityIds
      * @return \Magento\Catalog\Model\ResourceModel\Product\Indexer\Price\DefaultPrice
      */
@@ -259,8 +256,7 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
         $tableName = $this->_getDefaultFinalPriceTable();
         $this->getConnection()->delete($tableName);
 
-        $finalPriceTable = $this->indexTableStructureFactory->create(
-            [
+        $finalPriceTable = $this->indexTableStructureFactory->create([
             'tableName' => $tableName,
             'entityField' => 'entity_id',
             'customerGroupField' => 'customer_group_id',
@@ -271,8 +267,7 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
             'minPriceField' => 'min_price',
             'maxPriceField' => 'max_price',
             'tierPriceField' => 'tier_price',
-            ]
-        );
+        ]);
 
         return $finalPriceTable;
     }
@@ -467,13 +462,11 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
         );
         $tierPrice = $this->getTotalTierPriceExpression($price);
         $tierPriceExpr = $connection->getIfNullSql($tierPrice, $maxUnsignedBigint);
-        $finalPrice = $connection->getLeastSql(
-            [
+        $finalPrice = $connection->getLeastSql([
             $price,
             $specialPriceExpr,
             $tierPriceExpr,
-            ]
-        );
+        ]);
 
         $select->columns(
             [
@@ -611,7 +604,7 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
             []
         )->joinLeft(
             ['otps' => $this->getTable('catalog_product_option_type_price')],
-            'otps.option_type_id = otpd.option_type_id AND otps.store_id = cs.store_id',
+            'otps.option_type_id = otpd.option_type_id AND otpd.store_id = cs.store_id',
             []
         )->group(
             ['i.entity_id', 'i.customer_group_id', 'i.website_id', 'o.option_id']
@@ -809,8 +802,6 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
     }
 
     /**
-     * Check if product exists.
-     *
      * @return bool
      */
     protected function hasEntity()
@@ -832,8 +823,6 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
     }
 
     /**
-     * Get total tier price expression.
-     *
      * @param \Zend_Db_Expr $priceExpression
      * @return \Zend_Db_Expr
      */
@@ -852,8 +841,7 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
                 ]
             ),
             'NULL',
-            $this->getConnection()->getLeastSql(
-                [
+            $this->getConnection()->getLeastSql([
                 $this->getConnection()->getIfNullSql(
                     $this->getTierPriceExpressionForTable('tier_price_1', $priceExpression),
                     $maxUnsignedBigint
@@ -870,14 +858,11 @@ class DefaultPrice extends AbstractIndexer implements PriceInterface
                     $this->getTierPriceExpressionForTable('tier_price_4', $priceExpression),
                     $maxUnsignedBigint
                 ),
-                ]
-            )
+            ])
         );
     }
 
     /**
-     * Get tier price expression for table.
-     *
      * @param string $tableAlias
      * @param \Zend_Db_Expr $priceExpression
      * @return \Zend_Db_Expr

@@ -85,34 +85,25 @@ class Row extends \Magento\Catalog\Model\Indexer\Product\Flat\AbstractAction
         $ids = [$id];
         $linkField = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
 
-        $storeIds = $this->getAssignedStoreIdsOfProduct($id);
-
         $stores = $this->_storeManager->getStores();
         foreach ($stores as $store) {
             $tableExists = $this->_isFlatTableExists($store->getId());
             if ($tableExists) {
-                if (!in_array($store->getId(), $storeIds)) {
-                    $this->flatItemEraser->deleteProductsFromStore($id, $store->getId());
-                    continue;
-                }
                 $this->flatItemEraser->removeDeletedProducts($ids, $store->getId());
-                $this->flatItemEraser->removeDisabledProducts($ids, $store->getId());
             }
 
             /* @var $status \Magento\Eav\Model\Entity\Attribute */
             $status = $this->_productIndexerHelper->getAttribute(ProductInterface::STATUS);
             $statusTable = $status->getBackend()->getTable();
-            $catalogProductEntityTable = $this->_productIndexerHelper->getTable('catalog_product_entity');
             $statusConditions = [
-                's.store_id IN(0,' . (int)$store->getId() . ')',
-                's.attribute_id = ' . (int)$status->getId(),
-                'e.entity_id = ' . (int)$id,
+                'store_id IN(0,' . (int)$store->getId() . ')',
+                'attribute_id = ' . (int)$status->getId(),
+                $linkField . ' = ' . (int)$id,
             ];
             $select = $this->_connection->select();
-            $select->from(['e' => $catalogProductEntityTable], ['s.value'])
+            $select->from($statusTable, ['value'])
                 ->where(implode(' AND ', $statusConditions))
-                ->joinLeft(['s' => $statusTable], "e.{$linkField} = s.{$linkField}", [])
-                ->order('s.store_id DESC')
+                ->order('store_id DESC')
                 ->limit(1);
             $result = $this->_connection->query($select);
             $status = $result->fetchColumn(0);
@@ -134,24 +125,5 @@ class Row extends \Magento\Catalog\Model\Indexer\Product\Flat\AbstractAction
         }
 
         return $this;
-    }
-
-    /**
-     * Get list store id where the product is enable
-     *
-     * @param int $productId
-     * @return array
-     */
-    private function getAssignedStoreIdsOfProduct($productId)
-    {
-        $select = $this->_connection->select();
-        $select->from(['e' => $this->_productIndexerHelper->getTable('store')], ['e.store_id'])
-            ->where('c.product_id = ' . $productId)
-            ->joinLeft(
-                ['c' => $this->_productIndexerHelper->getTable('catalog_product_website')],
-                'e.website_id = c.website_id',
-                []
-            );
-        return $this->_connection->fetchCol($select);
     }
 }

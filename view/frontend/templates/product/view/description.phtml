@@ -4,7 +4,7 @@
  * See COPYING.txt for license details.
  */
 
-// phpcs:disable Magento2.Templates.ThisInTemplate.FoundThis
+// @codingStandardsIgnoreFile
 
 /**
  * Product description template
@@ -12,8 +12,4 @@
  * @var $block \Magento\Catalog\Block\Product\View\Description
  */
 ?>
-<?= /* @noEscape */ $this->helper(Magento\Catalog\Helper\Output::class)->productAttribute(
-    $block->getProduct(),
-    $block->getProduct()->getDescription(),
-    'description'
-) ?>
+<?= /* @escapeNotVerified */ $this->helper('Magento\Catalog\Helper\Output')->productAttribute($block->getProduct(), $block->getProduct()->getDescription(), 'description') ?>

@@ -11,7 +11,7 @@ define([
     'Magento_Catalog/js/price-utils',
     'underscore',
     'mage/template',
-    'jquery-ui-modules/widget'
+    'jquery/ui'
 ], function ($, utils, _, mageTemplate) {
     'use strict';
 
@@ -49,7 +49,6 @@ define([
 
             box.on('reloadPrice', this.reloadPrice.bind(this));
             box.on('updatePrice', this.onUpdatePrice.bind(this));
-            box.trigger('price-box-initialized');
         },
 
         /**

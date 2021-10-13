@@ -11,7 +11,7 @@ use Magento\Ui\Component\Listing\Columns\Column;
 use Magento\Framework\UrlInterface;
 
 /**
- * Class ProductActions for Listing Columns
+ * Class ProductActions
  *
  * @api
  * @since 100.0.2

@@ -7,7 +7,6 @@ namespace Magento\Catalog\Model\ResourceModel\Collection;
 
 /**
  * Catalog EAV collection resource abstract model
- *
  * Implement using different stores for retrieve attribute values
  *
  * @api
@@ -43,6 +42,7 @@ class AbstractCollection extends \Magento\Eav\Model\Entity\Collection\AbstractCo
      * @param \Magento\Framework\Validator\UniversalFactory $universalFactory
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\DB\Adapter\AdapterInterface $connection
+     *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -205,7 +205,10 @@ class AbstractCollection extends \Magento\Eav\Model\Entity\Collection\AbstractCo
     }
 
     /**
-     * @inheritdoc
+     * @param \Magento\Framework\DB\Select $select
+     * @param string $table
+     * @param string $type
+     * @return \Magento\Framework\DB\Select
      */
     protected function _addLoadAttributesSelectValues($select, $table, $type)
     {

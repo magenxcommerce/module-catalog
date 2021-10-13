@@ -3,46 +3,33 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
-declare(strict_types=1);
-
 namespace Magento\Catalog\Model\Indexer\Category\Product\Action;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\Config;
-use Magento\Catalog\Model\Indexer\Category\Product\AbstractAction;
 use Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Query\Generator as QueryGenerator;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Select;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Framework\Indexer\BatchProviderInterface;
-use Magento\Framework\Indexer\BatchSizeManagementInterface;
 use Magento\Indexer\Model\ProcessManager;
-use Magento\Store\Model\Store;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Full reindex action
  *
+ * @package Magento\Catalog\Model\Indexer\Category\Product\Action
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Full extends AbstractAction
+class Full extends \Magento\Catalog\Model\Indexer\Category\Product\AbstractAction
 {
     /**
-     * @var BatchSizeManagementInterface
+     * @var \Magento\Framework\Indexer\BatchSizeManagementInterface
      */
     private $batchSizeManagement;
 
     /**
-     * @var BatchProviderInterface
+     * @var \Magento\Framework\Indexer\BatchProviderInterface
      */
     private $batchProvider;
 
     /**
-     * @var MetadataPool
+     * @var \Magento\Framework\EntityManager\MetadataPool
      */
     protected $metadataPool;
 
@@ -65,25 +52,25 @@ class Full extends AbstractAction
 
     /**
      * @param ResourceConnection $resource
-     * @param StoreManagerInterface $storeManager
-     * @param Config $config
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Catalog\Model\Config $config
      * @param QueryGenerator|null $queryGenerator
-     * @param BatchSizeManagementInterface|null $batchSizeManagement
-     * @param BatchProviderInterface|null $batchProvider
-     * @param MetadataPool|null $metadataPool
+     * @param \Magento\Framework\Indexer\BatchSizeManagementInterface|null $batchSizeManagement
+     * @param \Magento\Framework\Indexer\BatchProviderInterface|null $batchProvider
+     * @param \Magento\Framework\EntityManager\MetadataPool|null $metadataPool
      * @param int|null $batchRowsCount
      * @param ActiveTableSwitcher|null $activeTableSwitcher
      * @param ProcessManager $processManager
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        ResourceConnection $resource,
-        StoreManagerInterface $storeManager,
-        Config $config,
+        \Magento\Framework\App\ResourceConnection $resource,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Catalog\Model\Config $config,
         QueryGenerator $queryGenerator = null,
-        BatchSizeManagementInterface $batchSizeManagement = null,
-        BatchProviderInterface $batchProvider = null,
-        MetadataPool $metadataPool = null,
+        \Magento\Framework\Indexer\BatchSizeManagementInterface $batchSizeManagement = null,
+        \Magento\Framework\Indexer\BatchProviderInterface $batchProvider = null,
+        \Magento\Framework\EntityManager\MetadataPool $metadataPool = null,
         $batchRowsCount = null,
         ActiveTableSwitcher $activeTableSwitcher = null,
         ProcessManager $processManager = null
@@ -94,15 +81,15 @@ class Full extends AbstractAction
             $config,
             $queryGenerator
         );
-        $objectManager = ObjectManager::getInstance();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $this->batchSizeManagement = $batchSizeManagement ?: $objectManager->get(
-            BatchSizeManagementInterface::class
+            \Magento\Framework\Indexer\BatchSizeManagementInterface::class
         );
         $this->batchProvider = $batchProvider ?: $objectManager->get(
-            BatchProviderInterface::class
+            \Magento\Framework\Indexer\BatchProviderInterface::class
         );
         $this->metadataPool = $metadataPool ?: $objectManager->get(
-            MetadataPool::class
+            \Magento\Framework\EntityManager\MetadataPool::class
         );
         $this->batchRowsCount = $batchRowsCount;
         $this->activeTableSwitcher = $activeTableSwitcher ?: $objectManager->get(ActiveTableSwitcher::class);
@@ -110,39 +97,33 @@ class Full extends AbstractAction
     }
 
     /**
-     * Create the store tables
-     *
      * @return void
      */
-    private function createTables(): void
+    private function createTables()
     {
         foreach ($this->storeManager->getStores() as $store) {
-            $this->tableMaintainer->createTablesForStore((int)$store->getId());
+            $this->tableMaintainer->createTablesForStore($store->getId());
         }
     }
 
     /**
-     * Truncates the replica tables
-     *
      * @return void
      */
-    private function clearReplicaTables(): void
+    private function clearReplicaTables()
     {
         foreach ($this->storeManager->getStores() as $store) {
-            $this->connection->truncateTable($this->tableMaintainer->getMainReplicaTable((int)$store->getId()));
+            $this->connection->truncateTable($this->tableMaintainer->getMainReplicaTable($store->getId()));
         }
     }
 
     /**
-     * Switches the active table
-     *
      * @return void
      */
-    private function switchTables(): void
+    private function switchTables()
     {
         $tablesToSwitch = [];
         foreach ($this->storeManager->getStores() as $store) {
-            $tablesToSwitch[] = $this->tableMaintainer->getMainTable((int)$store->getId());
+            $tablesToSwitch[] = $this->tableMaintainer->getMainTable($store->getId());
         }
         $this->activeTableSwitcher->switchTable($this->connection, $tablesToSwitch);
     }
@@ -152,13 +133,12 @@ class Full extends AbstractAction
      *
      * @return $this
      */
-    public function execute(): Full
+    public function execute()
     {
         $this->createTables();
         $this->clearReplicaTables();
         $this->reindex();
         $this->switchTables();
-
         return $this;
     }
 
@@ -167,7 +147,7 @@ class Full extends AbstractAction
      *
      * @return void
      */
-    protected function reindex(): void
+    protected function reindex()
     {
         $userFunctions = [];
 
@@ -185,9 +165,9 @@ class Full extends AbstractAction
     /**
      * Execute indexation by store
      *
-     * @param Store $store
+     * @param \Magento\Store\Model\Store $store
      */
-    private function reindexStore($store): void
+    private function reindexStore($store)
     {
         $this->reindexRootCategory($store);
         $this->reindexAnchorCategories($store);
@@ -197,31 +177,31 @@ class Full extends AbstractAction
     /**
      * Publish data from tmp to replica table
      *
-     * @param Store $store
+     * @param \Magento\Store\Model\Store $store
      * @return void
      */
-    private function publishData($store): void
+    private function publishData($store)
     {
-        $select = $this->connection->select()->from($this->tableMaintainer->getMainTmpTable((int)$store->getId()));
+        $select = $this->connection->select()->from($this->tableMaintainer->getMainTmpTable($store->getId()));
         $columns = array_keys(
-            $this->connection->describeTable($this->tableMaintainer->getMainReplicaTable((int)$store->getId()))
+            $this->connection->describeTable($this->tableMaintainer->getMainReplicaTable($store->getId()))
         );
-        $tableName = $this->tableMaintainer->getMainReplicaTable((int)$store->getId());
+        $tableName = $this->tableMaintainer->getMainReplicaTable($store->getId());
 
         $this->connection->query(
             $this->connection->insertFromSelect(
                 $select,
                 $tableName,
                 $columns,
-                AdapterInterface::INSERT_ON_DUPLICATE
+                \Magento\Framework\DB\Adapter\AdapterInterface::INSERT_ON_DUPLICATE
             )
         );
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    protected function reindexRootCategory(Store $store): void
+    protected function reindexRootCategory(\Magento\Store\Model\Store $store)
     {
         if ($this->isIndexRootCategoryNeeded()) {
             $this->reindexCategoriesBySelect($this->getAllProducts($store), 'cp.entity_id IN (?)', $store);
@@ -231,10 +211,10 @@ class Full extends AbstractAction
     /**
      * Reindex products of anchor categories
      *
-     * @param Store $store
+     * @param \Magento\Store\Model\Store $store
      * @return void
      */
-    protected function reindexAnchorCategories(Store $store): void
+    protected function reindexAnchorCategories(\Magento\Store\Model\Store $store)
     {
         $this->reindexCategoriesBySelect($this->getAnchorCategoriesSelect($store), 'ccp.product_id IN (?)', $store);
     }
@@ -242,10 +222,10 @@ class Full extends AbstractAction
     /**
      * Reindex products of non anchor categories
      *
-     * @param Store $store
+     * @param \Magento\Store\Model\Store $store
      * @return void
      */
-    protected function reindexNonAnchorCategories(Store $store): void
+    protected function reindexNonAnchorCategories(\Magento\Store\Model\Store $store)
     {
         $this->reindexCategoriesBySelect($this->getNonAnchorCategoriesSelect($store), 'ccp.product_id IN (?)', $store);
     }
@@ -253,42 +233,40 @@ class Full extends AbstractAction
     /**
      * Reindex categories using given SQL select and condition.
      *
-     * @param Select $basicSelect
+     * @param \Magento\Framework\DB\Select $basicSelect
      * @param string $whereCondition
-     * @param Store $store
+     * @param \Magento\Store\Model\Store $store
      * @return void
      */
-    private function reindexCategoriesBySelect(Select $basicSelect, $whereCondition, $store): void
+    private function reindexCategoriesBySelect(\Magento\Framework\DB\Select $basicSelect, $whereCondition, $store)
     {
-        $this->tableMaintainer->createMainTmpTable((int)$store->getId());
+        $this->tableMaintainer->createMainTmpTable($store->getId());
 
-        $entityMetadata = $this->metadataPool->getMetadata(ProductInterface::class);
+        $entityMetadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
         $columns = array_keys(
-            $this->connection->describeTable($this->tableMaintainer->getMainTmpTable((int)$store->getId()))
+            $this->connection->describeTable($this->tableMaintainer->getMainTmpTable($store->getId()))
         );
         $this->batchSizeManagement->ensureBatchSize($this->connection, $this->batchRowsCount);
-
-        $select = $this->connection->select();
-        $select->distinct(true);
-        $select->from(['e' => $entityMetadata->getEntityTable()], $entityMetadata->getIdentifierField());
-
-        $batchQueries = $this->prepareSelectsByRange(
-            $select,
+        $batches = $this->batchProvider->getBatches(
+            $this->connection,
+            $entityMetadata->getEntityTable(),
             $entityMetadata->getIdentifierField(),
-            (int)$this->batchRowsCount
+            $this->batchRowsCount
         );
-
-        foreach ($batchQueries as $query) {
-            $this->connection->delete($this->tableMaintainer->getMainTmpTable((int)$store->getId()));
-            $entityIds = $this->connection->fetchCol($query);
+        foreach ($batches as $batch) {
+            $this->connection->delete($this->tableMaintainer->getMainTmpTable($store->getId()));
             $resultSelect = clone $basicSelect;
+            $select = $this->connection->select();
+            $select->distinct(true);
+            $select->from(['e' => $entityMetadata->getEntityTable()], $entityMetadata->getIdentifierField());
+            $entityIds = $this->batchProvider->getBatchIds($this->connection, $select, $batch);
             $resultSelect->where($whereCondition, $entityIds);
             $this->connection->query(
                 $this->connection->insertFromSelect(
                     $resultSelect,
-                    $this->tableMaintainer->getMainTmpTable((int)$store->getId()),
+                    $this->tableMaintainer->getMainTmpTable($store->getId()),
                     $columns,
-                    AdapterInterface::INSERT_ON_DUPLICATE
+                    \Magento\Framework\DB\Adapter\AdapterInterface::INSERT_ON_DUPLICATE
                 )
             );
             $this->publishData($store);

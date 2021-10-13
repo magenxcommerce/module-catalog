@@ -5,26 +5,12 @@
  */
 namespace Magento\Catalog\Model\Product\AttributeSet;
 
-/**
- * Attribute Set Options
- */
 class Options implements \Magento\Framework\Data\OptionSourceInterface
 {
-
     /**
-     * @var array
+     * @var null|array
      */
     protected $options;
-
-    /**
-     * @var \Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\CollectionFactory
-     */
-    protected $collectionFactory;
-
-    /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product
-     */
-    protected $product;
 
     /**
      * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\CollectionFactory $collectionFactory
@@ -39,7 +25,7 @@ class Options implements \Magento\Framework\Data\OptionSourceInterface
     }
 
     /**
-     * @inheritDoc
+     * @return array|null
      */
     public function toOptionArray()
     {
@@ -48,7 +34,6 @@ class Options implements \Magento\Framework\Data\OptionSourceInterface
                 ->setEntityTypeFilter($this->product->getTypeId())
                 ->toOptionArray();
         }
-
         return $this->options;
     }
 }

@@ -6,6 +6,7 @@
 namespace Magento\Catalog\Model\Category\Link;
 
 use Magento\Catalog\Api\Data\CategoryLinkInterface;
+use Magento\Catalog\Model\Indexer\Product\Category;
 use Magento\Framework\EntityManager\Operation\ExtensionInterface;
 
 /**
@@ -39,8 +40,6 @@ class SaveHandler implements ExtensionInterface
     }
 
     /**
-     * Execute
-     *
      * @param object $entity
      * @param array $arguments
      * @return object
@@ -79,8 +78,6 @@ class SaveHandler implements ExtensionInterface
     }
 
     /**
-     * Get category links positions
-     *
      * @param object $entity
      * @return array
      */
@@ -109,19 +106,27 @@ class SaveHandler implements ExtensionInterface
      */
     private function mergeCategoryLinks($newCategoryPositions, $oldCategoryPositions)
     {
+        $result = [];
         if (empty($newCategoryPositions)) {
-            return [];
+            return $result;
         }
 
-        $categoryPositions = array_combine(array_column($oldCategoryPositions, 'category_id'), $oldCategoryPositions);
         foreach ($newCategoryPositions as $newCategoryPosition) {
-            $categoryId = $newCategoryPosition['category_id'];
-            if (!isset($categoryPositions[$categoryId])) {
-                $categoryPositions[$categoryId] = ['category_id' => $categoryId];
+            $key = array_search(
+                $newCategoryPosition['category_id'],
+                array_column($oldCategoryPositions, 'category_id')
+            );
+
+            if ($key === false) {
+                $result[] = $newCategoryPosition;
+            } elseif (isset($oldCategoryPositions[$key])
+                && $oldCategoryPositions[$key]['position'] != $newCategoryPosition['position']
+            ) {
+                $result[] = $newCategoryPositions[$key];
+                unset($oldCategoryPositions[$key]);
             }
-            $categoryPositions[$categoryId]['position'] = $newCategoryPosition['position'];
         }
-        $result = array_values($categoryPositions);
+        $result = array_merge($result, $oldCategoryPositions);
 
         return $result;
     }

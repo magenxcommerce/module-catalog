@@ -3,8 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Test\Unit\Model\View\Asset;
 
 use Magento\Catalog\Model\Product\Media\ConfigInterface;
@@ -13,43 +11,44 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Framework\View\Asset\ContextInterface;
 use Magento\Framework\View\Asset\Repository;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class ImageTest extends TestCase
+/**
+ * Class ImageTest
+ */
+class ImageTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Image
+     * @var \Magento\Catalog\Model\View\Asset\Image
      */
     protected $model;
 
     /**
-     * @var ContextInterface|MockObject
+     * @var ContextInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $mediaConfig;
 
     /**
-     * @var EncryptorInterface|MockObject
+     * @var EncryptorInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $encryptor;
 
     /**
-     * @var ContextInterface|MockObject
+     * @var ContextInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $context;
 
     /**
-     * @var Repository|MockObject
+     * @var Repository|\PHPUnit_Framework_MockObject_MockObject
      */
     private $assetRepo;
 
     private $objectManager;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->mediaConfig = $this->getMockForAbstractClass(ConfigInterface::class);
-        $this->encryptor = $this->getMockForAbstractClass(EncryptorInterface::class);
-        $this->context = $this->getMockForAbstractClass(ContextInterface::class);
+        $this->mediaConfig = $this->createMock(ConfigInterface::class);
+        $this->encryptor = $this->createMock(EncryptorInterface::class);
+        $this->context = $this->createMock(ContextInterface::class);
         $this->assetRepo = $this->createMock(Repository::class);
         $this->objectManager = new ObjectManager($this);
         $this->model = $this->objectManager->getObject(
@@ -104,10 +103,9 @@ class ImageTest extends TestCase
     /**
      * @param string $filePath
      * @param array $miscParams
-     * @param string $readableParams
      * @dataProvider getPathDataProvider
      */
-    public function testGetPath($filePath, $miscParams, $readableParams)
+    public function testGetPath($filePath, $miscParams)
     {
         $imageModel = $this->objectManager->getObject(
             Image::class,
@@ -120,15 +118,13 @@ class ImageTest extends TestCase
                 'miscParams' => $miscParams
             ]
         );
+        $miscParams['background'] = isset($miscParams['background']) ? implode(',', $miscParams['background']) : '';
         $absolutePath = '/var/www/html/magento2ce/pub/media/catalog/product';
-        $hashPath = 'somehash';
+        $hashPath = md5(implode('_', $miscParams));
         $this->context->method('getPath')->willReturn($absolutePath);
-        $this->encryptor->expects(static::once())
-            ->method('hash')
-            ->with($readableParams, $this->anything())
-            ->willReturn($hashPath);
+        $this->encryptor->method('hash')->willReturn($hashPath);
         static::assertEquals(
-            $absolutePath . '/cache/' . $hashPath . $filePath,
+            $absolutePath . '/cache/'. $hashPath . $filePath,
             $imageModel->getPath()
         );
     }
@@ -136,10 +132,9 @@ class ImageTest extends TestCase
     /**
      * @param string $filePath
      * @param array $miscParams
-     * @param string $readableParams
      * @dataProvider getPathDataProvider
      */
-    public function testGetUrl($filePath, $miscParams, $readableParams)
+    public function testGetUrl($filePath, $miscParams)
     {
         $imageModel = $this->objectManager->getObject(
             Image::class,
@@ -152,13 +147,11 @@ class ImageTest extends TestCase
                 'miscParams' => $miscParams
             ]
         );
+        $miscParams['background'] = isset($miscParams['background']) ? implode(',', $miscParams['background']) : '';
         $absolutePath = 'http://localhost/pub/media/catalog/product';
-        $hashPath = 'somehash';
+        $hashPath = md5(implode('_', $miscParams));
         $this->context->expects(static::once())->method('getBaseUrl')->willReturn($absolutePath);
-        $this->encryptor->expects(static::once())
-            ->method('hash')
-            ->with($readableParams, $this->anything())
-            ->willReturn($hashPath);
+        $this->encryptor->expects(static::once())->method('hash')->willReturn($hashPath);
         static::assertEquals(
             $absolutePath . '/cache/' . $hashPath . $filePath,
             $imageModel->getUrl()
@@ -173,8 +166,7 @@ class ImageTest extends TestCase
         return [
             [
                 '/some_file.png',
-                [], //default value for miscParams,
-                'h:empty_w:empty_q:empty_r:empty_nonproportional_noframe_notransparency_notconstrainonly_nobackground',
+                [], //default value for miscParams
             ],
             [
                 '/some_file_2.png',
@@ -182,32 +174,15 @@ class ImageTest extends TestCase
                     'image_type' => 'thumbnail',
                     'image_height' => 75,
                     'image_width' => 75,
-                    'keep_aspect_ratio' => true,
-                    'keep_frame' => true,
-                    'keep_transparency' => true,
-                    'constrain_only' => true,
+                    'keep_aspect_ratio' => 'proportional',
+                    'keep_frame' => 'frame',
+                    'keep_transparency' => 'transparency',
+                    'constrain_only' => 'doconstrainonly',
                     'background' => [233,1,0],
                     'angle' => null,
                     'quality' => 80,
                 ],
-                'h:75_w:75_proportional_frame_transparency_doconstrainonly_rgb233,1,0_r:empty_q:80',
-            ],
-            [
-                '/some_file_3.png',
-                [
-                    'image_type' => 'thumbnail',
-                    'image_height' => 75,
-                    'image_width' => 75,
-                    'keep_aspect_ratio' => false,
-                    'keep_frame' => false,
-                    'keep_transparency' => false,
-                    'constrain_only' => false,
-                    'background' => [233,1,0],
-                    'angle' => 90,
-                    'quality' => 80,
-                ],
-                'h:75_w:75_nonproportional_noframe_notransparency_notconstrainonly_rgb233,1,0_r:90_q:80',
-            ],
+            ]
         ];
     }
 }

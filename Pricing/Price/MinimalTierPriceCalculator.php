@@ -29,10 +29,8 @@ class MinimalTierPriceCalculator implements MinimalPriceCalculatorInterface
     }
 
     /**
-     * Get raw value of "as low as" as a minimal among tier prices{@inheritdoc}
-     *
-     * @param SaleableInterface $saleableItem
-     * @return float|null
+     * Get raw value of "as low as" as a minimal among tier prices
+     * {@inheritdoc}
      */
     public function getValue(SaleableInterface $saleableItem)
     {
@@ -51,10 +49,8 @@ class MinimalTierPriceCalculator implements MinimalPriceCalculatorInterface
     }
 
     /**
-     * Return calculated amount object that keeps "as low as" value{@inheritdoc}
-     *
-     * @param SaleableInterface $saleableItem
-     * @return AmountInterface|null
+     * Return calculated amount object that keeps "as low as" value
+     * {@inheritdoc}
      */
     public function getAmount(SaleableInterface $saleableItem)
     {
@@ -62,6 +58,6 @@ class MinimalTierPriceCalculator implements MinimalPriceCalculatorInterface
 
         return $value === null
             ? null
-            : $this->calculator->getAmount($value, $saleableItem, 'tax');
+            : $this->calculator->getAmount($value, $saleableItem);
     }
 }

@@ -6,41 +6,31 @@
  */
 namespace Magento\Catalog\Controller\Adminhtml\Category;
 
-use Magento\Backend\App\Action\Context;
-use Magento\Backend\Model\View\Result\Page;
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Backend\Model\View\Result\Redirect;
-use Magento\Framework\Controller\ResultInterface;
-use Magento\Catalog\Controller\Adminhtml\Category;
-use Magento\Backend\Model\View\Result\ForwardFactory;
-use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
 
 /**
  * Class Add Category
  *
  * @package Magento\Catalog\Controller\Adminhtml\Category
  */
-class Add extends Category implements HttpGetActionInterface
+class Add extends \Magento\Catalog\Controller\Adminhtml\Category implements HttpGetActionInterface
 {
     /**
      * Forward factory for result
      *
-     * @deprecated Unused Class: ForwardFactory
-     * @see $this->resultFactory->create()
-     * @var ForwardFactory
-     *
+     * @var \Magento\Backend\Model\View\Result\ForwardFactory
      */
     protected $resultForwardFactory;
 
     /**
      * Add category constructor
      *
-     * @param Context $context
-     * @param ForwardFactory $resultForwardFactory
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Backend\Model\View\Result\ForwardFactory $resultForwardFactory
      */
     public function __construct(
-        Context $context,
-        ForwardFactory $resultForwardFactory
+        \Magento\Backend\App\Action\Context $context,
+        \Magento\Backend\Model\View\Result\ForwardFactory $resultForwardFactory
     ) {
         parent::__construct($context);
         $this->resultForwardFactory = $resultForwardFactory;
@@ -49,7 +39,7 @@ class Add extends Category implements HttpGetActionInterface
     /**
      * Add new category form
      *
-     * @return ResultInterface
+     * @return \Magento\Backend\Model\View\Result\Forward
      */
     public function execute()
     {
@@ -57,7 +47,7 @@ class Add extends Category implements HttpGetActionInterface
 
         $category = $this->_initCategory(true);
         if (!$category || !$parentId || $category->getId()) {
-            /** @var Redirect $resultRedirect */
+            /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultRedirectFactory->create();
             return $resultRedirect->setPath('catalog/*/', ['_current' => true, 'id' => null]);
         }
@@ -71,8 +61,9 @@ class Add extends Category implements HttpGetActionInterface
             $category->addData($categoryData);
         }
 
-        /** @var Page $resultPage */
-        $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
+        $resultPageFactory = $this->_objectManager->get(\Magento\Framework\View\Result\PageFactory::class);
+        /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
+        $resultPage = $resultPageFactory->create();
 
         if ($this->getRequest()->getQuery('isAjax')) {
             return $this->ajaxRequestResponse($category, $resultPage);

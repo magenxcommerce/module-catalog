@@ -35,7 +35,6 @@ interface ProductAttributeInterface extends \Magento\Catalog\Api\Data\EavAttribu
 
     /**
      * @return \Magento\Eav\Api\Data\AttributeExtensionInterface|null
-     * @since 103.0.0
      */
     public function getExtensionAttributes();
 }

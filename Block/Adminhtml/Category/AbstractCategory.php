@@ -67,8 +67,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category id
-     *
      * @return int|string|null
      */
     public function getCategoryId()
@@ -80,8 +78,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category name
-     *
      * @return string
      */
     public function getCategoryName()
@@ -90,8 +86,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category path
-     *
      * @return mixed
      */
     public function getCategoryPath()
@@ -103,8 +97,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Check store root category
-     *
      * @return bool
      */
     public function hasStoreRootCategory()
@@ -117,8 +109,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get store from request
-     *
      * @return Store
      */
     public function getStore()
@@ -128,8 +118,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get root category for tree
-     *
      * @param mixed|null $parentNodeCategory
      * @param int $recursionLevel
      * @return Node|array|null
@@ -161,11 +149,10 @@ class AbstractCategory extends \Magento\Backend\Block\Template
 
             $root = $tree->getNodeById($rootId);
 
-            if ($root) {
+            if ($root && $rootId != \Magento\Catalog\Model\Category::TREE_ROOT_ID) {
                 $root->setIsVisible(true);
-                if ($root->getId() == \Magento\Catalog\Model\Category::TREE_ROOT_ID) {
-                    $root->setName(__('Root'));
-                }
+            } elseif ($root && $root->getId() == \Magento\Catalog\Model\Category::TREE_ROOT_ID) {
+                $root->setName(__('Root'));
             }
 
             $this->_coreRegistry->register('root', $root);
@@ -175,8 +162,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get Default Store Id
-     *
      * @return int
      */
     protected function _getDefaultStoreId()
@@ -185,8 +170,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category collection
-     *
      * @return \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
      */
     public function getCategoryCollection()
@@ -244,8 +227,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category node for tree
-     *
      * @param mixed $parentNodeCategory
      * @param int $recursionLevel
      * @return Node
@@ -268,8 +249,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category save url
-     *
      * @param array $args
      * @return string
      */
@@ -281,8 +260,6 @@ class AbstractCategory extends \Magento\Backend\Block\Template
     }
 
     /**
-     * Get category edit url
-     *
      * @return string
      */
     public function getEditUrl()

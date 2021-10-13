@@ -4,15 +4,16 @@
  * See COPYING.txt for license details.
  */
 
-namespace Magento\Catalog\Block\Product\View;
-
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Option\Value;
-
 /**
  * Product options block
  *
- * @author Magento Core Team <core@magentocommerce.com>
+ * @author     Magento Core Team <core@magentocommerce.com>
+ */
+namespace Magento\Catalog\Block\Product\View;
+
+use Magento\Catalog\Model\Product;
+
+/**
  * @api
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @since 100.0.2
@@ -120,8 +121,6 @@ class Options extends \Magento\Framework\View\Element\Template
     }
 
     /**
-     * Get group of option.
-     *
      * @param string $type
      * @return string
      */
@@ -143,8 +142,6 @@ class Options extends \Magento\Framework\View\Element\Template
     }
 
     /**
-     * Check if block has options.
-     *
      * @return bool
      */
     public function hasOptions()
@@ -163,10 +160,7 @@ class Options extends \Magento\Framework\View\Element\Template
      */
     protected function _getPriceConfiguration($option)
     {
-        $optionPrice = $option->getPrice(true);
-        if ($option->getPriceType() !== Value::TYPE_PERCENT) {
-            $optionPrice = $this->pricingHelper->currency($optionPrice, false, false);
-        }
+        $optionPrice = $this->pricingHelper->currency($option->getPrice(true), false, false);
         $data = [
             'prices' => [
                 'oldPrice' => [
@@ -201,7 +195,7 @@ class Options extends \Magento\Framework\View\Element\Template
                 ],
             ],
             'type' => $option->getPriceType(),
-            'name' => $option->getTitle(),
+            'name' => $option->getTitle()
         ];
         return $data;
     }
@@ -237,7 +231,7 @@ class Options extends \Magento\Framework\View\Element\Template
         //pass the return array encapsulated in an object for the other modules to be able to alter it eg: weee
         $this->_eventManager->dispatch('catalog_product_option_price_configuration_after', ['configObj' => $configObj]);
 
-        $config = $configObj->getConfig();
+        $config=$configObj->getConfig();
 
         return $this->_jsonEncoder->encode($config);
     }

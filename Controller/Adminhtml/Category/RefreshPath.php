@@ -1,5 +1,6 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -7,9 +8,6 @@ namespace Magento\Catalog\Controller\Adminhtml\Category;
 
 use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
 
-/**
- * Class RefreshPath
- */
 class RefreshPath extends \Magento\Catalog\Controller\Adminhtml\Category implements HttpGetActionInterface
 {
     /**
@@ -46,7 +44,6 @@ class RefreshPath extends \Magento\Catalog\Controller\Adminhtml\Category impleme
                 'id' => $categoryId,
                 'path' => $category->getPath(),
                 'parentId' => $category->getParentId(),
-                'level' => $category->getLevel()
             ]);
         }
     }

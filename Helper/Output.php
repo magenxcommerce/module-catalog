@@ -9,22 +9,9 @@ namespace Magento\Catalog\Helper;
 
 use Magento\Catalog\Model\Category as ModelCategory;
 use Magento\Catalog\Model\Product as ModelProduct;
-use Magento\Eav\Model\Config;
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Escaper;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filter\Template;
-use Magento\Framework\Phrase;
-use function is_object;
-use function method_exists;
-use function preg_match;
-use function strtolower;
 
-/**
- * Html output
- */
-class Output extends AbstractHelper
+class Output extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * Array of existing handlers
@@ -50,12 +37,12 @@ class Output extends AbstractHelper
     /**
      * Eav config
      *
-     * @var Config
+     * @var \Magento\Eav\Model\Config
      */
     protected $_eavConfig;
 
     /**
-     * @var Escaper
+     * @var \Magento\Framework\Escaper
      */
     protected $_escaper;
 
@@ -66,32 +53,27 @@ class Output extends AbstractHelper
 
     /**
      * Output constructor.
-     * @param Context $context
-     * @param Config $eavConfig
+     * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Eav\Model\Config $eavConfig
      * @param Data $catalogData
-     * @param Escaper $escaper
+     * @param \Magento\Framework\Escaper $escaper
      * @param array $directivePatterns
-     * @param array $handlers
      */
     public function __construct(
-        Context $context,
-        Config $eavConfig,
+        \Magento\Framework\App\Helper\Context $context,
+        \Magento\Eav\Model\Config $eavConfig,
         Data $catalogData,
-        Escaper $escaper,
-        $directivePatterns = [],
-        array $handlers = []
+        \Magento\Framework\Escaper $escaper,
+        $directivePatterns = []
     ) {
         $this->_eavConfig = $eavConfig;
         $this->_catalogData = $catalogData;
         $this->_escaper = $escaper;
         $this->directivePatterns = $directivePatterns;
-        $this->_handlers = $handlers;
         parent::__construct($context);
     }
 
     /**
-     * Return template processor
-     *
      * @return Template
      */
     protected function _getTemplateProcessor()
@@ -133,7 +115,8 @@ class Output extends AbstractHelper
      */
     public function getHandlers($method)
     {
-        return $this->_handlers[strtolower($method)] ?? [];
+        $method = strtolower($method);
+        return $this->_handlers[$method] ?? [];
     }
 
     /**
@@ -158,32 +141,32 @@ class Output extends AbstractHelper
      * Prepare product attribute html output
      *
      * @param ModelProduct $product
-     * @param string|Phrase $attributeHtml
+     * @param string $attributeHtml
      * @param string $attributeName
      * @return string
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @throws LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function productAttribute($product, $attributeHtml, $attributeName)
     {
         $attribute = $this->_eavConfig->getAttribute(ModelProduct::ENTITY, $attributeName);
         if ($attribute &&
             $attribute->getId() &&
-            $attribute->getFrontendInput() !== 'media_image' &&
+            $attribute->getFrontendInput() != 'media_image' &&
             (!$attribute->getIsHtmlAllowedOnFront() &&
             !$attribute->getIsWysiwygEnabled())
         ) {
-            if ($attribute->getFrontendInput() !== 'price') {
+            if ($attribute->getFrontendInput() != 'price') {
                 $attributeHtml = $this->_escaper->escapeHtml($attributeHtml);
             }
-            if ($attribute->getFrontendInput() === 'textarea') {
+            if ($attribute->getFrontendInput() == 'textarea') {
                 $attributeHtml = nl2br($attributeHtml);
             }
         }
         if ($attributeHtml !== null
             && $attribute->getIsHtmlAllowedOnFront()
             && $attribute->getIsWysiwygEnabled()
-            && $this->isDirectivesExists((string)$attributeHtml)
+            && $this->isDirectivesExists($attributeHtml)
         ) {
             $attributeHtml = $this->_getTemplateProcessor()->filter($attributeHtml);
         }
@@ -204,14 +187,14 @@ class Output extends AbstractHelper
      * @param string $attributeHtml
      * @param string $attributeName
      * @return string
-     * @throws LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function categoryAttribute($category, $attributeHtml, $attributeName)
     {
         $attribute = $this->_eavConfig->getAttribute(ModelCategory::ENTITY, $attributeName);
 
         if ($attribute &&
-            $attribute->getFrontendInput() !== 'image' &&
+            $attribute->getFrontendInput() != 'image' &&
             (!$attribute->getIsHtmlAllowedOnFront() &&
             !$attribute->getIsWysiwygEnabled())
         ) {
@@ -220,7 +203,7 @@ class Output extends AbstractHelper
         if ($attributeHtml !== null
             && $attribute->getIsHtmlAllowedOnFront()
             && $attribute->getIsWysiwygEnabled()
-            && $this->isDirectivesExists((string)$attributeHtml)
+            && $this->isDirectivesExists($attributeHtml)
 
         ) {
             $attributeHtml = $this->_getTemplateProcessor()->filter($attributeHtml);
@@ -236,14 +219,14 @@ class Output extends AbstractHelper
     /**
      * Check if string has directives
      *
-     * @param string|Phrase $attributeHtml
+     * @param string $attributeHtml
      * @return bool
      */
-    public function isDirectivesExists(string $attributeHtml): bool
+    public function isDirectivesExists($attributeHtml)
     {
         $matches = false;
         foreach ($this->directivePatterns as $pattern) {
-            if (preg_match($pattern, (string)$attributeHtml)) {
+            if (preg_match($pattern, $attributeHtml)) {
                 $matches = true;
                 break;
             }

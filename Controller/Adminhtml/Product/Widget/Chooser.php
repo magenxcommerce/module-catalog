@@ -1,17 +1,12 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Catalog\Controller\Adminhtml\Product\Widget;
 
-use Magento\Framework\App\Action\HttpPostActionInterface;
-use Magento\Framework\App\ObjectManager;
-
-/**
- * Controller to build Chooser container.
- */
-class Chooser extends \Magento\Backend\App\Action implements HttpPostActionInterface
+class Chooser extends \Magento\Backend\App\Action
 {
     /**
      * Authorization level of a basic admin session
@@ -29,30 +24,22 @@ class Chooser extends \Magento\Backend\App\Action implements HttpPostActionInter
     protected $layoutFactory;
 
     /**
-     * @var \Magento\Framework\Escaper
-     */
-    private $escaper;
-
-    /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Magento\Framework\Controller\Result\RawFactory $resultRawFactory
      * @param \Magento\Framework\View\LayoutFactory $layoutFactory
-     * @param \Magento\Framework\Escaper|null $escaper
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Framework\Controller\Result\RawFactory $resultRawFactory,
-        \Magento\Framework\View\LayoutFactory $layoutFactory,
-        \Magento\Framework\Escaper $escaper = null
+        \Magento\Framework\View\LayoutFactory $layoutFactory
     ) {
         parent::__construct($context);
         $this->resultRawFactory = $resultRawFactory;
         $this->layoutFactory = $layoutFactory;
-        $this->escaper = $escaper ?: ObjectManager::getInstance()->get(\Magento\Framework\Escaper::class);
     }
 
     /**
-     * Chooser Source action.
+     * Chooser Source action
      *
      * @return \Magento\Framework\Controller\Result\Raw
      */
@@ -68,11 +55,11 @@ class Chooser extends \Magento\Backend\App\Action implements HttpPostActionInter
             '',
             [
                 'data' => [
-                    'id' => $this->escaper->escapeHtml($uniqId),
+                    'id' => $uniqId,
                     'use_massaction' => $massAction,
                     'product_type_id' => $productTypeId,
-                    'category_id' => (int)$this->getRequest()->getParam('category_id'),
-                ],
+                    'category_id' => $this->getRequest()->getParam('category_id'),
+                ]
             ]
         );
 
@@ -84,10 +71,10 @@ class Chooser extends \Magento\Backend\App\Action implements HttpPostActionInter
                 '',
                 [
                     'data' => [
-                        'id' => $this->escaper->escapeHtml($uniqId) . 'Tree',
+                        'id' => $uniqId . 'Tree',
                         'node_click_listener' => $productsGrid->getCategoryClickListenerJs(),
                         'with_empty_node' => true,
-                    ],
+                    ]
                 ]
             );
 
@@ -99,7 +86,6 @@ class Chooser extends \Magento\Backend\App\Action implements HttpPostActionInter
 
         /** @var \Magento\Framework\Controller\Result\Raw $resultRaw */
         $resultRaw = $this->resultRawFactory->create();
-
         return $resultRaw->setContents($html);
     }
 }

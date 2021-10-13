@@ -13,7 +13,6 @@ use Magento\Catalog\Api\Data\ProductInterface;
  * Resolves the product from a configured item.
  *
  * @api
- * @since 102.0.7
  */
 interface ItemResolverInterface
 {
@@ -22,7 +21,6 @@ interface ItemResolverInterface
      *
      * @param ItemInterface $item
      * @return ProductInterface
-     * @since 102.0.7
      */
     public function getFinalProduct(ItemInterface $item) : ProductInterface;
 }

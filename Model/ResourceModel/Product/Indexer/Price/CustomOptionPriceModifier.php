@@ -127,8 +127,6 @@ class CustomOptionPriceModifier implements PriceModifierInterface
     }
 
     /**
-     * Check if custom options exist.
-     *
      * @param IndexTableStructure $priceTable
      * @return bool
      * @throws \Exception
@@ -156,8 +154,6 @@ class CustomOptionPriceModifier implements PriceModifierInterface
     }
 
     /**
-     * Get connection.
-     *
      * @return \Magento\Framework\DB\Adapter\AdapterInterface
      */
     private function getConnection()
@@ -215,7 +211,7 @@ class CustomOptionPriceModifier implements PriceModifierInterface
         } else {
             $select->joinLeft(
                 ['otps' => $this->getTable('catalog_product_option_type_price')],
-                'otps.option_type_id = otpd.option_type_id AND otps.store_id = cwd.default_store_id',
+                'otps.option_type_id = otpd.option_type_id AND otpd.store_id = cwd.default_store_id',
                 []
             );
 
@@ -377,8 +373,6 @@ class CustomOptionPriceModifier implements PriceModifierInterface
     }
 
     /**
-     * Get select for update.
-     *
      * @param string $sourceTable
      * @return \Magento\Framework\DB\Select
      */
@@ -408,8 +402,6 @@ class CustomOptionPriceModifier implements PriceModifierInterface
     }
 
     /**
-     * Get table name.
-     *
      * @param string $tableName
      * @return string
      */
@@ -419,8 +411,6 @@ class CustomOptionPriceModifier implements PriceModifierInterface
     }
 
     /**
-     * Is price scope global.
-     *
      * @return bool
      */
     private function isPriceGlobal(): bool

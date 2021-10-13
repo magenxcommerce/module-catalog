@@ -5,13 +5,13 @@
 
 define([
     'jquery',
-    'mage/mage',
-    'validation'
+    'mage/mage'
 ], function ($) {
     'use strict';
 
     return function (config, element) {
-        $(element).mage('form').validation({
+
+        $(element).mage('form').mage('validation', {
             validationUrl: config.validationUrl
         });
     };

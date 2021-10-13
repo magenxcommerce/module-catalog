@@ -1,5 +1,6 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -8,14 +9,11 @@ namespace Magento\Catalog\Controller\Product;
 use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
 use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Catalog\Controller\Product as ProductAction;
 
 /**
- * View a product on storefront. Needs to be accessible by POST because of the store switching
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * View a product on storefront. Needs to be accessible by POST because of the store switching.
  */
 class View extends ProductAction implements HttpGetActionInterface, HttpPostActionInterface
 {
@@ -35,41 +33,23 @@ class View extends ProductAction implements HttpGetActionInterface, HttpPostActi
     protected $resultPageFactory;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var \Magento\Framework\Json\Helper\Data
-     */
-    private $jsonHelper;
-
-    /**
      * Constructor
      *
      * @param Context $context
      * @param \Magento\Catalog\Helper\Product\View $viewHelper
      * @param \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory
      * @param PageFactory $resultPageFactory
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\Json\Helper\Data $jsonHelper
      */
     public function __construct(
         Context $context,
         \Magento\Catalog\Helper\Product\View $viewHelper,
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
-        PageFactory $resultPageFactory,
-        \Psr\Log\LoggerInterface $logger = null,
-        \Magento\Framework\Json\Helper\Data $jsonHelper = null
+        PageFactory $resultPageFactory
     ) {
-        parent::__construct($context);
         $this->viewHelper = $viewHelper;
         $this->resultForwardFactory = $resultForwardFactory;
         $this->resultPageFactory = $resultPageFactory;
-        $this->logger = $logger ?: ObjectManager::getInstance()
-            ->get(\Psr\Log\LoggerInterface::class);
-        $this->jsonHelper = $jsonHelper ?: ObjectManager::getInstance()
-            ->get(\Magento\Framework\Json\Helper\Data::class);
+        parent::__construct($context);
     }
 
     /**
@@ -104,23 +84,21 @@ class View extends ProductAction implements HttpGetActionInterface, HttpPostActi
 
         if ($this->getRequest()->isPost() && $this->getRequest()->getParam(self::PARAM_NAME_URL_ENCODED)) {
             $product = $this->_initProduct();
-
+            
             if (!$product) {
                 return $this->noProductRedirect();
             }
-
+            
             if ($specifyOptions) {
                 $notice = $product->getTypeInstance()->getSpecifyOptionMessage();
                 $this->messageManager->addNoticeMessage($notice);
             }
-
+            
             if ($this->getRequest()->isAjax()) {
                 $this->getResponse()->representJson(
-                    $this->jsonHelper->jsonEncode(
-                        [
-                            'backUrl' => $this->_redirect->getRedirectUrl()
-                        ]
-                    )
+                    $this->_objectManager->get(\Magento\Framework\Json\Helper\Data::class)->jsonEncode([
+                        'backUrl' => $this->_redirect->getRedirectUrl()
+                    ])
                 );
                 return;
             }
@@ -142,7 +120,7 @@ class View extends ProductAction implements HttpGetActionInterface, HttpPostActi
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             return $this->noProductRedirect();
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->_objectManager->get(\Psr\Log\LoggerInterface::class)->critical($e);
             $resultForward = $this->resultForwardFactory->create();
             $resultForward->forward('noroute');
             return $resultForward;

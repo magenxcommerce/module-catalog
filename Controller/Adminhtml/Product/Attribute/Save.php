@@ -194,9 +194,25 @@ class Save extends Attribute implements HttpPostActionInterface
             $attributeCode = $model && $model->getId()
                 ? $model->getAttributeCode()
                 : $this->getRequest()->getParam('attribute_code');
-            if (!$attributeCode) {
-                $frontendLabel = $this->getRequest()->getParam('frontend_label')[0] ?? '';
-                $attributeCode = $this->generateCode($frontendLabel);
+            $attributeCode = $attributeCode ?: $this->generateCode($this->getRequest()->getParam('frontend_label')[0]);
+            if (strlen($attributeCode) > 0) {
+                $validatorAttrCode = new \Zend_Validate_Regex(
+                    ['pattern' => '/^[a-z\x{600}-\x{6FF}][a-z\x{600}-\x{6FF}_0-9]{0,30}$/u']
+                );
+                if (!$validatorAttrCode->isValid($attributeCode)) {
+                    $this->messageManager->addErrorMessage(
+                        __(
+                            'Attribute code "%1" is invalid. Please use only letters (a-z), ' .
+                            'numbers (0-9) or underscore(_) in this field, first character should be a letter.',
+                            $attributeCode
+                        )
+                    );
+                    return $this->returnResult(
+                        'catalog/*/edit',
+                        ['attribute_id' => $attributeId, '_current' => true],
+                        ['error' => true]
+                    );
+                }
             }
             $data['attribute_code'] = $attributeCode;
 
@@ -224,7 +240,7 @@ class Save extends Attribute implements HttpPostActionInterface
                     return $this->returnResult('catalog/*/', [], ['error' => true]);
                 }
                 // entity type check
-                if ($model->getEntityTypeId() != $this->_entityTypeId || array_key_exists('backend_model', $data)) {
+                if ($model->getEntityTypeId() != $this->_entityTypeId) {
                     $this->messageManager->addErrorMessage(__('We can\'t update the attribute.'));
                     $this->_session->setAttributeData($data);
                     return $this->returnResult('catalog/*/', [], ['error' => true]);
@@ -243,13 +259,13 @@ class Save extends Attribute implements HttpPostActionInterface
                 $data['backend_model'] = $this->productHelper->getAttributeBackendModelByInputType(
                     $data['frontend_input']
                 );
-
-                if ($model->getIsUserDefined() === null) {
-                    $data['backend_type'] = $model->getBackendTypeByInput($data['frontend_input']);
-                }
             }
 
             $data += ['is_filterable' => 0, 'is_filterable_in_search' => 0];
+
+            if ($model->getIsUserDefined() === null || $model->getIsUserDefined() != 0) {
+                $data['backend_type'] = $model->getBackendTypeByInput($data['frontend_input']);
+            }
 
             $defaultValueField = $model->getDefaultValueByInput($data['frontend_input']);
             if ($defaultValueField) {
@@ -260,8 +276,6 @@ class Save extends Attribute implements HttpPostActionInterface
                 // Unset attribute field for system attributes
                 unset($data['apply_to']);
             }
-
-            unset($data['entity_type_id']);
 
             $model->addData($data);
 

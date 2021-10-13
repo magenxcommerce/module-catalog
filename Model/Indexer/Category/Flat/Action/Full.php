@@ -79,7 +79,6 @@ class Full extends \Magento\Catalog\Model\Indexer\Category\Flat\AbstractAction
                     }
                     $category['store_id'] = $store->getId();
                     $data[] = $this->prepareValuesToInsert(
-                        // phpcs:ignore Magento2.Performance.ForeachArrayMerge
                         array_merge($category, $attributesData[$category[$linkField]])
                     );
                 }
@@ -184,7 +183,7 @@ class Full extends \Magento\Catalog\Model\Indexer\Category\Flat\AbstractAction
         foreach ($this->storeManager->getStores() as $store) {
             $actualStoreTables[] = sprintf(
                 '%s_store_%s',
-                $this->connection->getTableName($this->getTableName('catalog_category_flat')),
+                $this->connection->getTableName('catalog_category_flat'),
                 $store->getId()
             );
         }
@@ -200,7 +199,7 @@ class Full extends \Magento\Catalog\Model\Indexer\Category\Flat\AbstractAction
     private function deleteAbandonedStoreCategoryFlatTables(): void
     {
         $existentTables = $this->connection->getTables(
-            $this->connection->getTableName($this->getTableName('catalog_category_flat_store_%'))
+            $this->connection->getTableName('catalog_category_flat_store_%')
         );
         $actualStoreTables = $this->getActualStoreTablesForCategoryFlat();
 

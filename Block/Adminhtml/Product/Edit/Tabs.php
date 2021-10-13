@@ -8,7 +8,7 @@ namespace Magento\Catalog\Block\Adminhtml\Product\Edit;
 
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Block\Widget\Accordion;
-use Magento\Backend\Block\Widget\Tabs as WidgetTabs;
+use Magento\Backend\Block\Widget\Tabs as WigetTabs;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Catalog\Helper\Catalog;
 use Magento\Catalog\Helper\Data;
@@ -22,7 +22,7 @@ use Magento\Framework\Translate\InlineInterface;
  * Admin product edit tabs
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Tabs extends WidgetTabs
+class Tabs extends WigetTabs
 {
     const BASIC_TAB_GROUP_CODE = 'basic';
 
@@ -109,7 +109,7 @@ class Tabs extends WidgetTabs
     }
 
     /**
-     * @inheritdoc
+     * @return void
      */
     protected function _construct()
     {
@@ -119,8 +119,6 @@ class Tabs extends WidgetTabs
     }
 
     /**
-     * Get group collection.
-     *
      * @param int $attributeSetId
      * @return \Magento\Eav\Model\ResourceModel\Entity\Attribute\Group\Collection
      */
@@ -133,11 +131,10 @@ class Tabs extends WidgetTabs
     }
 
     /**
-     * @inheritdoc
+     * @return $this
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @SuppressWarnings(PHPMD.NPathComplexity)
-     * @SuppressWarnings(PHPMD.RequestAwareBlockMethod)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareLayout()
     {
@@ -318,8 +315,6 @@ class Tabs extends WidgetTabs
     }
 
     /**
-     * Set attribute tab block.
-     *
      * @param string $attributeTabBlock
      * @return $this
      */
@@ -342,8 +337,6 @@ class Tabs extends WidgetTabs
     }
 
     /**
-     * Get accordion.
-     *
      * @param string $parentTab
      * @return string
      */

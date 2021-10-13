@@ -5,8 +5,6 @@
  */
 namespace Magento\Catalog\Model;
 
-use Magento\Framework\File\Uploader;
-
 /**
  * Catalog image uploader
  */
@@ -69,9 +67,14 @@ class ImageUploader
     /**
      * List of allowed image mime types
      *
-     * @var string[]
+     * @var array
      */
-    private $allowedMimeTypes;
+    private $allowedMimeTypes = [
+        'image/jpg',
+        'image/jpeg',
+        'image/gif',
+        'image/png',
+    ];
 
     /**
      * ImageUploader constructor
@@ -84,7 +87,6 @@ class ImageUploader
      * @param string $baseTmpPath
      * @param string $basePath
      * @param string[] $allowedExtensions
-     * @param string[] $allowedMimeTypes
      */
     public function __construct(
         \Magento\MediaStorage\Helper\File\Storage\Database $coreFileStorageDatabase,
@@ -94,8 +96,7 @@ class ImageUploader
         \Psr\Log\LoggerInterface $logger,
         $baseTmpPath,
         $basePath,
-        $allowedExtensions,
-        $allowedMimeTypes = []
+        $allowedExtensions
     ) {
         $this->coreFileStorageDatabase = $coreFileStorageDatabase;
         $this->mediaDirectory = $filesystem->getDirectoryWrite(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA);
@@ -105,7 +106,6 @@ class ImageUploader
         $this->baseTmpPath = $baseTmpPath;
         $this->basePath = $basePath;
         $this->allowedExtensions = $allowedExtensions;
-        $this->allowedMimeTypes = $allowedMimeTypes;
     }
 
     /**
@@ -165,7 +165,7 @@ class ImageUploader
     }
 
     /**
-     * Retrieve allowed extensions
+     * Retrieve base path
      *
      * @return string[]
      */
@@ -191,24 +191,17 @@ class ImageUploader
      * Checking file for moving and move it
      *
      * @param string $imageName
-     * @param bool $returnRelativePath
+     *
      * @return string
      *
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function moveFileFromTmp($imageName, $returnRelativePath = false)
+    public function moveFileFromTmp($imageName)
     {
         $baseTmpPath = $this->getBaseTmpPath();
         $basePath = $this->getBasePath();
 
-        $baseImagePath = $this->getFilePath(
-            $basePath,
-            Uploader::getNewFileName(
-                $this->mediaDirectory->getAbsolutePath(
-                    $this->getFilePath($basePath, $imageName)
-                )
-            )
-        );
+        $baseImagePath = $this->getFilePath($basePath, $imageName);
         $baseTmpImagePath = $this->getFilePath($baseTmpPath, $imageName);
 
         try {
@@ -221,14 +214,12 @@ class ImageUploader
                 $baseImagePath
             );
         } catch (\Exception $e) {
-            $this->logger->critical($e);
             throw new \Magento\Framework\Exception\LocalizedException(
-                __('Something went wrong while saving the file(s).'),
-                $e
+                __('Something went wrong while saving the file(s).')
             );
         }
 
-        return $returnRelativePath ? $baseImagePath : $imageName;
+        return $imageName;
     }
 
     /**
@@ -278,8 +269,7 @@ class ImageUploader
             } catch (\Exception $e) {
                 $this->logger->critical($e);
                 throw new \Magento\Framework\Exception\LocalizedException(
-                    __('Something went wrong while saving the file(s).'),
-                    $e
+                    __('Something went wrong while saving the file(s).')
                 );
             }
         }

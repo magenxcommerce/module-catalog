@@ -139,7 +139,7 @@ abstract class AbstractFilter extends \Magento\Framework\DataObject implements F
     }
 
     /**
-     * Get filter items count
+     * Get fiter items count
      *
      * @return int
      */

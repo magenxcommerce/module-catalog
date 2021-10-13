@@ -11,12 +11,6 @@
  */
 namespace Magento\Catalog\Block\Adminhtml\Product\Edit\Tab\Attributes;
 
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\Json\Helper\Data as JsonHelper;
-
-/**
- * Admin product attribute search block
- */
 class Search extends \Magento\Backend\Block\Widget
 {
     /**
@@ -42,20 +36,17 @@ class Search extends \Magento\Backend\Block\Widget
      * @param \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $collectionFactory
      * @param \Magento\Framework\Registry $registry
      * @param array $data
-     * @param JsonHelper|null $jsonHelper
      */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\DB\Helper $resourceHelper,
         \Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory $collectionFactory,
         \Magento\Framework\Registry $registry,
-        array $data = [],
-        ?JsonHelper $jsonHelper = null
+        array $data = []
     ) {
         $this->_resourceHelper = $resourceHelper;
         $this->_collectionFactory = $collectionFactory;
         $this->_coreRegistry = $registry;
-        $data['jsonHelper'] = $jsonHelper ?? ObjectManager::getInstance()->get(JsonHelper::class);
         parent::__construct($context, $data);
     }
 
@@ -71,15 +62,13 @@ class Search extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get selector options
-     *
      * @return array
      */
     public function getSelectorOptions()
     {
         $templateId = $this->_coreRegistry->registry('product')->getAttributeSetId();
         return [
-            'source' => $this->escapeUrl($this->getUrl('catalog/product/suggestAttributes')),
+            'source' => $this->getUrl('catalog/product/suggestAttributes'),
             'minLength' => 0,
             'ajaxOptions' => ['data' => ['template_id' => $templateId]],
             'template' => '[data-template-for="product-attribute-search-' . $this->getGroupId() . '"]',
@@ -121,8 +110,6 @@ class Search extends \Magento\Backend\Block\Widget
     }
 
     /**
-     * Get add attribute url
-     *
      * @return string
      */
     public function getAddAttributeUrl()

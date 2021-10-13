@@ -3,10 +3,18 @@
  * See COPYING.txt for license details.
  */
 
-define([
-    'jquery',
-    'jquery-ui-modules/widget'
-], function ($) {
+(function (factory) {
+    'use strict';
+
+    if (typeof define === 'function' && define.amd) {
+        define([
+            'jquery',
+            'jquery/ui'
+        ], factory);
+    } else {
+        factory(jQuery);
+    }
+}(function ($) {
     'use strict';
 
     $.widget('mage.gallery', {
@@ -41,4 +49,4 @@ define([
     });
 
     return $.mage.gallery;
-});
+}));

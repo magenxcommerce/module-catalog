@@ -11,16 +11,14 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Category
- *
  * @package Magento\Catalog\Block\Rss
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Category extends \Magento\Framework\View\Element\AbstractBlock implements DataProviderInterface
 {
-   /**
-    * @var \Magento\Catalog\Model\CategoryFactory
-    */
+    /**
+     * @var \Magento\Catalog\Model\CategoryFactory
+     */
     protected $categoryFactory;
 
     /**
@@ -52,6 +50,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
      * @var CategoryRepositoryInterface
      */
     protected $categoryRepository;
+
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
@@ -84,8 +83,6 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Set Block cache key
-     *
      * @return void
      */
     protected function _construct()
@@ -100,9 +97,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Get info about category by category id
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getRssData()
     {
@@ -121,9 +116,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
         $newUrl = $category->getUrl();
         $title = $category->getName();
         $data = ['title' => $title, 'description' => $title, 'link' => $newUrl, 'charset' => 'UTF-8'];
-        $attributes = $this->_viewConfig
-            ->getViewConfig()
-            ->getMediaAttributes('Magento_Catalog', $this->imageHelper::MEDIA_TYPE_CONFIG_NODE, 'rss_thumbnail');
+
         /** @var $product \Magento\Catalog\Model\Product */
         foreach ($this->rssModel->getProductCollection($category, $this->getStoreId()) as $product) {
             $product->setAllowedInRss(true);
@@ -137,7 +130,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
 
             $description = '
                     <table><tr>
-                        <td><a href="%s"><img src="%s" border="0" align="left" height="%s" width="%s"></a></td>
+                        <td><a href="%s"><img src="%s" border="0" align="left" height="75" width="75"></a></td>
                         <td  style="text-decoration:none;">%s %s</td>
                     </tr></table>
                 ';
@@ -146,8 +139,6 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
                 $description,
                 $product->getProductUrl(),
                 $this->imageHelper->init($product, 'rss_thumbnail')->getUrl(),
-                isset($attributes['height']) ? $attributes['height'] : 75,
-                isset($attributes['width']) ? $attributes['width'] : 75,
                 $product->getDescription(),
                 $product->getAllowedPriceInRss() ? $this->renderPriceHtml($product) : ''
             );
@@ -196,8 +187,6 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Get current Store Id
-     *
      * @return int
      */
     protected function getStoreId()
@@ -210,8 +199,6 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Cache lifetime for RSS feed
-     *
      * @return int
      */
     public function getCacheLifetime()
@@ -220,9 +207,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Retrieve rss feed enable for category page
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isAllowed()
     {
@@ -233,8 +218,6 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Get category feed collection
-     *
      * @return array
      */
     public function getFeeds()
@@ -274,9 +257,7 @@ class Category extends \Magento\Framework\View\Element\AbstractBlock implements 
     }
 
     /**
-     * Check isAuthRequired Required
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isAuthRequired()
     {

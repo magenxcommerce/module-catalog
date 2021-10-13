@@ -7,41 +7,26 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Model\Indexer\Product\Eav\Action;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\Indexer\Product\Eav\AbstractAction;
 use Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher;
-use Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\BatchSizeCalculator;
-use Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\DecimalFactory;
-use Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\SourceFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Framework\DB\Query\BatchIteratorInterface;
-use Magento\Framework\DB\Query\Generator as QueryGenerator;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Indexer\BatchProviderInterface;
-use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Full reindex action
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Full extends AbstractAction
+class Full extends \Magento\Catalog\Model\Indexer\Product\Eav\AbstractAction
 {
     /**
-     * @var MetadataPool
+     * @var \Magento\Framework\EntityManager\MetadataPool
      */
     private $metadataPool;
 
     /**
-     * @var BatchProviderInterface
+     * @var \Magento\Framework\Indexer\BatchProviderInterface
      */
     private $batchProvider;
 
     /**
-     * @var BatchSizeCalculator
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\BatchSizeCalculator
      */
     private $batchSizeCalculator;
 
@@ -51,53 +36,43 @@ class Full extends AbstractAction
     private $activeTableSwitcher;
 
     /**
-     * @var ScopeConfigInterface
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
      */
     private $scopeConfig;
 
     /**
-     * @var QueryGenerator|null
-     */
-    private $batchQueryGenerator;
-
-    /**
-     * @param DecimalFactory $eavDecimalFactory
-     * @param SourceFactory $eavSourceFactory
-     * @param MetadataPool|null $metadataPool
-     * @param BatchProviderInterface|null $batchProvider
-     * @param BatchSizeCalculator $batchSizeCalculator
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\DecimalFactory $eavDecimalFactory
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\SourceFactory $eavSourceFactory
+     * @param \Magento\Framework\EntityManager\MetadataPool|null $metadataPool
+     * @param \Magento\Framework\Indexer\BatchProviderInterface|null $batchProvider
+     * @param \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\BatchSizeCalculator $batchSizeCalculator
      * @param ActiveTableSwitcher|null $activeTableSwitcher
-     * @param ScopeConfigInterface|null $scopeConfig
-     * @param QueryGenerator|null $batchQueryGenerator
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface|null $scopeConfig
      */
     public function __construct(
-        DecimalFactory $eavDecimalFactory,
-        SourceFactory $eavSourceFactory,
-        MetadataPool $metadataPool = null,
-        BatchProviderInterface $batchProvider = null,
-        BatchSizeCalculator $batchSizeCalculator = null,
+        \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\DecimalFactory $eavDecimalFactory,
+        \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\SourceFactory $eavSourceFactory,
+        \Magento\Framework\EntityManager\MetadataPool $metadataPool = null,
+        \Magento\Framework\Indexer\BatchProviderInterface $batchProvider = null,
+        \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\BatchSizeCalculator $batchSizeCalculator = null,
         ActiveTableSwitcher $activeTableSwitcher = null,
-        ScopeConfigInterface $scopeConfig = null,
-        QueryGenerator $batchQueryGenerator = null
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig = null
     ) {
-        $this->scopeConfig = $scopeConfig ?: ObjectManager::getInstance()->get(
-            ScopeConfigInterface::class
+        $this->scopeConfig = $scopeConfig ?: \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\Framework\App\Config\ScopeConfigInterface::class
         );
         parent::__construct($eavDecimalFactory, $eavSourceFactory, $scopeConfig);
-        $this->metadataPool = $metadataPool ?: ObjectManager::getInstance()->get(
-            MetadataPool::class
+        $this->metadataPool = $metadataPool ?: \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\Framework\EntityManager\MetadataPool::class
         );
-        $this->batchProvider = $batchProvider ?: ObjectManager::getInstance()->get(
-            BatchProviderInterface::class
+        $this->batchProvider = $batchProvider ?: \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\Framework\Indexer\BatchProviderInterface::class
         );
-        $this->batchSizeCalculator = $batchSizeCalculator ?: ObjectManager::getInstance()->get(
-            BatchSizeCalculator::class
+        $this->batchSizeCalculator = $batchSizeCalculator ?: \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\Catalog\Model\ResourceModel\Product\Indexer\Eav\BatchSizeCalculator::class
         );
-        $this->activeTableSwitcher = $activeTableSwitcher ?: ObjectManager::getInstance()->get(
+        $this->activeTableSwitcher = $activeTableSwitcher ?: \Magento\Framework\App\ObjectManager::getInstance()->get(
             ActiveTableSwitcher::class
-        );
-        $this->batchQueryGenerator = $batchQueryGenerator ?: ObjectManager::getInstance()->get(
-            QueryGenerator::class
         );
     }
 
@@ -106,10 +81,10 @@ class Full extends AbstractAction
      *
      * @param array|int|null $ids
      * @return void
-     * @throws LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function execute($ids = null): void
+    public function execute($ids = null)
     {
         if (!$this->isEavIndexerEnabled()) {
             return;
@@ -119,21 +94,20 @@ class Full extends AbstractAction
                 $connection = $indexer->getConnection();
                 $mainTable = $this->activeTableSwitcher->getAdditionalTableName($indexer->getMainTable());
                 $connection->truncateTable($mainTable);
-                $entityMetadata = $this->metadataPool->getMetadata(ProductInterface::class);
-
-                $select = $connection->select();
-                $select->distinct(true);
-                $select->from(['e' => $entityMetadata->getEntityTable()], $entityMetadata->getIdentifierField());
-
-                $batchQueries = $this->batchQueryGenerator->generate(
+                $entityMetadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
+                $batches = $this->batchProvider->getBatches(
+                    $connection,
+                    $entityMetadata->getEntityTable(),
                     $entityMetadata->getIdentifierField(),
-                    $select,
-                    $this->batchSizeCalculator->estimateBatchSize($connection, $indexerName),
-                    BatchIteratorInterface::NON_UNIQUE_FIELD_ITERATOR
+                    $this->batchSizeCalculator->estimateBatchSize($connection, $indexerName)
                 );
 
-                foreach ($batchQueries as $query) {
-                    $entityIds = $connection->fetchCol($query);
+                foreach ($batches as $batch) {
+                    /** @var \Magento\Framework\DB\Select $select */
+                    $select = $connection->select();
+                    $select->distinct(true);
+                    $select->from(['e' => $entityMetadata->getEntityTable()], $entityMetadata->getIdentifierField());
+                    $entityIds = $this->batchProvider->getBatchIds($connection, $select, $batch);
                     if (!empty($entityIds)) {
                         $indexer->reindexEntities($this->processRelations($indexer, $entityIds, true));
                         $this->syncData($indexer, $mainTable);
@@ -142,14 +116,14 @@ class Full extends AbstractAction
                 $this->activeTableSwitcher->switchTable($indexer->getConnection(), [$indexer->getMainTable()]);
             }
         } catch (\Exception $e) {
-            throw new LocalizedException(__($e->getMessage()), $e);
+            throw new \Magento\Framework\Exception\LocalizedException(__($e->getMessage()), $e);
         }
     }
 
     /**
      * @inheritdoc
      */
-    protected function syncData($indexer, $destinationTable, $ids = null): void
+    protected function syncData($indexer, $destinationTable, $ids = null)
     {
         $connection = $indexer->getConnection();
         $connection->beginTransaction();
@@ -162,7 +136,7 @@ class Full extends AbstractAction
                 $select,
                 $destinationTable,
                 $targetColumns,
-                AdapterInterface::INSERT_ON_DUPLICATE
+                \Magento\Framework\DB\Adapter\AdapterInterface::INSERT_ON_DUPLICATE
             );
             $connection->query($query);
             $connection->commit();
@@ -181,7 +155,7 @@ class Full extends AbstractAction
     {
         $eavIndexerStatus = $this->scopeConfig->getValue(
             self::ENABLE_EAV_INDEXER,
-            ScopeInterface::SCOPE_STORE
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
 
         return (bool)$eavIndexerStatus;

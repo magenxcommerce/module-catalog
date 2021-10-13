@@ -3,8 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
-/** @var $block Magento\Catalog\Block\FrontendStorageManager */
+// @codingStandardsIgnoreFile
 ?>
 <script type="text/x-magento-init">
         {
@@ -13,8 +12,9 @@
                     "components": {
                         "storage-manager": {
                             "component": "Magento_Catalog/js/storage-manager",
-                            "appendTo": "<?= $block->escapeJs($block->getParentComponentName()) ?>",
-                            "storagesConfiguration" : <?= /* @noEscape */ $block->getConfigurationJson() ?>
+                            "appendTo": "<?= /* @escapeNotVerified */ $block->getParentComponentName() ?>",
+                            "storagesConfiguration" :
+                                         <?= /* @escapeNotVerified */ $block->getConfigurationJson() ?>
                         }
                     }
                 }

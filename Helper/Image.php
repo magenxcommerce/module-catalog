@@ -6,7 +6,6 @@
 namespace Magento\Catalog\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\View\Element\Block\ArgumentInterface;
 
 /**
  * Catalog image helper
@@ -15,7 +14,7 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @since 100.0.2
  */
-class Image extends AbstractHelper implements ArgumentInterface
+class Image extends AbstractHelper
 {
     /**
      * Media config node
@@ -213,29 +212,31 @@ class Image extends AbstractHelper implements ArgumentInterface
 
         // Set 'keep frame' flag
         $frame = $this->getFrame();
-        $this->_getModel()->setKeepFrame($frame);
+        if (!empty($frame)) {
+            $this->_getModel()->setKeepFrame($frame);
+        }
 
         // Set 'constrain only' flag
         $constrain = $this->getAttribute('constrain');
-        if (null !== $constrain) {
+        if (!empty($constrain)) {
             $this->_getModel()->setConstrainOnly($constrain);
         }
 
         // Set 'keep aspect ratio' flag
         $aspectRatio = $this->getAttribute('aspect_ratio');
-        if (null !== $aspectRatio) {
+        if (!empty($aspectRatio)) {
             $this->_getModel()->setKeepAspectRatio($aspectRatio);
         }
 
         // Set 'transparency' flag
         $transparency = $this->getAttribute('transparency');
-        if (null !== $transparency) {
+        if (!empty($transparency)) {
             $this->_getModel()->setKeepTransparency($transparency);
         }
 
         // Set background color
         $background = $this->getAttribute('background');
-        if (null !== $background) {
+        if (!empty($background)) {
             $this->_getModel()->setBackgroundColor($background);
         }
 
@@ -297,7 +298,6 @@ class Image extends AbstractHelper implements ArgumentInterface
      *
      * @param int $quality
      * @return $this
-     * @deprecated 103.0.1
      */
     public function setQuality($quality)
     {
@@ -406,8 +406,7 @@ class Image extends AbstractHelper implements ArgumentInterface
 
     /**
      * Add watermark to image
-     *
-     * Size param in format 100x200
+     * size param in format 100x200
      *
      * @param string $fileName
      * @param string $position
@@ -534,8 +533,6 @@ class Image extends AbstractHelper implements ArgumentInterface
     }
 
     /**
-     * Save changes
-     *
      * @return $this
      */
     public function save()
@@ -556,8 +553,6 @@ class Image extends AbstractHelper implements ArgumentInterface
     }
 
     /**
-     * Getter for placeholder url
-     *
      * @param null|string $placeholder
      * @return string
      */
@@ -660,8 +655,7 @@ class Image extends AbstractHelper implements ArgumentInterface
 
     /**
      * Set watermark size
-     *
-     * Param size in format 100x200
+     * param size in format 100x200
      *
      * @param string $size
      * @return $this
@@ -763,7 +757,7 @@ class Image extends AbstractHelper implements ArgumentInterface
     protected function parseSize($string)
     {
         $size = explode('x', strtolower($string));
-        if (count($size) == 2) {
+        if (sizeof($size) == 2) {
             return ['width' => $size[0] > 0 ? $size[0] : null, 'height' => $size[1] > 0 ? $size[1] : null];
         }
         return false;

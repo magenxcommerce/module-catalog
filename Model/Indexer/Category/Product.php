@@ -137,11 +137,10 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 
         /** @var Product\Action\Rows $action */
         $action = $this->rowsActionFactory->create();
-        if ($indexer->isScheduled()) {
+        if ($indexer->isWorking()) {
             $action->execute($ids, true);
-        } else {
-            $action->execute($ids);
         }
+        $action->execute($ids);
 
         return $this;
     }

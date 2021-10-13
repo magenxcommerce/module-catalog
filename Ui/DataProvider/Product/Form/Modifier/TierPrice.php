@@ -45,7 +45,7 @@ class TierPrice extends AbstractModifier
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @since 102.0.0
      */
     public function modifyData(array $data)
@@ -54,11 +54,8 @@ class TierPrice extends AbstractModifier
     }
 
     /**
-     * Add tier price info to meta array.
-     *
+     * {@inheritdoc}
      * @since 102.0.0
-     * @param array $meta
-     * @return array
      */
     public function modifyMeta(array $meta)
     {
@@ -115,7 +112,7 @@ class TierPrice extends AbstractModifier
                             'dataType' => Price::NAME,
                             'component' => 'Magento_Ui/js/form/components/group',
                             'label' => __('Price'),
-                            'showLabel' => false,
+                            'enableLabel' => true,
                             'dataScope' => '',
                             'additionalClasses' => 'control-grouped',
                             'sortOrder' => isset($priceMeta['arguments']['data']['config']['sortOrder'])
@@ -138,10 +135,6 @@ class TierPrice extends AbstractModifier
                                             . ProductAttributeInterface::CODE_TIER_PRICE_FIELD_PRICE,
                                         ProductPriceOptionsInterface::VALUE_PERCENT => '${ $.parentName }.'
                                             . ProductAttributeInterface::CODE_TIER_PRICE_FIELD_PERCENTAGE_VALUE,
-                                        '__disableTmpl' => [
-                                            ProductPriceOptionsInterface::VALUE_FIXED => false,
-                                            ProductPriceOptionsInterface::VALUE_PERCENT => false,
-                                        ],
                                     ],
                                 ],
                             ],
@@ -157,8 +150,8 @@ class TierPrice extends AbstractModifier
                                     'dataType' => Price::NAME,
                                     'addbefore' => '%',
                                     'validation' => [
-                                        'required-entry' => true,
-                                        'validate-positive-percent-decimal' => true
+                                        'validate-number' => true,
+                                        'less-than-equals-to' => 100
                                     ],
                                     'visible' => $firstOption
                                         && $firstOption['value'] == ProductPriceOptionsInterface::VALUE_PERCENT,

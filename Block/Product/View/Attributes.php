@@ -16,8 +16,6 @@ use Magento\Framework\Phrase;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 
 /**
- * Attributes attributes block
- *
  * @api
  * @since 100.0.2
  */
@@ -58,8 +56,6 @@ class Attributes extends \Magento\Framework\View\Element\Template
     }
 
     /**
-     * Returns a Product
-     *
      * @return Product
      */
     public function getProduct()
@@ -92,9 +88,9 @@ class Attributes extends \Magento\Framework\View\Element\Template
                     $value = $this->priceCurrency->convertAndFormat($value);
                 }
 
-                if (is_string($value) && strlen(trim($value))) {
+                if (is_string($value) && strlen($value)) {
                     $data[$attribute->getAttributeCode()] = [
-                        'label' => $attribute->getStoreLabel(),
+                        'label' => __($attribute->getStoreLabel()),
                         'value' => $value,
                         'code' => $attribute->getAttributeCode(),
                     ];
@@ -110,7 +106,6 @@ class Attributes extends \Magento\Framework\View\Element\Template
      * @param \Magento\Eav\Model\Entity\Attribute\AbstractAttribute $attribute
      * @param array $excludeAttr
      * @return bool
-     * @since 103.0.0
      */
     protected function isVisibleOnFrontend(
         \Magento\Eav\Model\Entity\Attribute\AbstractAttribute $attribute,

@@ -12,7 +12,4 @@
         <data key="from">10</data>
         <data key="to">100</data>
     </entity>
-    <entity name="ProductPerPage">
-        <data key="productCount">1</data>
-    </entity>
 </entities>

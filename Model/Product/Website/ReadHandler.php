@@ -9,9 +9,6 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Website\Link as ProductWebsiteLink;
 use Magento\Framework\EntityManager\Operation\ExtensionInterface;
 
-/**
- * Add websites ids to product extension attributes.
- */
 class ReadHandler implements ExtensionInterface
 {
     /**
@@ -21,7 +18,7 @@ class ReadHandler implements ExtensionInterface
 
     /**
      * ReadHandler constructor.
-     * @param ProductWebsiteLink $productWebsiteLink
+     * @param ProductWebsiteLink $resourceModel
      */
     public function __construct(
         ProductWebsiteLink $productWebsiteLink
@@ -30,8 +27,6 @@ class ReadHandler implements ExtensionInterface
     }
 
     /**
-     * Add website ids to product extension attributes, if no set.
-     *
      * @param ProductInterface $product
      * @param array $arguments
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

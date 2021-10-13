@@ -113,28 +113,27 @@ class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
      */
     private function customizeFrontendLabels($meta)
     {
-        $labelConfigs = [];
-
         foreach ($this->storeRepository->getList() as $store) {
             $storeId = $store->getId();
 
             if (!$storeId) {
                 continue;
             }
-            $labelConfigs['frontend_label[' . $storeId . ']'] = $this->arrayManager->set(
-                'arguments/data/config',
-                [],
-                [
-                    'formElement' => Input::NAME,
-                    'componentType' => Field::NAME,
-                    'label' => $store->getName(),
-                    'dataType' => Text::NAME,
-                    'dataScope' => 'frontend_label[' . $storeId . ']'
-                ]
-            );
-        }
-        $meta['manage-titles']['children'] = $labelConfigs;
 
+            $meta['manage-titles']['children'] = [
+                'frontend_label[' . $storeId . ']' => $this->arrayManager->set(
+                    'arguments/data/config',
+                    [],
+                    [
+                        'formElement' => Input::NAME,
+                        'componentType' => Field::NAME,
+                        'label' => $store->getName(),
+                        'dataType' => Text::NAME,
+                        'dataScope' => 'frontend_label[' . $storeId . ']'
+                    ]
+                ),
+            ];
+        }
         return $meta;
     }
 

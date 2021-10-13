@@ -7,7 +7,7 @@ define([
     'jquery',
     'priceUtils',
     'priceOptions',
-    'jquery-ui-modules/widget'
+    'jquery/ui'
 ], function ($, utils) {
     'use strict';
 

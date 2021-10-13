@@ -9,16 +9,14 @@ namespace Magento\Catalog\Model\ProductRender;
 use Magento\Catalog\Api\Data\ProductRender\ImageInterface;
 
 /**
- * Product image renderer model.
+ * @inheritdoc
  */
 class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     ImageInterface
 {
     /**
-     * Set url to image.
-     *
      * @param string $url
-     * @return void
+     * @return @return void
      */
     public function setUrl($url)
     {
@@ -36,8 +34,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image code.
-     *
      * @return string
      */
     public function getCode()
@@ -46,8 +42,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image code.
-     *
      * @param string $code
      * @return void
      */
@@ -57,8 +51,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image height.
-     *
      * @param string $height
      * @return void
      */
@@ -68,8 +60,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image height.
-     *
      * @return float
      */
     public function getHeight()
@@ -78,8 +68,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image width.
-     *
      * @return float
      */
     public function getWidth()
@@ -88,8 +76,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image width.
-     *
      * @param string $width
      * @return void
      */
@@ -99,8 +85,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image label.
-     *
      * @return string
      */
     public function getLabel()
@@ -109,8 +93,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image label.
-     *
      * @param string $label
      * @return void
      */
@@ -120,8 +102,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image width after image resize.
-     *
      * @return float
      */
     public function getResizedWidth()
@@ -130,8 +110,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image width after image resize.
-     *
      * @param string $width
      * @return void
      */
@@ -141,8 +119,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Set image height after image resize.
-     *
      * @param string $height
      * @return void
      */
@@ -152,8 +128,6 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
     }
 
     /**
-     * Retrieve image height after image resize.
-     *
      * @return float
      */
     public function getResizedHeight()
@@ -175,7 +149,7 @@ class Image extends \Magento\Framework\Model\AbstractExtensibleModel implements
      * Set an extension attributes object.
      *
      * @param \Magento\Catalog\Api\Data\ProductRender\ImageExtensionInterface $extensionAttributes
-     * @return void
+     * @return $this
      */
     public function setExtensionAttributes(
         \Magento\Catalog\Api\Data\ProductRender\ImageExtensionInterface $extensionAttributes

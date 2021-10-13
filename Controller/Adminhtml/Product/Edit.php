@@ -1,17 +1,13 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 namespace Magento\Catalog\Controller\Adminhtml\Product;
 
 use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
-use Magento\Framework\App\ObjectManager;
 
-/**
- *  Edit product
- */
 class Edit extends \Magento\Catalog\Controller\Adminhtml\Product implements HttpGetActionInterface
 {
     /**
@@ -27,26 +23,17 @@ class Edit extends \Magento\Catalog\Controller\Adminhtml\Product implements Http
     protected $resultPageFactory;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Magento\Catalog\Controller\Adminhtml\Product\Builder $productBuilder
      * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Catalog\Controller\Adminhtml\Product\Builder $productBuilder,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager = null
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory
     ) {
         parent::__construct($context, $productBuilder);
         $this->resultPageFactory = $resultPageFactory;
-        $this->storeManager = $storeManager ?: ObjectManager::getInstance()
-            ->get(\Magento\Store\Model\StoreManagerInterface::class);
     }
 
     /**
@@ -56,13 +43,15 @@ class Edit extends \Magento\Catalog\Controller\Adminhtml\Product implements Http
      */
     public function execute()
     {
+        /** @var \Magento\Store\Model\StoreManagerInterface $storeManager */
+        $storeManager = $this->_objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
         $storeId = (int) $this->getRequest()->getParam('store', 0);
-        $store = $this->storeManager->getStore($storeId);
-        $this->storeManager->setCurrentStore($store->getCode());
+        $store = $storeManager->getStore($storeId);
+        $storeManager->setCurrentStore($store->getCode());
         $productId = (int) $this->getRequest()->getParam('id');
         $product = $this->productBuilder->build($this->getRequest());
 
-        if ($productId && !$product->getEntityId()) {
+        if (($productId && !$product->getEntityId())) {
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultRedirectFactory->create();
             $this->messageManager->addErrorMessage(__('This product doesn\'t exist.'));
@@ -83,8 +72,9 @@ class Edit extends \Magento\Catalog\Controller\Adminhtml\Product implements Http
         $resultPage->getConfig()->getTitle()->prepend(__('Products'));
         $resultPage->getConfig()->getTitle()->prepend($product->getName());
 
-        if (!$this->storeManager->isSingleStoreMode()
-            && ($switchBlock = $resultPage->getLayout()->getBlock('store_switcher'))
+        if (!$this->_objectManager->get(\Magento\Store\Model\StoreManagerInterface::class)->isSingleStoreMode()
+            &&
+            ($switchBlock = $resultPage->getLayout()->getBlock('store_switcher'))
         ) {
             $switchBlock->setDefaultStoreName(__('Default Values'))
                 ->setWebsiteIds($product->getWebsiteIds())

@@ -11,7 +11,6 @@ use Magento\Catalog\Model\ProductOptions\ConfigInterface;
 use Magento\Catalog\Model\Config\Source\Product\Options\Price as ProductOptionsPrice;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Stdlib\ArrayManager;
-use Magento\Ui\Component\Form\Element\Hidden;
 use Magento\Ui\Component\Modal;
 use Magento\Ui\Component\Container;
 use Magento\Ui\Component\DynamicRows;
@@ -351,7 +350,6 @@ class CustomOptions extends AbstractModifier
                                     [
                                         'targetName' => '${ $.ns }.${ $.ns }.' . static::GROUP_CUSTOM_OPTIONS_NAME
                                             . '.' . static::GRID_OPTIONS_NAME,
-                                        '__disableTmpl' => ['targetName' => false],
                                         'actionName' => 'processingAddChild',
                                     ]
                                 ]
@@ -389,10 +387,7 @@ class CustomOptions extends AbstractModifier
                         'collapsibleHeader' => true,
                         'sortOrder' => $sortOrder,
                         'dataProvider' => static::CUSTOM_OPTIONS_LISTING,
-                        'imports' => [
-                            'insertData' => '${ $.provider }:${ $.dataProvider }',
-                            '__disableTmpl' => ['insertData' => false],
-                        ],
+                        'imports' => ['insertData' => '${ $.provider }:${ $.dataProvider }'],
                     ],
                 ],
             ],
@@ -517,8 +512,7 @@ class CustomOptions extends AbstractModifier
                                     'exports' => true
                                 ],
                                 'exports' => [
-                                    'currentProductId' => '${ $.externalProvider }:params.current_product_id',
-                                    '__disableTmpl' => ['currentProductId' => false],
+                                    'currentProductId' => '${ $.externalProvider }:params.current_product_id'
                                 ]
                             ],
                         ],
@@ -564,8 +558,7 @@ class CustomOptions extends AbstractModifier
                                     'valueUpdate' => 'input',
                                     'imports' => [
                                         'optionId' => '${ $.provider }:${ $.parentScope }.option_id',
-                                        'isUseDefault' => '${ $.provider }:${ $.parentScope }.is_use_default',
-                                        '__disableTmpl' => ['optionId' => false, 'isUseDefault' => false],
+                                        'isUseDefault' => '${ $.provider }:${ $.parentScope }.is_use_default'
                                     ]
                                 ],
                             ],
@@ -644,8 +637,7 @@ class CustomOptions extends AbstractModifier
                         'imports' => [
                             'optionId' => '${ $.provider }:${ $.parentScope }.option_id',
                             'optionTypeId' => '${ $.provider }:${ $.parentScope }.option_type_id',
-                            'isUseDefault' => '${ $.provider }:${ $.parentScope }.is_use_default',
-                            '__disableTmpl' => ['optionId' => false, 'optionTypeId' => false, 'isUseDefault' => false],
+                            'isUseDefault' => '${ $.provider }:${ $.parentScope }.is_use_default'
                         ],
                         'service' => [
                             'template' => 'Magento_Catalog/form/element/helper/custom-option-type-service',
@@ -875,7 +867,7 @@ class CustomOptions extends AbstractModifier
                 'data' => [
                     'config' => [
                         'componentType' => Field::NAME,
-                        'formElement' => Hidden::NAME,
+                        'formElement' => Input::NAME,
                         'dataScope' => static::FIELD_SORT_ORDER_NAME,
                         'dataType' => Number::NAME,
                         'visible' => false,
@@ -1160,7 +1152,7 @@ class CustomOptions extends AbstractModifier
 
             if (count($group['optgroup'])) {
                 $options[] = $group;
-                $groupIndex++;
+                $groupIndex += 1;
             }
         }
 

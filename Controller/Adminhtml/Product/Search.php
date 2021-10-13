@@ -9,12 +9,11 @@ declare(strict_types=1);
 namespace Magento\Catalog\Controller\Adminhtml\Product;
 
 use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Framework\App\Action\HttpGetActionInterface;
 
 /**
  * Controller to search product for ui-select component
  */
-class Search extends \Magento\Backend\App\Action implements HttpGetActionInterface
+class Search extends \Magento\Backend\App\Action
 {
     /**
      * Authorization level of a basic admin session
@@ -49,8 +48,6 @@ class Search extends \Magento\Backend\App\Action implements HttpGetActionInterfa
     }
 
     /**
-     * Execute product search.
-     *
      * @return \Magento\Framework\Controller\ResultInterface
      */
     public function execute() : \Magento\Framework\Controller\ResultInterface

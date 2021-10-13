@@ -14,8 +14,6 @@ use Magento\Framework\EntityManager\HydratorPool;
 use Magento\Framework\App\ObjectManager;
 
 /**
- * Product custom options repository
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryInterface
@@ -85,7 +83,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getList($sku)
     {
@@ -94,7 +92,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getProductOptions(ProductInterface $product, $requiredOnly = false)
     {
@@ -106,7 +104,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get($sku, $optionId)
     {
@@ -119,7 +117,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete(\Magento\Catalog\Api\Data\ProductCustomOptionInterface $entity)
     {
@@ -128,7 +126,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function duplicate(
         \Magento\Catalog\Api\Data\ProductInterface $product,
@@ -144,7 +142,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function save(\Magento\Catalog\Api\Data\ProductCustomOptionInterface $option)
     {
@@ -186,7 +184,7 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteByIdentifier($sku, $optionId)
     {
@@ -211,8 +209,8 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     /**
      * Mark original values for removal if they are absent among new values
      *
-     * @param array $newValues
-     * @param \Magento\Catalog\Model\Product\Option\Value[] $originalValues
+     * @param $newValues array
+     * @param $originalValues \Magento\Catalog\Model\Product\Option\Value[]
      * @return array
      */
     protected function markRemovedValues($newValues, $originalValues)
@@ -236,8 +234,6 @@ class Repository implements \Magento\Catalog\Api\ProductCustomOptionRepositoryIn
     }
 
     /**
-     * Get hydrator pool
-     *
      * @return \Magento\Framework\EntityManager\HydratorPool
      * @deprecated 101.0.0
      */

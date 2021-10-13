@@ -9,8 +9,6 @@ namespace Magento\Catalog\Model;
 use Magento\Framework\Serialize\SerializerInterface;
 
 /**
- * Catalog config model.
- *
  * @SuppressWarnings(PHPMD.LongVariable)
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -135,7 +133,6 @@ class Config extends \Magento\Eav\Model\Config
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Eav\Model\Config $eavConfig
      * @param SerializerInterface $serializer
-     * @param array $attributesForPreload
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -152,8 +149,7 @@ class Config extends \Magento\Eav\Model\Config
         \Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\CollectionFactory $setCollectionFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Eav\Model\Config $eavConfig,
-        SerializerInterface $serializer = null,
-        $attributesForPreload = []
+        SerializerInterface $serializer = null
     ) {
         $this->_scopeConfig = $scopeConfig;
         $this->_configFactory = $configFactory;
@@ -169,9 +165,7 @@ class Config extends \Magento\Eav\Model\Config
             $entityTypeCollectionFactory,
             $cacheState,
             $universalFactory,
-            $serializer,
-            $scopeConfig,
-            $attributesForPreload
+            $serializer
         );
     }
 

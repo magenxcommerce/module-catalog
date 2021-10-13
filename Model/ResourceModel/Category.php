@@ -9,21 +9,13 @@
  *
  * @author      Magento Core Team <core@magentocommerce.com>
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Model\ResourceModel;
 
 use Magento\Catalog\Model\Indexer\Category\Product\Processor;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
 use Magento\Framework\EntityManager\EntityManager;
-use Magento\Catalog\Setup\CategorySetup;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Catalog\Api\Data\ProductInterface;
 
 /**
- * Resource model for category entity
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Category extends AbstractResource
@@ -98,11 +90,6 @@ class Category extends AbstractResource
     private $indexerProcessor;
 
     /**
-     * @var MetadataPool
-     */
-    private $metadataPool;
-
-    /**
      * Category constructor.
      * @param \Magento\Eav\Model\Entity\Context $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -113,8 +100,6 @@ class Category extends AbstractResource
      * @param Processor $indexerProcessor
      * @param array $data
      * @param \Magento\Framework\Serialize\Serializer\Json|null $serializer
-     * @param MetadataPool|null $metadataPool
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         \Magento\Eav\Model\Entity\Context $context,
@@ -125,8 +110,7 @@ class Category extends AbstractResource
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
         Processor $indexerProcessor,
         $data = [],
-        \Magento\Framework\Serialize\Serializer\Json $serializer = null,
-        MetadataPool $metadataPool = null
+        \Magento\Framework\Serialize\Serializer\Json $serializer = null
     ) {
         parent::__construct(
             $context,
@@ -139,9 +123,8 @@ class Category extends AbstractResource
         $this->_eventManager = $eventManager;
         $this->connectionName  = 'catalog';
         $this->indexerProcessor = $indexerProcessor;
-        $this->serializer = $serializer ?: ObjectManager::getInstance()
+        $this->serializer = $serializer ?: \Magento\Framework\App\ObjectManager::getInstance()
             ->get(\Magento\Framework\Serialize\Serializer\Json::class);
-        $this->metadataPool = $metadataPool ?: ObjectManager::getInstance()->get(MetadataPool::class);
     }
 
     /**
@@ -215,7 +198,7 @@ class Category extends AbstractResource
      * delete child categories
      *
      * @param \Magento\Framework\DataObject $object
-     * @return void
+     * @return $this
      */
     protected function _beforeDelete(\Magento\Framework\DataObject $object)
     {
@@ -266,8 +249,7 @@ class Category extends AbstractResource
 
     /**
      * Process category data before saving
-     *
-     * Prepare path and increment children count for parent categories
+     * prepare path and increment children count for parent categories
      *
      * @param \Magento\Framework\DataObject $object
      * @return $this
@@ -288,7 +270,7 @@ class Category extends AbstractResource
             if ($object->getPosition() === null) {
                 $object->setPosition($this->_getMaxPosition($object->getPath()) + 1);
             }
-            $path = explode('/', (string)$object->getPath());
+            $path = explode('/', $object->getPath());
             $level = count($path)  - ($object->getId() ? 1 : 0);
             $toUpdateChild = array_diff($path, [$object->getId()]);
 
@@ -316,8 +298,7 @@ class Category extends AbstractResource
 
     /**
      * Process category data after save category object
-     *
-     * Save related products ids and update path value
+     * save related products ids and update path value
      *
      * @param \Magento\Framework\DataObject $object
      * @return $this
@@ -327,7 +308,7 @@ class Category extends AbstractResource
         /**
          * Add identifier for new category
          */
-        if (substr((string)$object->getPath(), -1) == '/') {
+        if (substr($object->getPath(), -1) == '/') {
             $object->setPath($object->getPath() . $object->getId());
             $this->_savePath($object);
         }
@@ -365,7 +346,7 @@ class Category extends AbstractResource
     {
         $connection = $this->getConnection();
         $positionField = $connection->quoteIdentifier('position');
-        $level = count(explode('/', (string)$path));
+        $level = count(explode('/', $path));
         $bind = ['c_level' => $level, 'c_path' => $path . '/%'];
         $select = $connection->select()->from(
             $this->getTable('catalog_category_entity'),
@@ -501,20 +482,8 @@ class Category extends AbstractResource
             $this->getCategoryProductTable(),
             ['product_id', 'position']
         )->where(
-            "{$this->getTable('catalog_category_product')}.category_id = ?",
-            $category->getId()
+            'category_id = :category_id'
         );
-        $websiteId = $category->getStore()->getWebsiteId();
-        if ($websiteId) {
-            $select->join(
-                ['product_website' => $this->getTable('catalog_product_website')],
-                "product_website.product_id = {$this->getTable('catalog_category_product')}.product_id",
-                []
-            )->where(
-                'product_website.website_id = ?',
-                $websiteId
-            );
-        }
         $bind = ['category_id' => (int)$category->getId()];
 
         return $this->getConnection()->fetchPairs($select, $bind);
@@ -695,7 +664,7 @@ class Category extends AbstractResource
         $bind = ['category_id' => (int)$category->getId()];
         $counts = $this->getConnection()->fetchOne($select, $bind);
 
-        return (int) $counts;
+        return intval($counts);
     }
 
     /**
@@ -730,7 +699,7 @@ class Category extends AbstractResource
      */
     public function getParentCategories($category)
     {
-        $pathIds = array_reverse(explode(',', (string)$category->getPathInStore()));
+        $pathIds = array_reverse(explode(',', $category->getPathInStore()));
         /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $categories */
         $categories = $this->_categoryCollectionFactory->create();
         return $categories->setStore(
@@ -771,8 +740,6 @@ class Category extends AbstractResource
             'custom_layout_update'
         )->addAttributeToSelect(
             'custom_apply_to_products'
-        )->addAttributeToSelect(
-            'custom_layout_update_file'
         )->addFieldToFilter(
             'entity_id',
             ['in' => $pathIds]
@@ -895,7 +862,6 @@ class Category extends AbstractResource
 
     /**
      * Check category is forbidden to delete.
-     *
      * If category is root and assigned to store group return false
      *
      * @param integer $categoryId
@@ -952,7 +918,7 @@ class Category extends AbstractResource
         $childrenCount = $this->getChildrenCount($category->getId()) + 1;
         $table = $this->getEntityTable();
         $connection = $this->getConnection();
-        $levelField = $connection->quoteIdentifier('level');
+        $levelFiled = $connection->quoteIdentifier('level');
         $pathField = $connection->quoteIdentifier('path');
 
         /**
@@ -992,7 +958,7 @@ class Category extends AbstractResource
                         $newPath . '/'
                     ) . ')'
                 ),
-                'level' => new \Zend_Db_Expr($levelField . ' + ' . $levelDisposition)
+                'level' => new \Zend_Db_Expr($levelFiled . ' + ' . $levelDisposition)
             ],
             [$pathField . ' LIKE ?' => $category->getPath() . '/%']
         );
@@ -1016,7 +982,6 @@ class Category extends AbstractResource
 
     /**
      * Process positions of old parent category children and new parent category children.
-     *
      * Get position for moved category
      *
      * @param \Magento\Catalog\Model\Category $category
@@ -1043,7 +1008,7 @@ class Category extends AbstractResource
         if ($afterCategoryId) {
             $select = $connection->select()->from($table, 'position')->where('entity_id = :entity_id');
             $position = $connection->fetchOne($select, ['entity_id' => $afterCategoryId]);
-            $position++;
+            $position += 1;
         } else {
             $position = 1;
         }
@@ -1097,7 +1062,7 @@ class Category extends AbstractResource
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete($object)
     {
@@ -1123,8 +1088,6 @@ class Category extends AbstractResource
     }
 
     /**
-     * Returns EntityManager object
-     *
      * @return EntityManager
      */
     private function getEntityManager()
@@ -1137,8 +1100,6 @@ class Category extends AbstractResource
     }
 
     /**
-     * Returns AggregateCount object
-     *
      * @return Category\AggregateCount
      */
     private function getAggregateCount()
@@ -1148,46 +1109,5 @@ class Category extends AbstractResource
                 ->get(\Magento\Catalog\Model\ResourceModel\Category\AggregateCount::class);
         }
         return $this->aggregateCount;
-    }
-
-    /**
-     * Get category with children.
-     *
-     * @param int $categoryId
-     * @return array
-     */
-    public function getCategoryWithChildren(int $categoryId): array
-    {
-        $connection = $this->getConnection();
-
-        $selectAttributeCode = $connection->select()
-            ->from(
-                ['eav_attribute' => $this->getTable('eav_attribute')],
-                ['attribute_id']
-            )->where('entity_type_id = ?', CategorySetup::CATEGORY_ENTITY_TYPE_ID)
-            ->where('attribute_code = ?', 'is_anchor')
-            ->limit(1);
-        $isAnchorAttributeCode = $connection->fetchOne($selectAttributeCode);
-        if (empty($isAnchorAttributeCode) || (int)$isAnchorAttributeCode <= 0) {
-            return [];
-        }
-
-        $linkField = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
-        $select = $connection->select()
-            ->from(
-                ['cce' => $this->getTable('catalog_category_entity')],
-                [$linkField, 'parent_id', 'path']
-            )->join(
-                ['cce_int' => $this->getTable('catalog_category_entity_int')],
-                'cce.' . $linkField . ' = cce_int.' . $linkField,
-                ['is_anchor' => 'cce_int.value']
-            )->where(
-                'cce_int.attribute_id = ?',
-                $isAnchorAttributeCode
-            )->where(
-                "cce.path LIKE '%/{$categoryId}' OR cce.path LIKE '%/{$categoryId}/%'"
-            )->order('path');
-
-        return $connection->fetchAll($select);
     }
 }

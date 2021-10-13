@@ -60,11 +60,9 @@ class DeleteHandler
     }
 
     /**
-     * Delete linked product.
-     *
      * @param string $entityType
      * @param object $entity
-     * @return void
+     * @return object
      * @throws CouldNotDeleteException
      * @throws NoSuchEntityException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

@@ -12,9 +12,6 @@ use Magento\Framework\DB\Query\Generator;
 use Magento\Framework\DB\Select;
 use Magento\Framework\App\ResourceConnection;
 
-/**
- * Class for retrieval of all product images
- */
 class Image
 {
     /**
@@ -54,7 +51,7 @@ class Image
     }
 
     /**
-     * Get all product images.
+     * Returns product images
      *
      * @return \Generator
      */
@@ -75,63 +72,16 @@ class Image
     }
 
     /**
-     * Get used product images.
-     *
-     * @return \Generator
-     */
-    public function getUsedProductImages(): \Generator
-    {
-        $batchSelectIterator = $this->batchQueryGenerator->generate(
-            'value_id',
-            $this->getUsedImagesSelect(),
-            $this->batchSize,
-            \Magento\Framework\DB\Query\BatchIteratorInterface::NON_UNIQUE_FIELD_ITERATOR
-        );
-
-        foreach ($batchSelectIterator as $select) {
-            foreach ($this->connection->fetchAll($select) as $key => $value) {
-                yield $key => $value;
-            }
-        }
-    }
-
-    /**
-     * Get the number of unique images of products.
-     *
+     * Get the number of unique pictures of products
      * @return int
      */
     public function getCountAllProductImages(): int
     {
-        $select = $this->getVisibleImagesSelect()
-            ->reset('columns')
-            ->reset('distinct')
-            ->columns(
-                new \Zend_Db_Expr('count(distinct value)')
-            );
-
+        $select = $this->getVisibleImagesSelect()->reset('columns')->columns('count(*)');
         return (int) $this->connection->fetchOne($select);
     }
 
     /**
-     * Get the number of unique and used images of products.
-     *
-     * @return int
-     */
-    public function getCountUsedProductImages(): int
-    {
-        $select = $this->getUsedImagesSelect()
-            ->reset('columns')
-            ->reset('distinct')
-            ->columns(
-                new \Zend_Db_Expr('count(distinct value)')
-            );
-
-        return (int) $this->connection->fetchOne($select);
-    }
-
-    /**
-     * Return select to fetch all products images.
-     *
      * @return Select
      */
     private function getVisibleImagesSelect(): Select
@@ -142,26 +92,6 @@ class Image
                 'value as filepath'
             )->where(
                 'disabled = 0'
-            );
-    }
-
-    /**
-     * Return select to fetch all used product images.
-     *
-     * @return Select
-     */
-    private function getUsedImagesSelect(): Select
-    {
-        return $this->connection->select()->distinct()
-            ->from(
-                ['images' => $this->resourceConnection->getTableName(Gallery::GALLERY_TABLE)],
-                'value as filepath'
-            )->joinInner(
-                ['image_value' => $this->resourceConnection->getTableName(Gallery::GALLERY_VALUE_TABLE)],
-                'images.value_id = image_value.value_id',
-                []
-            )->where(
-                'images.disabled = 0 AND image_value.disabled = 0'
             );
     }
 }

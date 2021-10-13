@@ -9,7 +9,6 @@ use Magento\Framework\App\Rss\DataProviderInterface;
 
 /**
  * Class NotifyStock
- *
  * @package Magento\Catalog\Block\Adminhtml\Rss
  */
 class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataProviderInterface
@@ -42,7 +41,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * @return void
      */
     protected function _construct()
     {
@@ -51,12 +50,12 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRssData()
     {
-         $newUrl = $this->rssUrlBuilder->getUrl(['_secure' => true, '_nosecret' => true, 'type' => 'notifystock']);
-        $title = __('Low Stock Products')->render();
+        $newUrl = $this->rssUrlBuilder->getUrl(['_secure' => true, '_nosecret' => true, 'type' => 'notifystock']);
+        $title = __('Low Stock Products');
         $data = ['title' => $title, 'description' => $title, 'link' => $newUrl, 'charset' => 'UTF-8'];
 
         foreach ($this->rssModel->getProductsCollection() as $item) {
@@ -66,7 +65,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
                 ['id' => $item->getId(), '_secure' => true, '_nosecret' => true]
             );
             $qty = 1 * $item->getQty();
-            $description = __('%1 has reached a quantity of %2.', $item->getName(), $qty)->render();
+            $description = __('%1 has reached a quantity of %2.', $item->getName(), $qty);
             $data['entries'][] = ['title' => $item->getName(), 'link' => $url, 'description' => $description];
         }
 
@@ -74,7 +73,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCacheLifetime()
     {
@@ -82,7 +81,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isAllowed()
     {
@@ -90,7 +89,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFeeds()
     {
@@ -98,7 +97,7 @@ class NotifyStock extends \Magento\Backend\Block\AbstractBlock implements DataPr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isAuthRequired()
     {

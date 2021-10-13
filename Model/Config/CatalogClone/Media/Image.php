@@ -5,9 +5,6 @@
  */
 namespace Magento\Catalog\Model\Config\CatalogClone\Media;
 
-use Magento\Framework\Escaper;
-use Magento\Framework\App\ObjectManager;
-
 /**
  * Clone model for media images related config fields
  *
@@ -30,11 +27,6 @@ class Image extends \Magento\Framework\App\Config\Value
     protected $_attributeCollectionFactory;
 
     /**
-     * @var Escaper
-     */
-    private $escaper;
-
-    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $config
@@ -44,9 +36,6 @@ class Image extends \Magento\Framework\App\Config\Value
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
-     * @param Escaper|null $escaper
-     *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -57,10 +46,8 @@ class Image extends \Magento\Framework\App\Config\Value
         \Magento\Eav\Model\Config $eavConfig,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
-        array $data = [],
-        Escaper $escaper = null
+        array $data = []
     ) {
-        $this->escaper = $escaper ?? ObjectManager::getInstance()->get(Escaper::class);
         $this->_attributeCollectionFactory = $attributeCollectionFactory;
         $this->_eavConfig = $eavConfig;
         parent::__construct($context, $registry, $config, $cacheTypeList, $resource, $resourceCollection, $data);
@@ -84,9 +71,10 @@ class Image extends \Magento\Framework\App\Config\Value
         $prefixes = [];
 
         foreach ($collection as $attribute) {
+            /* @var $attribute \Magento\Eav\Model\Entity\Attribute */
             $prefixes[] = [
                 'field' => $attribute->getAttributeCode() . '_',
-                'label' => $this->escaper->escapeHtml($attribute->getFrontend()->getLabel()),
+                'label' => $attribute->getFrontend()->getLabel(),
             ];
         }
 

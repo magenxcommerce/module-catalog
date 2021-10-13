@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Test class for \Magento\Catalog\Block\Product\View
  *
@@ -8,91 +8,81 @@
 
 namespace Magento\Catalog\Test\Unit\Block\Product;
 
-use Magento\Catalog\Block\Product\View;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductTypes\ConfigInterface;
-use Magento\Framework\Registry;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-
-class ViewTest extends TestCase
+class ViewTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var View
+     * @var \Magento\Catalog\Block\Product\View
      */
     protected $view;
 
     /**
-     * @var MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $productTypeConfig;
 
     /**
-     * @var MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $registryMock;
 
-    /**
-     * @inheritDoc
-     */
-    protected function setUp(): void
+    protected function setUp()
     {
-        $helper = new ObjectManager($this);
-        $this->productTypeConfig = $this->getMockForAbstractClass(ConfigInterface::class);
-        $this->registryMock = $this->createMock(Registry::class);
+        $helper = new \Magento\Framework\TestFramework\Unit\Helper\ObjectManager($this);
+        $this->productTypeConfig = $this->createMock(\Magento\Catalog\Model\ProductTypes\ConfigInterface::class);
+        $this->registryMock = $this->createMock(\Magento\Framework\Registry::class);
         $this->view = $helper->getObject(
-            View::class,
+            \Magento\Catalog\Block\Product\View::class,
             ['productTypeConfig' => $this->productTypeConfig, 'registry' => $this->registryMock]
         );
     }
 
-    /**
-     * @return void
-     */
     public function testShouldRenderQuantity()
     {
-        $productMock = $this->createMock(Product::class);
+        $productMock = $this->createMock(\Magento\Catalog\Model\Product::class);
         $this->registryMock->expects(
             $this->any()
         )->method(
             'registry'
         )->with(
             'product'
-        )->willReturn(
-            $productMock
+        )->will(
+            $this->returnValue($productMock)
         );
-        $productMock->expects($this->once())->method('getTypeId')->willReturn('id');
+        $productMock->expects($this->once())->method('getTypeId')->will($this->returnValue('id'));
         $this->productTypeConfig->expects(
             $this->once()
         )->method(
             'isProductSet'
         )->with(
             'id'
-        )->willReturn(
-            true
+        )->will(
+            $this->returnValue(true)
         );
-        $this->assertFalse($this->view->shouldRenderQuantity());
+        $this->assertEquals(false, $this->view->shouldRenderQuantity());
     }
 
-    /**
-     * @return void
-     */
     public function testGetIdentities()
     {
         $productTags = ['cat_p_1'];
-        $product = $this->createMock(Product::class);
+        $product = $this->createMock(\Magento\Catalog\Model\Product::class);
+        $category = $this->createMock(\Magento\Catalog\Model\Category::class);
 
         $product->expects($this->once())
             ->method('getIdentities')
-            ->willReturn($productTags);
+            ->will($this->returnValue($productTags));
+        $category->expects($this->once())
+            ->method('getId')
+            ->will($this->returnValue(1));
         $this->registryMock->expects($this->any())
             ->method('registry')
-            ->willReturnMap(
-                [
-                    ['product', $product],
-                ]
+            ->will(
+                $this->returnValueMap(
+                    [
+                        ['product', $product],
+                        ['current_category', $category],
+                    ]
+                )
             );
-        $this->assertEquals($productTags, $this->view->getIdentities());
+        $this->assertEquals(['cat_p_1', 'cat_c_1'], $this->view->getIdentities());
     }
 }

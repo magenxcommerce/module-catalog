@@ -3,11 +3,19 @@
  * See COPYING.txt for license details.
  */
 
-define([
-    'jquery',
-    'jquery-ui-modules/widget',
-    'mage/validation/validation'
-], function ($) {
+(function (factory) {
+    'use strict';
+
+    if (typeof define === 'function' && define.amd) {
+        define([
+            'jquery',
+            'jquery/ui',
+            'mage/validation/validation'
+        ], factory);
+    } else {
+        factory(jQuery);
+    }
+}(function ($) {
     'use strict';
 
     $.widget('mage.validation', $.mage.validation, {
@@ -89,4 +97,4 @@ define([
     });
 
     return $.mage.validation;
-});
+}));

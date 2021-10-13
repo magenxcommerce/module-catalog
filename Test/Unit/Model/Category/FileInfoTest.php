@@ -3,123 +3,75 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Catalog\Test\Unit\Model\Category;
 
 use Magento\Catalog\Model\Category\FileInfo;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\File\Mime;
 use Magento\Framework\Filesystem;
-use Magento\Framework\Filesystem\Directory\ReadInterface;
 use Magento\Framework\Filesystem\Directory\WriteInterface;
-use Magento\Store\Model\Store;
-use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use Magento\Framework\Filesystem\Directory\ReadInterface;
 
-/**
- * Test for Magento\Catalog\Model\Category\FileInfo class.
- */
-class FileInfoTest extends TestCase
+class FileInfoTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Filesystem|MockObject
+     * @var Filesystem|\PHPUnit_Framework_MockObject_MockObject
      */
     private $filesystem;
 
     /**
-     * @var Mime|MockObject
+     * @var Mime|\PHPUnit_Framework_MockObject_MockObject
      */
     private $mime;
 
     /**
-     * @var WriteInterface|MockObject
+     * @var WriteInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $mediaDirectory;
 
     /**
-     * @var ReadInterface|MockObject
+     * @var ReadInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $baseDirectory;
-
-    /**
-     * @var ReadInterface|MockObject
-     */
-    private $pubDirectory;
-
-    /**
-     * @var StoreManagerInterface|MockObject
-     */
-    private $storeManager;
-
-    /**
-     * @var Store|MockObject
-     */
-    private $store;
 
     /**
      * @var FileInfo
      */
     private $model;
 
-    protected function setUp(): void
+    protected function setUp()
     {
         $this->mediaDirectory = $this->getMockBuilder(WriteInterface::class)
             ->getMockForAbstractClass();
 
-        $this->baseDirectory = $baseDirectory = $this->getMockBuilder(ReadInterface::class)
+        $this->baseDirectory = $this->getMockBuilder(ReadInterface::class)
             ->getMockForAbstractClass();
-
-        $this->pubDirectory = $pubDirectory = $this->getMockBuilder(ReadInterface::class)
-            ->getMockForAbstractClass();
-
-        $this->store = $this->getMockBuilder(Store::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storeManager = $this->getMockBuilder(StoreManagerInterface::class)
-            ->setMethods(['getStore'])
-            ->getMockForAbstractClass();
-        $this->storeManager->expects($this->any())
-            ->method('getStore')
-            ->willReturn($this->store);
 
         $this->filesystem = $this->getMockBuilder(Filesystem::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $this->filesystem->method('getDirectoryWrite')
+        $this->filesystem->expects($this->any())
+            ->method('getDirectoryWrite')
             ->with(DirectoryList::MEDIA)
             ->willReturn($this->mediaDirectory);
 
-        $this->filesystem->method('getDirectoryRead')
-            ->willReturnCallback(
-                function ($arg) use ($baseDirectory, $pubDirectory) {
-                    if ($arg === DirectoryList::PUB) {
-                        return $pubDirectory;
-                    }
-                    return $baseDirectory;
-                }
-            );
+        $this->filesystem->expects($this->any())
+            ->method('getDirectoryRead')
+            ->with(DirectoryList::ROOT)
+            ->willReturn($this->baseDirectory);
 
         $this->mime = $this->getMockBuilder(Mime::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->baseDirectory->method('getAbsolutePath')
-            ->willReturn('/a/b/c/');
-
-        $this->baseDirectory->method('getRelativePath')
-            ->with('/a/b/c/pub/')
-            ->willReturn('pub/');
-
-        $this->pubDirectory->method('getAbsolutePath')
-            ->willReturn('/a/b/c/pub/');
+        $this->baseDirectory->expects($this->any())
+            ->method('getAbsolutePath')
+            ->with(null)
+            ->willReturn('/a/b/c');
 
         $this->model = new FileInfo(
             $this->filesystem,
-            $this->mime,
-            $this->storeManager
+            $this->mime
         );
     }
 
@@ -133,12 +85,12 @@ class FileInfoTest extends TestCase
         $this->mediaDirectory->expects($this->at(0))
             ->method('getAbsolutePath')
             ->with(null)
-            ->willReturn('/a/b/c/pub/media/');
+            ->willReturn('/a/b/c/pub/media');
 
         $this->mediaDirectory->expects($this->at(1))
             ->method('getAbsolutePath')
             ->with(null)
-            ->willReturn('/a/b/c/pub/media/');
+            ->willReturn('/a/b/c/pub/media');
 
         $this->mediaDirectory->expects($this->at(2))
             ->method('getAbsolutePath')
@@ -161,73 +113,39 @@ class FileInfoTest extends TestCase
 
         $expected = ['size' => 1];
 
-        $this->mediaDirectory->method('getAbsolutePath')
+        $this->mediaDirectory->expects($this->any())
+            ->method('getAbsolutePath')
             ->with(null)
-            ->willReturn('/a/b/c/pub/media/');
+            ->willReturn('/a/b/c/pub/media');
 
-        $this->mediaDirectory->method('stat')
+        $this->mediaDirectory->expects($this->once())
+            ->method('stat')
             ->with($mediaPath . $fileName)
             ->willReturn($expected);
 
         $result = $this->model->getStat($fileName);
 
-        $this->assertIsArray($result);
+        $this->assertTrue(is_array($result));
         $this->assertArrayHasKey('size', $result);
         $this->assertEquals(1, $result['size']);
     }
 
-    /**
-     * @param $fileName
-     * @param $fileMediaPath
-     * @dataProvider isExistProvider
-     */
-    public function testIsExist($fileName, $fileMediaPath)
+    public function testIsExist()
     {
-        $this->mediaDirectory->method('getAbsolutePath')
-            ->willReturn('/a/b/c/pub/media/');
+        $mediaPath = '/catalog/category';
 
-        $this->mediaDirectory->method('isExist')
-            ->with($fileMediaPath)
+        $fileName = '/filename.ext1';
+
+        $this->mediaDirectory->expects($this->any())
+            ->method('getAbsolutePath')
+            ->with(null)
+            ->willReturn('/a/b/c/pub/media');
+
+        $this->mediaDirectory->expects($this->once())
+            ->method('isExist')
+            ->with($mediaPath . $fileName)
             ->willReturn(true);
 
         $this->assertTrue($this->model->isExist($fileName));
-    }
-
-    /**
-     * @return array
-     */
-    public function isExistProvider()
-    {
-        return [
-            ['/filename.ext1', '/catalog/category/filename.ext1'],
-            ['/pub/media/filename.ext1', 'filename.ext1'],
-            ['/media/filename.ext1', 'filename.ext1']
-        ];
-    }
-
-    /**
-     * @param $fileName
-     * @param $expected
-     * @dataProvider isBeginsWithMediaDirectoryPathProvider
-     */
-    public function testIsBeginsWithMediaDirectoryPath($fileName, $expected)
-    {
-        $this->mediaDirectory->method('getAbsolutePath')
-            ->willReturn('/a/b/c/pub/media/');
-
-        $this->assertEquals($expected, $this->model->isBeginsWithMediaDirectoryPath($fileName));
-    }
-
-    /**
-     * @return array
-     */
-    public function isBeginsWithMediaDirectoryPathProvider()
-    {
-        return [
-            ['/pub/media/test/filename.ext1', true],
-            ['/media/test/filename.ext1', true],
-            ['/test/filename.ext1', false],
-            ['test2/filename.ext1', false]
-        ];
     }
 }

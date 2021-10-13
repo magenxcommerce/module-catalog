@@ -37,8 +37,7 @@ class ScheduleDesignUpdate extends AbstractModifier
     }
 
     /**
-     * @inheritdoc
-     *
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyMeta(array $meta)
@@ -48,8 +47,7 @@ class ScheduleDesignUpdate extends AbstractModifier
     }
 
     /**
-     * @inheritdoc
-     *
+     * {@inheritdoc}
      * @since 101.0.0
      */
     public function modifyData(array $data)
@@ -98,8 +96,7 @@ class ScheduleDesignUpdate extends AbstractModifier
             $fromContainerPath . self::META_CONFIG_PATH,
             $meta,
             [
-                'label' => false,
-                'required' => false,
+                'label' => __('Schedule Update From'),
                 'additionalClasses' => 'admin__control-grouped-date',
                 'breakLine' => false,
                 'component' => 'Magento_Ui/js/form/components/group',

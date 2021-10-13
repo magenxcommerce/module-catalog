@@ -15,9 +15,6 @@ use Magento\Framework\Indexer\DimensionFactory;
 use Magento\Customer\Model\Indexer\CustomerGroupDimensionProvider;
 use Magento\Store\Model\Indexer\WebsiteDimensionProvider;
 
-/**
- * Update catalog_product_index_price table after delete or save customer group
- */
 class CustomerGroup
 {
     /**
@@ -83,7 +80,7 @@ class CustomerGroup
         \Closure $proceed,
         GroupInterface $group
     ) {
-        $isGroupNew = $group->getId() === null;
+        $isGroupNew = !$group->getId();
         $group = $proceed($group);
         if ($isGroupNew) {
             foreach ($this->getAffectedDimensions((string)$group->getId()) as $dimensions) {

@@ -7,9 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Model\Product\Attribute\Backend\TierPrice;
 
+use Magento\Framework\EntityManager\Operation\ExtensionInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\Locale\FormatInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
 use Magento\Customer\Api\GroupManagementInterface;
@@ -17,9 +16,9 @@ use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Catalog\Model\ResourceModel\Product\Attribute\Backend\Tierprice;
 
 /**
- * Process tier price data for handled existing product.
+ * Process tier price data for handled existing product
  */
-class UpdateHandler extends AbstractHandler
+class UpdateHandler implements ExtensionInterface
 {
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -32,6 +31,11 @@ class UpdateHandler extends AbstractHandler
     private $attributeRepository;
 
     /**
+     * @var \Magento\Customer\Api\GroupManagementInterface
+     */
+    private $groupManagement;
+
+    /**
      * @var \Magento\Framework\EntityManager\MetadataPool
      */
     private $metadataPoll;
@@ -42,33 +46,24 @@ class UpdateHandler extends AbstractHandler
     private $tierPriceResource;
 
     /**
-     * @var FormatInterface
-     */
-    private $localeFormat;
-
-    /**
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository
      * @param \Magento\Customer\Api\GroupManagementInterface $groupManagement
      * @param \Magento\Framework\EntityManager\MetadataPool $metadataPool
      * @param \Magento\Catalog\Model\ResourceModel\Product\Attribute\Backend\Tierprice $tierPriceResource
-     * @param FormatInterface|null $localeFormat
      */
     public function __construct(
         StoreManagerInterface $storeManager,
         ProductAttributeRepositoryInterface $attributeRepository,
         GroupManagementInterface $groupManagement,
         MetadataPool $metadataPool,
-        Tierprice $tierPriceResource,
-        FormatInterface $localeFormat = null
+        Tierprice $tierPriceResource
     ) {
-        parent::__construct($groupManagement);
-
         $this->storeManager = $storeManager;
         $this->attributeRepository = $attributeRepository;
+        $this->groupManagement = $groupManagement;
         $this->metadataPoll = $metadataPool;
         $this->tierPriceResource = $tierPriceResource;
-        $this->localeFormat = $localeFormat ?: ObjectManager::getInstance()->get(FormatInterface::class);
     }
 
     /**
@@ -77,7 +72,8 @@ class UpdateHandler extends AbstractHandler
      * @param \Magento\Catalog\Api\Data\ProductInterface|object $entity
      * @param array $arguments
      * @return \Magento\Catalog\Api\Data\ProductInterface|object
-     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function execute($entity, $arguments = [])
@@ -90,14 +86,14 @@ class UpdateHandler extends AbstractHandler
                     __('Tier prices data should be array, but actually other type is received')
                 );
             }
-            $websiteId = (int)$this->storeManager->getStore($entity->getStoreId())->getWebsiteId();
+            $websiteId = $this->storeManager->getStore($entity->getStoreId())->getWebsiteId();
             $isGlobal = $attribute->isScopeGlobal() || $websiteId === 0;
             $identifierField = $this->metadataPoll->getMetadata(ProductInterface::class)->getLinkField();
-            $productId = (int)$entity->getData($identifierField);
+            $productId = (int) $entity->getData($identifierField);
 
             // prepare original data to compare
             $origPrices = $entity->getOrigData($attribute->getName());
-            $old = $this->prepareOldTierPriceToCompare($origPrices);
+            $old = $this->prepareOriginalDataToCompare($origPrices, $isGlobal);
             // prepare data for save
             $new = $this->prepareNewDataForSave($priceRows, $isGlobal);
 
@@ -119,6 +115,34 @@ class UpdateHandler extends AbstractHandler
     }
 
     /**
+     * Get additional tier price fields
+     *
+     * @param array $objectArray
+     * @return array
+     */
+    private function getAdditionalFields(array $objectArray): array
+    {
+        $percentageValue = $this->getPercentage($objectArray);
+        return [
+            'value' => $percentageValue ? null : $objectArray['price'],
+            'percentage_value' => $percentageValue ?: null,
+        ];
+    }
+
+    /**
+     * Check whether price has percentage value.
+     *
+     * @param array $priceRow
+     * @return int|null
+     */
+    private function getPercentage(array $priceRow): ?int
+    {
+        return isset($priceRow['percentage_value']) && is_numeric($priceRow['percentage_value'])
+            ? (int)$priceRow['percentage_value']
+            : null;
+    }
+
+    /**
      * Update existing tier prices for processed product
      *
      * @param array $valuesToUpdate
@@ -129,9 +153,8 @@ class UpdateHandler extends AbstractHandler
     {
         $isChanged = false;
         foreach ($valuesToUpdate as $key => $value) {
-            if ((($value['value'])!== null
-                    && (float)$oldValues[$key]['price'] !== $this->localeFormat->getNumber($value['value'])
-                ) || $this->getPercentage($oldValues[$key]) !== $this->getPercentage($value)
+            if ((!empty($value['value']) && (float)$oldValues[$key]['price'] !== (float)$value['value'])
+                || $this->getPercentage($oldValues[$key]) !== $this->getPercentage($value)
             ) {
                 $price = new \Magento\Framework\DataObject(
                     [
@@ -198,13 +221,37 @@ class UpdateHandler extends AbstractHandler
      */
     private function getPriceKey(array $priceData): string
     {
-        $qty = $this->parseQty($priceData['price_qty']);
         $key = implode(
             '-',
-            array_merge([$priceData['website_id'], $priceData['cust_group']], [$qty])
+            array_merge([$priceData['website_id'], $priceData['cust_group']], [(int)$priceData['price_qty']])
         );
 
         return $key;
+    }
+
+    /**
+     * Prepare tier price data by provided price row data
+     *
+     * @param array $data
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    private function prepareTierPrice(array $data): array
+    {
+        $useForAllGroups = (int)$data['cust_group'] === $this->groupManagement->getAllCustomersGroup()->getId();
+        $customerGroupId = $useForAllGroups ? 0 : $data['cust_group'];
+        $tierPrice = array_merge(
+            $this->getAdditionalFields($data),
+            [
+                'website_id' => $data['website_id'],
+                'all_groups' => (int)$useForAllGroups,
+                'customer_group_id' => $customerGroupId,
+                'value' => $data['price'] ?? null,
+                'qty' => (int)$data['price_qty']
+            ]
+        );
+
+        return $tierPrice;
     }
 
     /**
@@ -219,18 +266,21 @@ class UpdateHandler extends AbstractHandler
     }
 
     /**
-     * Prepare old data to compare.
+     * Prepare original data to compare.
      *
      * @param array|null $origPrices
+     * @param bool $isGlobal
      * @return array
      */
-    private function prepareOldTierPriceToCompare(?array $origPrices): array
+    private function prepareOriginalDataToCompare(?array $origPrices, bool $isGlobal = true): array
     {
         $old = [];
         if (is_array($origPrices)) {
             foreach ($origPrices as $data) {
-                $key = $this->getPriceKey($data);
-                $old[$key] = $data;
+                if ($isGlobal === $this->isWebsiteGlobal((int)$data['website_id'])) {
+                    $key = $this->getPriceKey($data);
+                    $old[$key] = $data;
+                }
             }
         }
 

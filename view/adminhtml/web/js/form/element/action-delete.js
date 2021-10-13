@@ -5,10 +5,10 @@
 define([
     'underscore',
     'Magento_Ui/js/form/element/abstract'
-], function (_, Abstract) {
+], function (_, Acstract) {
     'use strict';
 
-    return Abstract.extend({
+    return Acstract.extend({
         defaults: {
             prefixName: '',
             prefixElementName: '',

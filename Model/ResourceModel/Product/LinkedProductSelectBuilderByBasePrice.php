@@ -11,9 +11,6 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DB\Select;
 use Magento\Store\Model\Store;
 
-/**
- * Provide Select object for retrieve product id with minimal price.
- */
 class LinkedProductSelectBuilderByBasePrice implements LinkedProductSelectBuilderInterface
 {
     /**
@@ -72,9 +69,9 @@ class LinkedProductSelectBuilderByBasePrice implements LinkedProductSelectBuilde
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function build(int $productId, int $storeId) : array
+    public function build($productId)
     {
         $linkField = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
         $priceAttribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price');
@@ -88,7 +85,7 @@ class LinkedProductSelectBuilderByBasePrice implements LinkedProductSelectBuilde
                 []
             )->joinInner(
                 [BaseSelectProcessorInterface::PRODUCT_TABLE_ALIAS => $productTable],
-                sprintf('%s.entity_id = link.child_id', BaseSelectProcessorInterface::PRODUCT_TABLE_ALIAS),
+                sprintf('%s.entity_id = link.child_id', BaseSelectProcessorInterface::PRODUCT_TABLE_ALIAS, $linkField),
                 ['entity_id']
             )->joinInner(
                 ['t' => $priceAttribute->getBackendTable()],
@@ -104,7 +101,7 @@ class LinkedProductSelectBuilderByBasePrice implements LinkedProductSelectBuilde
 
         if (!$this->catalogHelper->isPriceGlobal()) {
             $priceSelectStore = clone $priceSelect;
-            $priceSelectStore->where('t.store_id = ?', $storeId);
+            $priceSelectStore->where('t.store_id = ?', $this->storeManager->getStore()->getId());
             $selects[] = $priceSelectStore;
         }
 

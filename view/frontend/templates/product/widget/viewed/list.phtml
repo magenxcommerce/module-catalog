@@ -5,13 +5,12 @@
  */
 ?>
 <?php
-// phpcs:disable Magento2.Security.LanguageConstruct.DirectOutput
-// phpcs:disable Magento2.PHP.ShortEchoSyntax.ShortEchoTag
-
-/** @var $block \Magento\Ui\Block\Wrapper */
+/**
+ * @var $block \Magento\Ui\Block\Wrapper
+ */
 ?>
 
-<?php /* @noEscape */ echo $block->renderApp([
+<?= /* @escapeNotVerified */ $block->renderApp([
     'widget_columns' => [
         'displayMode' => 'list'
     ],

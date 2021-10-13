@@ -48,8 +48,6 @@ class Stock extends Extended
     }
 
     /**
-     * Construct.
-     *
      * @return void
      */
     protected function _construct()
@@ -65,8 +63,6 @@ class Stock extends Extended
     }
 
     /**
-     * @inheritDoc
-     *
      * @return Grid
      */
     protected function _prepareCollection()
@@ -84,8 +80,6 @@ class Stock extends Extended
     }
 
     /**
-     * @inheritDoc
-     *
      * @return $this
      */
     protected function _prepareColumns()
@@ -109,8 +103,6 @@ class Stock extends Extended
     }
 
     /**
-     * Get grid url.
-     *
      * @return string
      */
     public function getGridUrl()

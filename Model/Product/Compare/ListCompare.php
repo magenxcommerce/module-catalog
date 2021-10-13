@@ -5,17 +5,13 @@
  */
 namespace Magento\Catalog\Model\Product\Compare;
 
-use Magento\Catalog\Model\ProductRepository;
 use Magento\Catalog\Model\ResourceModel\Product\Compare\Item\Collection;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Product Compare List Model
  *
  * @api
  * @SuppressWarnings(PHPMD.LongVariable)
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  * @since 100.0.2
  */
 class ListCompare extends \Magento\Framework\DataObject
@@ -56,11 +52,6 @@ class ListCompare extends \Magento\Framework\DataObject
     protected $_compareItemFactory;
 
     /**
-     * @var ProductRepository
-     */
-    private $productRepository;
-
-    /**
      * Constructor
      *
      * @param \Magento\Catalog\Model\Product\Compare\ItemFactory $compareItemFactory
@@ -69,7 +60,6 @@ class ListCompare extends \Magento\Framework\DataObject
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Customer\Model\Visitor $customerVisitor
      * @param array $data
-     * @param ProductRepository|null $productRepository
      */
     public function __construct(
         \Magento\Catalog\Model\Product\Compare\ItemFactory $compareItemFactory,
@@ -77,15 +67,13 @@ class ListCompare extends \Magento\Framework\DataObject
         \Magento\Catalog\Model\ResourceModel\Product\Compare\Item $catalogProductCompareItem,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Customer\Model\Visitor $customerVisitor,
-        array $data = [],
-        ProductRepository $productRepository = null
+        array $data = []
     ) {
         $this->_compareItemFactory = $compareItemFactory;
         $this->_itemCollectionFactory = $itemCollectionFactory;
         $this->_catalogProductCompareItem = $catalogProductCompareItem;
         $this->_customerSession = $customerSession;
         $this->_customerVisitor = $customerVisitor;
-        $this->productRepository = $productRepository ?: ObjectManager::getInstance()->create(ProductRepository::class);
         parent::__construct($data);
     }
 
@@ -94,7 +82,6 @@ class ListCompare extends \Magento\Framework\DataObject
      *
      * @param int|\Magento\Catalog\Model\Product $product
      * @return $this
-     * @throws \Exception
      */
     public function addProduct($product)
     {
@@ -103,31 +90,12 @@ class ListCompare extends \Magento\Framework\DataObject
         $this->_addVisitorToItem($item);
         $item->loadByProduct($product);
 
-        if (!$item->getId() && $this->productExists($product)) {
+        if (!$item->getId()) {
             $item->addProductData($product);
             $item->save();
         }
 
         return $this;
-    }
-
-    /**
-     * Check product exists.
-     *
-     * @param int|\Magento\Catalog\Model\Product $product
-     * @return bool
-     */
-    private function productExists($product)
-    {
-        if ($product instanceof \Magento\Catalog\Model\Product && $product->getId()) {
-            return true;
-        }
-        try {
-            $product = $this->productRepository->getById((int)$product);
-            return !empty($product->getId());
-        } catch (NoSuchEntityException $e) {
-            return false;
-        }
     }
 
     /**

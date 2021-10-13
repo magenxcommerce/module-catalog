@@ -60,7 +60,7 @@ class FinalPriceBox extends BasePriceBox
     }
 
     /**
-     * @inheritdoc
+     * @return string
      */
     protected function _toHtml()
     {
@@ -182,27 +182,25 @@ class FinalPriceBox extends BasePriceBox
      */
     public function getCacheKey()
     {
-        return parent::getCacheKey()
-            . ($this->getData('list_category_page') ? '-list-category-page': '')
-            . ($this->getSaleableItem()->getCustomerGroupId() ?? '');
+        return parent::getCacheKey() . ($this->getData('list_category_page') ? '-list-category-page': '');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @return array
      */
     public function getCacheKeyInfo()
     {
         $cacheKeys = parent::getCacheKeyInfo();
         $cacheKeys['display_minimal_price'] = $this->getDisplayMinimalPrice();
         $cacheKeys['is_product_list'] = $this->isProductList();
-        $cacheKeys['customer_group_id'] = $this->getSaleableItem()->getCustomerGroupId();
         return $cacheKeys;
     }
 
     /**
-     * Get flag that price rendering should be done for the list of products.
-     *
-     * By default (if flag is not set) is false.
+     * Get flag that price rendering should be done for the list of products
+     * By default (if flag is not set) is false
      *
      * @return bool
      */

@@ -70,11 +70,11 @@ class Inventory extends \Magento\Backend\Block\Widget implements \Magento\Backen
      * Retrieve current store id
      *
      * @return int
-     * @SuppressWarnings(PHPMD.RequestAwareBlockMethod)
      */
     public function getStoreId()
     {
-        return (int)$this->getRequest()->getParam('store');
+        $storeId = $this->getRequest()->getParam('store');
+        return (int) $storeId;
     }
 
     /**
@@ -99,8 +99,6 @@ class Inventory extends \Magento\Backend\Block\Widget implements \Magento\Backen
     }
 
     /**
-     * Return Tab title.
-     *
      * @return \Magento\Framework\Phrase
      */
     public function getTabTitle()
@@ -109,7 +107,7 @@ class Inventory extends \Magento\Backend\Block\Widget implements \Magento\Backen
     }
 
     /**
-     * @inheritdoc
+     * @return bool
      */
     public function canShowTab()
     {
@@ -117,7 +115,7 @@ class Inventory extends \Magento\Backend\Block\Widget implements \Magento\Backen
     }
 
     /**
-     * @inheritdoc
+     * @return bool
      */
     public function isHidden()
     {
@@ -125,8 +123,6 @@ class Inventory extends \Magento\Backend\Block\Widget implements \Magento\Backen
     }
 
     /**
-     * Get availability status.
-     *
      * @param string $fieldName
      * @return bool
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

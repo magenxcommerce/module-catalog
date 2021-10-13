@@ -1,16 +1,12 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Catalog\Controller\Adminhtml\Product;
 
-use Magento\Framework\App\Action\HttpGetActionInterface;
-
-/**
- * Get specified tab grid controller.
- */
-class GridOnly extends \Magento\Catalog\Controller\Adminhtml\Product implements HttpGetActionInterface
+class GridOnly extends \Magento\Catalog\Controller\Adminhtml\Product
 {
     /**
      * @var \Magento\Framework\Controller\Result\RawFactory
@@ -51,7 +47,7 @@ class GridOnly extends \Magento\Catalog\Controller\Adminhtml\Product implements 
         $this->productBuilder->build($this->getRequest());
 
         $block = $this->getRequest()->getParam('gridOnlyBlock');
-        $blockClassSuffix = ucwords($block, '_');
+        $blockClassSuffix = str_replace(' ', '_', ucwords(str_replace('_', ' ', $block)));
 
         /** @var \Magento\Framework\Controller\Result\Raw $resultRaw */
         $resultRaw = $this->resultRawFactory->create();
