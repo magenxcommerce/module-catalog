@@ -4,14 +4,14 @@
  * See COPYING.txt for license details.
  */
 
+// @codingStandardsIgnoreFile
 use Magento\Catalog\Model\Product\Option;
 
 /**
- * @var $block \Magento\Catalog\Block\Product\View\Options\Type\Select\Checkable
- * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ * @var \Magento\Catalog\Block\Product\View\Options\View\Checkable $block
  */
 $option = $block->getOption();
-if ($option): ?>
+if ($option) : ?>
     <?php
     $configValue = $block->getPreconfiguredValue($option);
     $optionType = $option->getType();
@@ -19,33 +19,33 @@ if ($option): ?>
     $count = 1;
     ?>
 
-<div class="options-list nested" id="options-<?= $block->escapeHtmlAttr($option->getId()) ?>-list">
-    <?php if ($optionType === Option::OPTION_TYPE_RADIO && !$option->getIsRequire()):?>
+<div class="options-list nested" id="options-<?php echo /* @noEscape */
+$option->getId() ?>-list">
+    <?php if ($optionType === Option::OPTION_TYPE_RADIO && !$option->getIsRequire()): ?>
     <div class="field choice admin__field admin__field-option">
         <input type="radio"
-               id="options_<?= $block->escapeHtmlAttr($option->getId()) ?>"
+               id="options_<?php echo /* @noEscape */
+               $option->getId() ?>"
                class="radio admin__control-radio product-custom-option"
-               name="options[<?= $block->escapeHtmlAttr($option->getId()) ?>]"
-               data-selector="options[<?= $block->escapeHtmlAttr($option->getId()) ?>]"
+               name="options[<?php echo /* @noEscape */
+               $option->getId() ?>]"
+               data-selector="options[<?php echo /* @noEscape */
+               $option->getId() ?>]"
+               onclick="<?php echo $block->getSkipJsReloadPrice() ? '' : 'opConfig.reloadPrice()' ?>"
                value=""
                checked="checked"
         />
-        <?php if (!$block->getSkipJsReloadPrice()): ?>
-            <?= /* @noEscape */ $secureRenderer->renderEventListenerAsTag(
-                'onclick',
-                'opConfig.reloadPrice()',
-                "options_" . $block->escapeJs($option->getId())
-            ) ?>
-        <?php endif; ?>
-        <label class="label admin__field-label" for="options_<?= $block->escapeHtmlAttr($option->getId()) ?>">
+        <label class="label admin__field-label" for="options_<?php echo /* @noEscape */
+        $option->getId() ?>">
                         <span>
-                            <?= $block->escapeHtml(__('None'))  ?>
+                            <?php echo /* @noEscape */
+                            __('None') ?>
                         </span>
         </label>
     </div>
 <?php endif; ?>
 
-    <?php foreach ($option->getValues() as $value): ?>
+    <?php foreach ($option->getValues() as $value) : ?>
         <?php
         $checked = '';
         $count++;
@@ -60,27 +60,39 @@ if ($option): ?>
         }
         ?>
 
-        <div class="field choice admin__field admin__field-option">
-            <input type="<?= $block->escapeHtmlAttr($optionType) ?>"
-                   class="<?= $optionType === Option::OPTION_TYPE_RADIO
-                       ? 'radio admin__control-radio'
-                       : 'checkbox admin__control-checkbox' ?> <?= $option->getIsRequire()
-                       ? 'required': '' ?>
+        <div class="field choice admin__field admin__field-option <?php echo /* @noEscape */
+        $option->getIsRequire() ? 'required': '' ?>">
+            <input type="<?php echo /* @noEscape */
+            $optionType ?>"
+                   class="<?php /** @noinspection DisconnectedForeachInstructionInspection */
+                   echo /* @noEscape */
+                   $optionType === Option::OPTION_TYPE_RADIO ?
+                       'radio admin__control-radio' :
+                       'checkbox admin__control-checkbox' ?> <?php echo /* @noEscape */
+                   $option->getIsRequire() ? 'required': '' ?>
                        product-custom-option
-                        <?= $block->getSkipJsReloadPrice() ? '' : 'opConfig.reloadPrice()' ?>"
-                   name="options[<?= $block->escapeHtmlAttr($option->getId()) ?>]<?= /* @noEscape */ $arraySign ?>"
-                   id="options_<?= $block->escapeHtmlAttr($option->getId() . '_' . $count) ?>"
-                   value="<?= $block->escapeHtmlAttr($value->getOptionTypeId()) ?>"
-                <?= $block->escapeHtml($checked) ?>
-                   data-selector="<?= $block->escapeHtmlAttr($dataSelector) ?>"
-                   price="<?= $block->escapeHtmlAttr($block->getCurrencyByStore($value)) ?>"
+                        <?php echo $block->getSkipJsReloadPrice() ? '' : 'opConfig.reloadPrice()' ?>"
+                   name="options[<?php echo $option->getId() ?>]<?php echo /* @noEscape */
+                   $arraySign ?>"
+                   id="options_<?php echo /* @noEscape */
+                       $option->getId() . '_' . $count ?>"
+                   value="<?php echo /* @noEscape */
+                   $value->getOptionTypeId() ?>"
+                <?php echo /* @noEscape */
+                $checked ?>
+                   data-selector="<?php echo /* @noEscape */
+                   $dataSelector ?>"
+                   price="<?php echo /* @noEscape */
+                   $block->getCurrencyByStore($value) ?>"
             />
             <label class="label admin__field-label"
-                   for="options_<?= $block->escapeHtmlAttr($option->getId() . '_' . $count) ?>">
+                   for="options_<?php echo /* @noEscape */
+                       $option->getId() . '_' . $count ?>">
                 <span>
-                    <?= $block->escapeHtml($value->getTitle()) ?>
+                    <?php echo $block->escapeHtml($value->getTitle()) ?>
                 </span>
-                <?= /* @noEscape */ $block->formatPrice($value) ?>
+                <?php echo /* @noEscape */
+                $block->formatPrice($value) ?>
             </label>
         </div>
     <?php endforeach; ?>

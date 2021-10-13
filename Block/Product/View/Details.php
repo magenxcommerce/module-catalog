@@ -39,11 +39,11 @@ class Details extends \Magento\Framework\View\Element\Template
             $alias = $layout->getElementAlias($childName);
             $sortOrder = (int)$this->getChildData($alias, 'sort_order') ?? 0;
 
-            $childNamesSortOrder[$childName] = $sortOrder;
+            $childNamesSortOrder[$sortOrder] = $childName;
         }
 
-        asort($childNamesSortOrder, SORT_NUMERIC);
+        ksort($childNamesSortOrder, SORT_NUMERIC);
 
-        return array_keys($childNamesSortOrder);
+        return $childNamesSortOrder;
     }
 }
