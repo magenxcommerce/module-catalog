@@ -101,11 +101,6 @@ class AdvancedPricing extends AbstractModifier
     private $customerGroupSource;
 
     /**
-     * @var CurrencySymbolProvider
-     */
-    private $currencySymbolProvider;
-
-    /**
      * @param LocatorInterface $locator
      * @param StoreManagerInterface $storeManager
      * @param GroupRepositoryInterface $groupRepository
@@ -115,8 +110,7 @@ class AdvancedPricing extends AbstractModifier
      * @param Data $directoryHelper
      * @param ArrayManager $arrayManager
      * @param string $scopeName
-     * @param GroupSourceInterface|null $customerGroupSource
-     * @param CurrencySymbolProvider|null $currencySymbolProvider
+     * @param GroupSourceInterface $customerGroupSource
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -129,8 +123,7 @@ class AdvancedPricing extends AbstractModifier
         Data $directoryHelper,
         ArrayManager $arrayManager,
         $scopeName = '',
-        GroupSourceInterface $customerGroupSource = null,
-        ?CurrencySymbolProvider $currencySymbolProvider = null
+        GroupSourceInterface $customerGroupSource = null
     ) {
         $this->locator = $locator;
         $this->storeManager = $storeManager;
@@ -143,8 +136,6 @@ class AdvancedPricing extends AbstractModifier
         $this->scopeName = $scopeName;
         $this->customerGroupSource = $customerGroupSource
             ?: ObjectManager::getInstance()->get(GroupSourceInterface::class);
-        $this->currencySymbolProvider = $currencySymbolProvider
-            ?: ObjectManager::getInstance()->get(CurrencySymbolProvider::class);
     }
 
     /**
@@ -497,7 +488,6 @@ class AdvancedPricing extends AbstractModifier
                             'arguments' => [
                                 'data' => [
                                     'config' => [
-                                        'component' => 'Magento_Catalog/js/components/website-currency-symbol',
                                         'dataType' => Text::NAME,
                                         'formElement' => Select::NAME,
                                         'componentType' => Field::NAME,
@@ -508,10 +498,6 @@ class AdvancedPricing extends AbstractModifier
                                         'visible' => $this->isMultiWebsites(),
                                         'disabled' => ($this->isShowWebsiteColumn() && !$this->isAllowChangeWebsite()),
                                         'sortOrder' => 10,
-                                        'currenciesForWebsites' => $this->currencySymbolProvider
-                                            ->getCurrenciesPerWebsite(),
-                                        'currency' => $this->currencySymbolProvider
-                                            ->getDefaultCurrency(),
                                     ],
                                 ],
                             ],
@@ -562,6 +548,9 @@ class AdvancedPricing extends AbstractModifier
                                         'label' => __('Price'),
                                         'enableLabel' => true,
                                         'dataScope' => 'price',
+                                        'addbefore' => $this->locator->getStore()
+                                                                     ->getBaseCurrency()
+                                                                     ->getCurrencySymbol(),
                                         'sortOrder' => 40,
                                         'validation' => [
                                             'required-entry' => true,
@@ -570,12 +559,8 @@ class AdvancedPricing extends AbstractModifier
                                         ],
                                         'imports' => [
                                             'priceValue' => '${ $.provider }:data.product.price',
-                                            '__disableTmpl' => ['priceValue' => false, 'addbefore' => false],
-                                            'addbefore' => '${ $.parentName }:currency'
+                                            '__disableTmpl' => ['priceValue' => false],
                                         ],
-                                        'tracks' => [
-                                            'addbefore' => true
-                                        ]
                                     ],
                                 ],
                             ],

@@ -7,7 +7,6 @@
 namespace Magento\Catalog\Model\Product\Media;
 
 use Magento\Eav\Model\Entity\Attribute;
-use Magento\Framework\UrlInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -77,7 +76,7 @@ class Config implements ConfigInterface
     public function getBaseMediaUrl()
     {
         return $this->storeManager->getStore()
-                ->getBaseUrl(UrlInterface::URL_TYPE_MEDIA) . $this->getBaseMediaUrlAddition();
+                ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . 'catalog/product';
     }
 
     /**
@@ -98,7 +97,7 @@ class Config implements ConfigInterface
     public function getBaseTmpMediaUrl()
     {
         return $this->storeManager->getStore()->getBaseUrl(
-            UrlInterface::URL_TYPE_MEDIA
+            \Magento\Framework\UrlInterface::URL_TYPE_MEDIA
         ) . 'tmp/' . $this->getBaseMediaUrlAddition();
     }
 

@@ -5,14 +5,19 @@
  */
 namespace Magento\Catalog\Model\Indexer\Category\Product\Plugin;
 
+use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\AbstractModel;
 use Magento\Catalog\Model\Indexer\Category\Product;
 use Magento\Catalog\Model\Indexer\Category\Product\TableMaintainer;
-use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\Framework\Model\AbstractModel;
-use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class StoreGroup
 {
+    /**
+     * @var bool
+     */
+    private $needInvalidating;
+
     /**
      * @var IndexerRegistry
      */
@@ -36,22 +41,35 @@ class StoreGroup
     }
 
     /**
+     * Check if need invalidate flat category indexer
+     *
+     * @param AbstractDb $subject
+     * @param AbstractModel $group
+     *
+     * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function beforeSave(AbstractDb $subject, AbstractModel $group)
+    {
+        $this->needInvalidating = $this->validate($group);
+    }
+
+    /**
      * Invalidate flat product
      *
      * @param AbstractDb $subject
-     * @param AbstractDb $result
-     * @param AbstractModel $group
+     * @param AbstractDb $objectResource
      *
      * @return AbstractDb
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterSave(AbstractDb $subject, AbstractDb $result, AbstractModel $group)
+    public function afterSave(AbstractDb $subject, AbstractDb $objectResource)
     {
-        if ($this->validate($group)) {
+        if ($this->needInvalidating) {
             $this->indexerRegistry->get(Product::INDEXER_ID)->invalidate();
         }
 
-        return $result;
+        return $objectResource;
     }
 
     /**

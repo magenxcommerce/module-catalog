@@ -14,9 +14,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Filesystem;
-use Magento\Framework\Filesystem\Directory\ReadInterface;
 use Magento\Framework\Filesystem\Directory\WriteInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
@@ -188,7 +186,6 @@ class ImageTest extends TestCase
      */
     public function testBeforeSaveAttributeFileName()
     {
-        $this->setupObjectManagerForCheckImageExist(false);
         $this->attribute->expects($this->once())
             ->method('getName')
             ->willReturn('test_attribute');
@@ -256,23 +253,11 @@ class ImageTest extends TestCase
         );
     }
 
-    private function setupObjectManagerForCheckImageExist($return)
-    {
-        $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
-        $mockFileSystem = $this->createMock(Filesystem::class);
-        $mockRead = $this->createMock(ReadInterface::class);
-        $objectManagerMock->method($this->logicalOr('get', 'create'))->willReturn($mockFileSystem);
-        $mockFileSystem->method('getDirectoryRead')->willReturn($mockRead);
-        $mockRead->method('isExist')->willReturn($return);
-        \Magento\Framework\App\ObjectManager::setInstance($objectManagerMock);
-    }
-
     /**
      * Test beforeSaveTemporaryAttribute.
      */
     public function testBeforeSaveTemporaryAttribute()
     {
-        $this->setupObjectManagerForCheckImageExist(false);
         $this->attribute->expects($this->once())
             ->method('getName')
             ->willReturn('test_attribute');
@@ -283,7 +268,7 @@ class ImageTest extends TestCase
 
         $this->storeMock->expects($this->once())
             ->method('getBaseMediaDir')
-            ->willReturn('media');
+            ->willReturn('pub/media');
 
         $model = $this->setUpModelForTests();
         $model->setAttribute($this->attribute);
@@ -294,9 +279,7 @@ class ImageTest extends TestCase
             ->with(DirectoryList::MEDIA)
             ->willReturn($mediaDirectoryMock);
 
-        $mediaDirectoryMock->method('getAbsolutePath')->willReturn('/media/test123.jpg');
-
-        $this->imageUploader->method('moveFileFromTmp')->willReturn('test123.jpg');
+        $this->imageUploader->expects($this->any())->method('moveFileFromTmp')->willReturn('test123.jpg');
 
         $object = new DataObject(
             [
@@ -304,7 +287,7 @@ class ImageTest extends TestCase
                     [
                         'name' => 'test123.jpg',
                         'tmp_name' => 'abc123',
-                        'url' => 'http://www.example.com/media/temp/test123.jpg'
+                        'url' => 'http://www.example.com/pub/media/temp/test123.jpg'
                     ],
                 ],
             ]
@@ -314,7 +297,7 @@ class ImageTest extends TestCase
 
         $this->assertEquals(
             [
-                ['name' => '/media/test123.jpg', 'tmp_name' => 'abc123', 'url' => '/media/test123.jpg'],
+                ['name' => '/pub/media/test123.jpg', 'tmp_name' => 'abc123', 'url' => '/pub/media/test123.jpg'],
             ],
             $object->getData('_additional_data_test_attribute')
         );
@@ -435,7 +418,6 @@ class ImageTest extends TestCase
      */
     public function testBeforeSaveWithExceptions()
     {
-        $this->setupObjectManagerForCheckImageExist(false);
         $model = $this->setUpModelForTests();
 
         $this->storeManagerInterfaceMock->expects($this->once())

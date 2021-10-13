@@ -7,10 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Test\Unit\Controller\Adminhtml\Product\Initialization;
 
-use Magento\Catalog\Api\Data\CategoryLinkInterface;
-use Magento\Catalog\Api\Data\CategoryLinkInterfaceFactory;
 use Magento\Catalog\Api\Data\ProductCustomOptionInterfaceFactory;
-use Magento\Catalog\Api\Data\ProductExtensionInterface;
 use Magento\Catalog\Api\Data\ProductLinkInterfaceFactory;
 use Magento\Catalog\Api\Data\ProductLinkTypeInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface as ProductRepository;
@@ -128,13 +125,17 @@ class HelperTest extends TestCase
             ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
-        $this->productRepositoryMock = $this->createMock(ProductRepository::class);
+        $this->productRepositoryMock = $this->getMockBuilder(ProductRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->requestMock = $this->getMockBuilder(RequestInterface::class)
             ->setMethods(['getPost'])
             ->getMockForAbstractClass();
-        $this->storeManagerMock = $this->createMock(StoreManagerInterface::class);
-        $this->stockFilterMock = $this->createMock(StockDataFilter::class);
-
+        $this->storeManagerMock = $this->getMockBuilder(StoreManagerInterface::class)
+            ->getMockForAbstractClass();
+        $this->stockFilterMock = $this->getMockBuilder(StockDataFilter::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->productMock = $this->getMockBuilder(Product::class)
             ->setMethods(
                 [
@@ -149,33 +150,29 @@ class HelperTest extends TestCase
             )
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
-        $productExtensionAttributes = $this->getMockBuilder(ProductExtensionInterface::class)
-            ->setMethods(['getCategoryLinks', 'setCategoryLinks'])
-            ->getMockForAbstractClass();
-        $this->productMock->setExtensionAttributes($productExtensionAttributes);
-
         $this->customOptionFactoryMock = $this->getMockBuilder(ProductCustomOptionInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->setMethods(['create'])
             ->getMock();
-        $this->productLinksMock = $this->createMock(ProductLinks::class);
-        $this->linkTypeProviderMock = $this->createMock(LinkTypeProvider::class);
+        $this->productLinksMock = $this->getMockBuilder(ProductLinks::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->linkTypeProviderMock = $this->getMockBuilder(LinkTypeProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->productLinksMock->expects($this->any())
             ->method('initializeLinks')
             ->willReturn($this->productMock);
-        $this->attributeFilterMock = $this->createMock(AttributeFilter::class);
-        $this->localeFormatMock = $this->createMock(Format::class);
-
-        $this->dateTimeFilterMock = $this->createMock(DateTime::class);
-
-        $categoryLinkFactoryMock = $this->getMockBuilder(CategoryLinkInterfaceFactory::class)
-            ->setMethods(['create'])
+        $this->attributeFilterMock = $this->getMockBuilder(AttributeFilter::class)
+            ->setMethods(['prepareProductAttributes'])
             ->disableOriginalConstructor()
             ->getMock();
-        $categoryLinkFactoryMock->method('create')
-            ->willReturnCallback(function () {
-                return $this->createMock(CategoryLinkInterface::class);
-            });
+        $this->localeFormatMock = $this->getMockBuilder(Format::class)
+            ->setMethods(['getNumber'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->dateTimeFilterMock = $this->createMock(DateTime::class);
 
         $this->helper = $this->objectManager->getObject(
             Helper::class,
@@ -190,12 +187,13 @@ class HelperTest extends TestCase
                 'linkTypeProvider' => $this->linkTypeProviderMock,
                 'attributeFilter' => $this->attributeFilterMock,
                 'localeFormat' => $this->localeFormatMock,
-                'dateTimeFilter' => $this->dateTimeFilterMock,
-                'categoryLinkFactory' => $categoryLinkFactoryMock,
+                'dateTimeFilter' => $this->dateTimeFilterMock
             ]
         );
 
-        $this->linkResolverMock = $this->createMock(Resolver::class);
+        $this->linkResolverMock = $this->getMockBuilder(Resolver::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $helperReflection = new \ReflectionClass(get_class($this->helper));
         $resolverProperty = $helperReflection->getProperty('linkResolver');
         $resolverProperty->setAccessible(true);

@@ -25,7 +25,8 @@
             <createData entity="_defaultCategory" stepKey="createSecondCategory"/>
 
             <!-- Switch "Category Product" and "Product Category" indexers to "Update by Schedule" mode -->
-            <actionGroup ref="AdminOpenIndexManagementPageActionGroup" stepKey="onIndexManagement"/>
+            <amOnPage url="{{AdminIndexManagementPage.url}}" stepKey="onIndexManagement"/>
+            <waitForPageLoad stepKey="waitForManagementPage"/>
 
             <actionGroup ref="AdminSwitchIndexerToActionModeActionGroup" stepKey="switchCategoryProduct">
                 <argument name="indexerValue" value="catalog_category_product"/>
@@ -33,14 +34,12 @@
             <actionGroup ref="AdminSwitchIndexerToActionModeActionGroup" stepKey="switchProductCategory">
                 <argument name="indexerValue" value="catalog_product_category"/>
             </actionGroup>
-            <actionGroup ref="AdminSwitchIndexerToActionModeActionGroup" stepKey="switchCatalogSearch">
-                <argument name="indexerValue" value="catalogsearch_fulltext"/>
-            </actionGroup>
         </before>
 
         <after>
             <!-- Switch "Category Product" and "Product Category" indexers to "Update by Save" mode -->
-            <actionGroup ref="AdminOpenIndexManagementPageActionGroup" stepKey="onIndexManagement"/>
+            <amOnPage url="{{AdminIndexManagementPage.url}}" stepKey="onIndexManagement"/>
+            <waitForPageLoad stepKey="waitForManagementPage"/>
 
             <actionGroup ref="AdminSwitchIndexerToActionModeActionGroup" stepKey="switchCategoryProduct">
                 <argument name="indexerValue" value="catalog_category_product"/>
@@ -90,7 +89,8 @@
         <see selector="{{AdminIndexManagementSection.successMessage}}"  userInput="You saved the configuration." stepKey="seeMessage"/>
 
         <!-- Navigate to the Catalog > Products -->
-        <actionGroup ref="AdminOpenCatalogProductPageActionGroup" stepKey="onCatalogProductPage"/>
+        <amOnPage url="{{AdminCatalogProductPage.url}}" stepKey="onCatalogProductPage"/>
+        <waitForPageLoad stepKey="waitForProductPage"/>
 
         <!-- Click on <product1>: Product page opens-->
         <actionGroup ref="FilterProductGridByNameActionGroup" stepKey="filterProduct">
@@ -160,7 +160,8 @@
         <actionGroup ref="AdminLoginActionGroup" stepKey="LoginAdmin"/>
 
         <!-- Navigate to the Catalog > Products: Navigate to the Catalog>Products -->
-        <actionGroup ref="AdminOpenCatalogProductPageActionGroup" stepKey="amOnProductPage"/>
+        <amOnPage url="{{AdminCatalogProductPage.url}}" stepKey="amOnProductPage"/>
+        <waitForPageLoad stepKey="waitForProductsPage"/>
 
         <!-- Click on <product1> -->
         <actionGroup ref="FilterAndSelectProductActionGroup" stepKey="openSimpleProduct">

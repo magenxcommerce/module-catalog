@@ -9,7 +9,7 @@ use Magento\Catalog\Model\Indexer\Product\Flat\Table\BuilderInterfaceFactory;
 use Magento\Store\Model\Store;
 
 /**
- * Prepare temporary tables structure for product flat indexer
+ * Class TableBuilder
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -86,13 +86,12 @@ class TableBuilder
         //Create list of temporary tables based on available attributes attributes
         $valueTables = [];
         foreach ($temporaryEavAttributes as $tableName => $columns) {
-            $valueTables[] = $this->_createTemporaryTable(
-                $this->_getTemporaryTableName($tableName),
-                $columns,
-                $valueFieldSuffix
+            // phpcs:ignore Magento2.Performance.ForeachArrayMerge
+            $valueTables = array_merge(
+                $valueTables,
+                $this->_createTemporaryTable($this->_getTemporaryTableName($tableName), $columns, $valueFieldSuffix)
             );
         }
-        $valueTables = array_merge([], ...$valueTables);
 
         //Fill "base" table which contains all available products
         $this->_fillTemporaryEntityTable($entityTableName, $entityTableColumns, $changedIds);
@@ -348,9 +347,7 @@ class TableBuilder
                 }
 
                 if (!empty($changedIds)) {
-                    $select->where(
-                        $this->_connection->quoteInto('e.entity_id IN (?)', $changedIds, \Zend_Db::INT_TYPE)
-                    );
+                    $select->where($this->_connection->quoteInto('e.entity_id IN (?)', $changedIds));
                 }
 
                 $sql = $select->insertFromSelect($temporaryTableName, $columns, true);
@@ -358,9 +355,7 @@ class TableBuilder
 
                 if (count($valueColumns) > 1) {
                     if (!empty($changedIds)) {
-                        $selectValue->where(
-                            $this->_connection->quoteInto('e.entity_id IN (?)', $changedIds, \Zend_Db::INT_TYPE)
-                        );
+                        $selectValue->where($this->_connection->quoteInto('e.entity_id IN (?)', $changedIds));
                     }
                     $sql = $selectValue->insertFromSelect($temporaryValueTableName, $valueColumns, true);
                     $this->_connection->query($sql);

@@ -3,41 +3,39 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Catalog\Model;
-
-use Magento\Catalog\Api\Data\CategoryLinkExtensionInterface;
-use Magento\Catalog\Api\Data\CategoryLinkInterface;
-use Magento\Framework\Model\AbstractExtensibleModel;
 
 /**
  * @codeCoverageIgnore
  */
-class CategoryLink extends AbstractExtensibleModel implements CategoryLinkInterface
+class CategoryLink extends \Magento\Framework\Api\AbstractExtensibleObject implements
+    \Magento\Catalog\Api\Data\CategoryLinkInterface
 {
-    public const KEY_POSITION = 'position';
-    public const KEY_CATEGORY_ID = 'category_id';
+    /**#@+
+     * Constants
+     */
+    const KEY_POSITION = 'position';
+    const KEY_CATEGORY_ID = 'category_id';
+    /**#@-*/
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPosition()
     {
-        return $this->getData(self::KEY_POSITION);
+        return $this->_get(self::KEY_POSITION);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCategoryId()
     {
-        return $this->getData(self::KEY_CATEGORY_ID);
+        return $this->_get(self::KEY_CATEGORY_ID);
     }
 
     /**
-     * @inheritDoc
-     *
      * @param int $position
      * @return $this
      */
@@ -58,7 +56,7 @@ class CategoryLink extends AbstractExtensibleModel implements CategoryLinkInterf
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @return \Magento\Catalog\Api\Data\CategoryLinkExtensionInterface|null
      */
@@ -68,13 +66,14 @@ class CategoryLink extends AbstractExtensibleModel implements CategoryLinkInterf
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @param \Magento\Catalog\Api\Data\CategoryLinkExtensionInterface $extensionAttributes
      * @return $this
      */
-    public function setExtensionAttributes(CategoryLinkExtensionInterface $extensionAttributes)
-    {
+    public function setExtensionAttributes(
+        \Magento\Catalog\Api\Data\CategoryLinkExtensionInterface $extensionAttributes
+    ) {
         return $this->_setExtensionAttributes($extensionAttributes);
     }
 }

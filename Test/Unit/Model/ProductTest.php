@@ -313,7 +313,10 @@ class ProductTest extends TestCase
 
         $contextMock = $this->createPartialMock(
             Context::class,
-            ['getEventDispatcher', 'getCacheManager', 'getAppState', 'getActionValidator']
+            ['getEventDispatcher', 'getCacheManager', 'getAppState', 'getActionValidator'],
+            [],
+            '',
+            false
         );
         $contextMock->expects($this->any())->method('getAppState')->willReturn($this->appStateMock);
         $contextMock->expects($this->any())
@@ -538,7 +541,7 @@ class ProductTest extends TestCase
     /**
      * @return array
      */
-    public function getSingleStoreIds(): array
+    public function getSingleStoreIds()
     {
         return [
             [
@@ -616,7 +619,7 @@ class ProductTest extends TestCase
 
         $result = $product->getCategoryCollection();
 
-        $productIdCachedActual = $this->getPropertyValue($product, '_productIdCached');
+        $productIdCachedActual = $this->getPropertyValue($product, '_productIdCached', $productIdCached);
         $this->assertEquals($getIdResult, $productIdCachedActual);
         $this->assertEquals($initCategoryCollection, $result);
     }
@@ -624,7 +627,7 @@ class ProductTest extends TestCase
     /**
      * @return array
      */
-    public function getCategoryCollectionCollectionNullDataProvider(): array
+    public function getCategoryCollectionCollectionNullDataProvider()
     {
         return [
             [
@@ -739,7 +742,7 @@ class ProductTest extends TestCase
     /**
      * @return array
      */
-    public function getProductReindexProvider(): array
+    public function getProductReindexProvider()
     {
         return [
             'set 1' => [true, false, 1, 1],
@@ -771,18 +774,12 @@ class ProductTest extends TestCase
     /**
      * @dataProvider getIdentitiesProvider
      * @param array $expected
-     * @param array|null $origData
+     * @param array $origData
      * @param array $data
      * @param bool $isDeleted
-     * @param bool $isNew
      */
-    public function testGetIdentities(
-        array $expected,
-        ?array $origData,
-        array $data,
-        bool $isDeleted = false,
-        bool $isNew = false
-    ) {
+    public function testGetIdentities($expected, $origData, $data, $isDeleted = false)
+    {
         $this->model->setIdFieldName('id');
         if (is_array($origData)) {
             foreach ($origData as $key => $value) {
@@ -793,14 +790,13 @@ class ProductTest extends TestCase
             $this->model->setData($key, $value);
         }
         $this->model->isDeleted($isDeleted);
-        $this->model->isObjectNew($isNew);
         $this->assertEquals($expected, $this->model->getIdentities());
     }
 
     /**
      * @return array
      */
-    public function getIdentitiesProvider(): array
+    public function getIdentitiesProvider()
     {
         $extensionAttributesMock = $this->getMockBuilder(ExtensionAttributesInterface::class)
             ->disableOriginalConstructor()
@@ -818,99 +814,80 @@ class ProductTest extends TestCase
                 ['id' => 1, 'name' => 'value', 'category_ids' => [1]],
             ],
             'new product' => $this->getNewProductProviderData(),
-            'new disabled product' => $this->getNewDisabledProductProviderData(),
             'status and category change' => [
                 [0 => 'cat_p_1', 1 => 'cat_c_p_1', 2 => 'cat_c_p_2'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_DISABLED],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 2],
                 [
                     'id' => 1,
                     'name' => 'value',
                     'category_ids' => [2],
-                    'status' => Status::STATUS_ENABLED,
+                    'status' => 1,
                     'affected_category_ids' => [1, 2],
                     'is_changed_categories' => true
                 ],
             ],
-            'category change for disabled product' => [
-                [0 => 'cat_p_1'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_DISABLED],
-                [
-                    'id' => 1,
-                    'name' => 'value',
-                    'category_ids' => [2],
-                    'status' => Status::STATUS_DISABLED,
-                    'affected_category_ids' => [1, 2],
-                    'is_changed_categories' => true
-                ],
-            ],
-            'status change to disabled' => [
+            'status change only' => [
                 [0 => 'cat_p_1', 1 => 'cat_c_p_7'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => Status::STATUS_ENABLED],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => Status::STATUS_DISABLED],
-            ],
-            'status change to enabled' => [
-                [0 => 'cat_p_1', 1 => 'cat_c_p_7'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => Status::STATUS_DISABLED],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => Status::STATUS_ENABLED],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => 1],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [7], 'status' => 2],
             ],
             'status changed, category unassigned' => $this->getStatusAndCategoryChangesData(),
             'no status changes' => [
                 [0 => 'cat_p_1'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
             ],
-            'no stock status changes' => $this->getNoStockStatusChangesData($extensionAttributesMock),
-            'no stock status data 1' => [
+            'no stock status changes' => [
                 [0 => 'cat_p_1'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
                 [
                     'id' => 1,
                     'name' => 'value',
                     'category_ids' => [1],
-                    'status' => Status::STATUS_ENABLED,
+                    'status' => 1,
+                    'stock_data' => ['is_in_stock' => true],
+                    ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttributesMock,
+                ],
+            ],
+            'no stock status data 1' => [
+                [0 => 'cat_p_1'],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
+                [
+                    'id' => 1,
+                    'name' => 'value',
+                    'category_ids' => [1],
+                    'status' => 1,
                     ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttributesMock,
                 ],
             ],
             'no stock status data 2' => [
                 [0 => 'cat_p_1'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
+                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
                 [
                     'id' => 1,
                     'name' => 'value',
                     'category_ids' => [1],
-                    'status' => Status::STATUS_ENABLED,
+                    'status' => 1,
                     'stock_data' => ['is_in_stock' => true],
                 ],
             ],
-            'stock status changes for enabled product' => $this->getStatusStockProviderData($extensionAttributesMock),
-            'stock status changes for disabled product' => [
-                [0 => 'cat_p_1'],
-                ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_DISABLED],
-                [
-                    'id' => 1,
-                    'name' => 'value',
-                    'category_ids' => [1],
-                    'status' => Status::STATUS_DISABLED,
-                    'stock_data' => ['is_in_stock' => false],
-                    ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttributesMock,
-                ],
-            ],
+            'stock status changes' => $this->getStatusStockProviderData($extensionAttributesMock),
         ];
     }
 
     /**
      * @return array
      */
-    private function getStatusAndCategoryChangesData(): array
+    private function getStatusAndCategoryChangesData()
     {
         return [
             [0 => 'cat_p_1', 1 => 'cat_c_p_5'],
-            ['id' => 1, 'name' => 'value', 'category_ids' => [5], 'status' => Status::STATUS_DISABLED],
+            ['id' => 1, 'name' => 'value', 'category_ids' => [5], 'status' => 2],
             [
                 'id' => 1,
                 'name' => 'value',
                 'category_ids' => [],
-                'status' => Status::STATUS_ENABLED,
+                'status' => 1,
                 'is_changed_categories' => true,
                 'affected_category_ids' => [5]
             ],
@@ -918,29 +895,9 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @param MockObject $extensionAttributesMock
      * @return array
      */
-    private function getNoStockStatusChangesData($extensionAttributesMock): array
-    {
-        return [
-            [0 => 'cat_p_1'],
-            ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
-            [
-                'id' => 1,
-                'name' => 'value',
-                'category_ids' => [1],
-                'status' => Status::STATUS_ENABLED,
-                'stock_data' => ['is_in_stock' => true],
-                ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttributesMock,
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    private function getNewProductProviderData(): array
+    private function getNewProductProviderData()
     {
         return [
             ['cat_p_1', 'cat_c_p_1'],
@@ -951,30 +908,7 @@ class ProductTest extends TestCase
                 'category_ids' => [1],
                 'affected_category_ids' => [1],
                 'is_changed_categories' => true
-            ],
-            false,
-            true,
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    private function getNewDisabledProductProviderData(): array
-    {
-        return [
-            ['cat_p_1'],
-            null,
-            [
-                'id' => 1,
-                'name' => 'value',
-                'category_ids' => [1],
-                'status' => Status::STATUS_DISABLED,
-                'affected_category_ids' => [1],
-                'is_changed_categories' => true
-            ],
-            false,
-            true,
+            ]
         ];
     }
 
@@ -982,16 +916,16 @@ class ProductTest extends TestCase
      * @param MockObject $extensionAttributesMock
      * @return array
      */
-    private function getStatusStockProviderData($extensionAttributesMock): array
+    private function getStatusStockProviderData($extensionAttributesMock)
     {
         return [
             [0 => 'cat_p_1', 1 => 'cat_c_p_1'],
-            ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => Status::STATUS_ENABLED],
+            ['id' => 1, 'name' => 'value', 'category_ids' => [1], 'status' => 1],
             [
                 'id' => 1,
                 'name' => 'value',
                 'category_ids' => [1],
-                'status' => Status::STATUS_ENABLED,
+                'status' => 1,
                 'stock_data' => ['is_in_stock' => false],
                 ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttributesMock,
             ],
@@ -1506,7 +1440,7 @@ class ProductTest extends TestCase
     /**
      * @return array
      */
-    public function priceDataProvider(): array
+    public function priceDataProvider()
     {
         return [
             'receive empty array' => [[]],

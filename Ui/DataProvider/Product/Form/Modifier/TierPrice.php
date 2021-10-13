@@ -118,10 +118,6 @@ class TierPrice extends AbstractModifier
                             'showLabel' => false,
                             'dataScope' => '',
                             'additionalClasses' => 'control-grouped',
-                            'imports' => [
-                                'currency' => '${ $.parentName }.website_id:currency',
-                                '__disableTmpl' => ['currency' => false],
-                            ],
                             'sortOrder' => isset($priceMeta['arguments']['data']['config']['sortOrder'])
                                 ? $priceMeta['arguments']['data']['config']['sortOrder'] : 40,
                         ],

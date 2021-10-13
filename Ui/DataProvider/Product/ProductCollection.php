@@ -5,10 +5,16 @@
  */
 namespace Magento\Catalog\Ui\DataProvider\Product;
 
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Eav\Model\Entity\Attribute\AttributeInterface;
+
 /**
  * Collection which is used for rendering product list in the backend.
  *
  * Used for product grid and customizes behavior of the default Product collection for grid needs.
+ *
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class ProductCollection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
 {
@@ -27,56 +33,64 @@ class ProductCollection extends \Magento\Catalog\Model\ResourceModel\Product\Col
     }
 
     /**
-     * Return approximately amount if too much entities.
+     * Add attribute filter to collection
      *
-     * @return int|mixed
+     * @param AttributeInterface|integer|string|array $attribute
+     * @param null|string|array $condition
+     * @param string $joinType
+     * @return $this
+     * @throws LocalizedException
      */
-    public function getSize()
+    public function addAttributeToFilter($attribute, $condition = null, $joinType = 'inner')
     {
-        $sql = $this->getSelectCountSql();
-        $possibleCount = $this->analyzeCount($sql);
-
-        if ($possibleCount > 20000) {
-            return $possibleCount;
+        $storeId = (int)$this->getStoreId();
+        if ($attribute === 'is_saleable'
+            || is_array($attribute)
+            || $storeId !== $this->getDefaultStoreId()
+        ) {
+            return parent::addAttributeToFilter($attribute, $condition, $joinType);
         }
 
-        return parent::getSize();
-    }
-
-    /**
-     * Analyze amount of entities in DB.
-     *
-     * @param $sql
-     * @return int|mixed
-     * @throws \Zend_Db_Statement_Exception
-     */
-    private function analyzeCount($sql)
-    {
-        $results = $this->getConnection()->query('EXPLAIN ' . $sql)->fetchAll();
-        $alias = $this->getMainTableAlias();
-
-        foreach ($results as $result) {
-            if ($result['table'] == $alias) {
-                return $result['rows'];
+        if ($attribute instanceof AttributeInterface) {
+            $attributeModel = $attribute;
+        } else {
+            $attributeModel = $this->getEntity()->getAttribute($attribute);
+            if ($attributeModel === false) {
+                throw new LocalizedException(
+                    __('Invalid attribute identifier for filter (%1)', get_class($attribute))
+                );
             }
         }
 
-        return 0;
+        if ($attributeModel->isScopeGlobal() || $attributeModel->getBackend()->isStatic()) {
+            return parent::addAttributeToFilter($attribute, $condition, $joinType);
+        }
+
+        $this->addAttributeToFilterAllStores($attributeModel, $condition);
+
+        return $this;
     }
 
     /**
-     * Identify main table alias or its name if alias is not defined.
+     * Add attribute to filter by all stores
      *
-     * @return string
-     * @throws \LogicException
+     * @param Attribute $attributeModel
+     * @param array $condition
+     * @return void
      */
-    private function getMainTableAlias()
+    private function addAttributeToFilterAllStores(Attribute $attributeModel, array $condition): void
     {
-        foreach ($this->getSelect()->getPart(\Magento\Framework\DB\Select::FROM) as $tableAlias => $tableMetadata) {
-            if ($tableMetadata['joinType'] == 'from') {
-                return $tableAlias;
-            }
-        }
-        throw new \LogicException("Main table cannot be identified.");
+        $tableName = $this->getTable($attributeModel->getBackendTable());
+        $entity = $this->getEntity();
+        $fKey = 'e.' . $this->getEntityPkName($entity);
+        $pKey = $tableName . '.' . $this->getEntityPkName($entity);
+        $attributeId = $attributeModel->getAttributeId();
+        $condition = "({$pKey} = {$fKey}) AND ("
+            . $this->_getConditionSql("{$tableName}.value", $condition)
+            . ') AND ('
+            . $this->_getConditionSql("{$tableName}.attribute_id", $attributeId)
+            . ')';
+        $selectExistsInAllStores = $this->getConnection()->select()->from($tableName);
+        $this->getSelect()->exists($selectExistsInAllStores, $condition);
     }
 }

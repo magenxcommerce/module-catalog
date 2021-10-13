@@ -5,8 +5,6 @@
  */
 namespace Magento\Catalog\Model\ResourceModel\Indexer;
 
-use Magento\Framework\DB\Adapter\AdapterInterface;
-
 /**
  * Logic for switching active and replica index tables.
  */
@@ -29,7 +27,7 @@ class ActiveTableSwitcher
     /**
      * Switch index tables from replica to active.
      *
-     * @param AdapterInterface $connection
+     * @param \Magento\Framework\DB\Adapter\AdapterInterface $connection
      * @param array $tableNames
      * @return void
      */
@@ -40,32 +38,22 @@ class ActiveTableSwitcher
             $outdatedTableName = $tableName . $this->outdatedTableSuffix;
             $replicaTableName = $tableName . $this->additionalTableSuffix;
 
-            $tableComment = $connection->showTableStatus($tableName)['Comment'] ?? '';
-            $replicaComment = $connection->showTableStatus($replicaTableName)['Comment'] ?? '';
-
             $renameBatch = [
                 [
                     'oldName' => $tableName,
-                    'newName' => $outdatedTableName,
+                    'newName' => $outdatedTableName
                 ],
                 [
                     'oldName' => $replicaTableName,
-                    'newName' => $tableName,
+                    'newName' => $tableName
                 ],
                 [
                     'oldName' => $outdatedTableName,
-                    'newName' => $replicaTableName,
-                ],
+                    'newName' => $replicaTableName
+                ]
             ];
-
-            $toRename[] = $renameBatch;
-
-            if (!empty($toRename) && $replicaComment !== '' && $tableComment !== $replicaComment) {
-                $connection->changeTableComment($tableName, $replicaComment);
-                $connection->changeTableComment($replicaTableName, $tableComment);
-            }
+            $toRename = array_merge($toRename, $renameBatch);
         }
-        $toRename = array_merge([], ...$toRename);
 
         if (!empty($toRename)) {
             $connection->renameTablesBatch($toRename);
@@ -73,8 +61,6 @@ class ActiveTableSwitcher
     }
 
     /**
-     * Returns table name with additional suffix
-     *
      * @param string $tableName
      * @return string
      */

@@ -84,6 +84,11 @@ class RepositoryTest extends TestCase
     protected $searchResultMock;
 
     /**
+     * @var AttributeOptionManagementInterface|MockObject
+     */
+    private $optionManagementMock;
+
+    /**
      * @inheritdoc
      */
     protected function setUp(): void
@@ -111,6 +116,8 @@ class RepositoryTest extends TestCase
                     ['getItems', 'getSearchCriteria', 'getTotalCount', 'setItems', 'setSearchCriteria', 'setTotalCount']
                 )
                 ->getMockForAbstractClass();
+        $this->optionManagementMock =
+            $this->getMockForAbstractClass(ProductAttributeOptionManagementInterface::class);
 
         $this->model = new Repository(
             $this->attributeResourceMock,
@@ -119,7 +126,8 @@ class RepositoryTest extends TestCase
             $this->eavAttributeRepositoryMock,
             $this->eavConfigMock,
             $this->validatorFactoryMock,
-            $this->searchCriteriaBuilderMock
+            $this->searchCriteriaBuilderMock,
+            $this->optionManagementMock
         );
     }
 
@@ -267,16 +275,13 @@ class RepositoryTest extends TestCase
     {
         $attributeId = 1;
         $attributeCode = 'existing_attribute_code';
-        $backendModel = 'backend_model';
         $attributeMock = $this->createMock(Attribute::class);
         $attributeMock->expects($this->any())->method('getAttributeCode')->willReturn($attributeCode);
         $attributeMock->expects($this->any())->method('getAttributeId')->willReturn($attributeId);
-        $attributeMock->expects($this->once())->method('setBackendModel')->with($backendModel)->willReturnSelf();
 
         $existingModelMock = $this->createMock(Attribute::class);
         $existingModelMock->expects($this->any())->method('getAttributeCode')->willReturn($attributeCode);
         $existingModelMock->expects($this->any())->method('getAttributeId')->willReturn($attributeId);
-        $existingModelMock->expects($this->once())->method('getBackendModel')->willReturn($backendModel);
 
         $this->eavAttributeRepositoryMock->expects($this->any())
             ->method('get')
@@ -286,6 +291,7 @@ class RepositoryTest extends TestCase
         // Attribute code must not be changed after attribute creation
         $attributeMock->expects($this->once())->method('setAttributeCode')->with($attributeCode);
         $this->attributeResourceMock->expects($this->once())->method('save')->with($attributeMock);
+        $this->optionManagementMock->expects($this->never())->method('add');
 
         $this->model->save($attributeMock);
     }
@@ -295,7 +301,6 @@ class RepositoryTest extends TestCase
      */
     public function testSaveSavesDefaultFrontendLabelIfItIsPresentInPayload()
     {
-        $backendModel = 'backend_model';
         $labelMock = $this->getMockForAbstractClass(AttributeFrontendLabelInterface::class);
         $labelMock->expects($this->any())->method('getStoreId')->willReturn(1);
         $labelMock->expects($this->any())->method('getLabel')->willReturn('Store Scope Label');
@@ -308,13 +313,11 @@ class RepositoryTest extends TestCase
         $attributeMock->expects($this->any())->method('getDefaultFrontendLabel')->willReturn(null);
         $attributeMock->expects($this->any())->method('getFrontendLabels')->willReturn([$labelMock]);
         $attributeMock->expects($this->any())->method('getOptions')->willReturn([]);
-        $attributeMock->expects($this->once())->method('setBackendModel')->with($backendModel)->willReturnSelf();
 
         $existingModelMock = $this->createMock(Attribute::class);
         $existingModelMock->expects($this->any())->method('getDefaultFrontendLabel')->willReturn('Default Label');
         $existingModelMock->expects($this->any())->method('getAttributeId')->willReturn($attributeId);
         $existingModelMock->expects($this->any())->method('getAttributeCode')->willReturn($attributeCode);
-        $existingModelMock->expects($this->once())->method('getBackendModel')->willReturn($backendModel);
 
         $this->eavAttributeRepositoryMock->expects($this->any())
             ->method('get')

@@ -227,16 +227,12 @@ class Product extends AbstractResource
      */
     public function getWebsiteIdsByProductIds($productIds)
     {
-        if (!is_array($productIds) || empty($productIds)) {
-            return [];
-        }
         $select = $this->getConnection()->select()->from(
             $this->getProductWebsiteTable(),
             ['product_id', 'website_id']
         )->where(
             'product_id IN (?)',
-            $productIds,
-            \Zend_Db::INT_TYPE
+            $productIds
         );
         $productsWebsites = [];
         foreach ($this->getConnection()->fetchAll($select) as $productInfo) {
@@ -361,7 +357,7 @@ class Product extends AbstractResource
         $entityId = $product->getData($entityIdField);
         foreach ($backendTables as $backendTable => $attributes) {
             $connection = $this->getConnection();
-            $where = $connection->quoteInto('attribute_id IN (?)', $attributes, \Zend_Db::INT_TYPE);
+            $where = $connection->quoteInto('attribute_id IN (?)', $attributes);
             $where .= $connection->quoteInto(" AND {$entityIdField} = ?", $entityId);
             $connection->delete($backendTable, $where);
         }
@@ -454,7 +450,6 @@ class Product extends AbstractResource
         // fetching all parent IDs, including those are higher on the tree
         $entityId = (int)$object->getEntityId();
         if (!isset($this->availableCategoryIdsCache[$entityId])) {
-            $unionTables = [];
             foreach ($this->_storeManager->getStores() as $store) {
                 $unionTables[] = $this->getAvailableInCategoriesSelect(
                     $entityId,
@@ -599,8 +594,7 @@ class Product extends AbstractResource
             ['entity_id', 'sku']
         )->where(
             'entity_id IN (?)',
-            $productIds,
-            \Zend_Db::INT_TYPE
+            $productIds
         );
         return $this->getConnection()->fetchAll($select);
     }

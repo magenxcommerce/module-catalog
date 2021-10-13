@@ -71,7 +71,7 @@ class Breadcrumbs extends DataObject implements ArgumentInterface
     public function getCategoryUrlSuffix()
     {
         return $this->scopeConfig->getValue(
-            self::XML_PATH_CATEGORY_URL_SUFFIX,
+            static::XML_PATH_CATEGORY_URL_SUFFIX,
             ScopeInterface::SCOPE_STORE
         );
     }
@@ -84,7 +84,7 @@ class Breadcrumbs extends DataObject implements ArgumentInterface
     public function isCategoryUsedInProductUrl(): bool
     {
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_PRODUCT_USE_CATEGORIES,
+            static::XML_PATH_PRODUCT_USE_CATEGORIES,
             ScopeInterface::SCOPE_STORE
         );
     }

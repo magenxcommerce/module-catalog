@@ -55,10 +55,7 @@ class TableResolver
         string $result,
         $modelEntity
     ) {
-        if (!is_array($modelEntity) &&
-            $modelEntity === AbstractAction::MAIN_INDEX_TABLE &&
-            $this->storeManager->getStore()->getId()
-        ) {
+        if (!is_array($modelEntity) && $modelEntity === AbstractAction::MAIN_INDEX_TABLE) {
             $catalogCategoryProductDimension = new Dimension(
                 \Magento\Store\Model\Store::ENTITY,
                 $this->storeManager->getStore()->getId()

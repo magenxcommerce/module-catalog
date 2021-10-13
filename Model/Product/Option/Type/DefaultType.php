@@ -13,8 +13,6 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Configuration\Item\Option\OptionInterface;
 use Magento\Catalog\Model\Product\Configuration\Item\ItemInterface;
 use Magento\Catalog\Model\Product\Option\Value;
-use Magento\Catalog\Pricing\Price\CalculateCustomOptionCatalogRule;
-use Magento\Framework\App\ObjectManager;
 
 /**
  * Catalog product option default type
@@ -63,29 +61,20 @@ class DefaultType extends \Magento\Framework\DataObject
     protected $_checkoutSession;
 
     /**
-     * @var CalculateCustomOptionCatalogRule
-     */
-    private $calculateCustomOptionCatalogRule;
-
-    /**
      * Construct
      *
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param array $data
-     * @param CalculateCustomOptionCatalogRule|null $calculateCustomOptionCatalogRule
      */
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        array $data = [],
-        CalculateCustomOptionCatalogRule $calculateCustomOptionCatalogRule = null
+        array $data = []
     ) {
         $this->_checkoutSession = $checkoutSession;
         parent::__construct($data);
         $this->_scopeConfig = $scopeConfig;
-        $this->calculateCustomOptionCatalogRule = $calculateCustomOptionCatalogRule ?? ObjectManager::getInstance()
-                ->get(CalculateCustomOptionCatalogRule::class);
     }
 
     /**
@@ -352,20 +341,7 @@ class DefaultType extends \Magento\Framework\DataObject
     {
         $option = $this->getOption();
 
-        $catalogPriceValue = $this->calculateCustomOptionCatalogRule->execute(
-            $option->getProduct(),
-            (float)$option->getPrice(),
-            $option->getPriceType() === Value::TYPE_PERCENT
-        );
-        if ($catalogPriceValue !== null) {
-            return $catalogPriceValue;
-        } else {
-            return $this->_getChargeableOptionPrice(
-                $option->getPrice(),
-                $option->getPriceType() === Value::TYPE_PERCENT,
-                $basePrice
-            );
-        }
+        return $this->_getChargeableOptionPrice($option->getPrice(), $option->getPriceType() == 'percent', $basePrice);
     }
 
     /**

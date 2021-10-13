@@ -127,12 +127,14 @@
         <waitForPageLoad stepKey="waitForCustomersPage"/>
         <see userInput="You saved the customer." stepKey="CustomerIsSaved"/>
 
-        <actionGroup ref="AdminOpenCustomersGridActionGroup" stepKey="navigateToCustomers"/>
+        <amOnPage url="{{AdminCustomerPage.url}}" stepKey="navigateToCustomers"/>
+        <waitForPageLoad stepKey="waitForPageLoad1" />
         <click selector="{{AdminCustomerFiltersSection.clearAll}}" stepKey="ClearFilters"/>
         <waitForPageLoad stepKey="waitForFiltersClear"/>
 
         <!--Create Cart Price Rule-->
-        <actionGroup ref="AdminOpenCartPriceRulesPageActionGroup" stepKey="amOnCartPriceList"/>
+        <amOnPage url="{{AdminCartPriceRulesPage.url}}" stepKey="amOnCartPriceList"/>
+        <waitForPageLoad stepKey="waitForPriceList"/>
         <click selector="{{AdminCartPriceRulesSection.addNewRuleButton}}" stepKey="clickAddNewRule"/>
         <waitForPageLoad stepKey="waitForPageDiscountPageIsLoaded"/>
         <fillField selector="{{AdminCartPriceRulesFormSection.ruleName}}" userInput="ship" stepKey="fillRuleName"/>

@@ -30,8 +30,7 @@ use Magento\Framework\Exception\TemporaryState\CouldNotSaveException as Temporar
 use Magento\Framework\Exception\ValidatorException;
 
 /**
- * @inheritdoc
- *
+ * Product Repository.
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.TooManyFields)
  */
@@ -544,9 +543,7 @@ class ProductRepository implements \Magento\Catalog\Api\ProductRepositoryInterfa
         if (!$ignoreLinksFlag && $ignoreLinksFlag !== null) {
             $productLinks = $product->getProductLinks();
         }
-        if (!isset($productDataArray['store_id'])) {
-            $productDataArray['store_id'] = (int) $this->storeManager->getStore()->getId();
-        }
+        $productDataArray['store_id'] = (int)$this->storeManager->getStore()->getId();
         $product = $this->initializeProductData($productDataArray, empty($existingProduct));
 
         $this->processLinks($product, $productLinks);
@@ -738,7 +735,6 @@ class ProductRepository implements \Magento\Catalog\Api\ProductRepositoryInterfa
     {
         if (!$this->collectionProcessor) {
             $this->collectionProcessor = \Magento\Framework\App\ObjectManager::getInstance()->get(
-                // phpstan:ignore "Class Magento\Catalog\Model\Api\SearchCriteria\ProductCollectionProcessor not found."
                 \Magento\Catalog\Model\Api\SearchCriteria\ProductCollectionProcessor::class
             );
         }

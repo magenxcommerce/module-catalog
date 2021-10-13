@@ -15,7 +15,6 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Store\Model\Store;
 
-// phpcs:disable Magento2.Classes.AbstractApi
 /**
  * Class AbstractAction
  *
@@ -43,7 +42,7 @@ abstract class AbstractAction
 
     /**
      * Suffix for table to show it is temporary
-     * @deprecated see getIndexTable
+     * @deprecated
      */
     const TEMPORARY_TABLE_SUFFIX = '_tmp';
 
@@ -430,7 +429,7 @@ abstract class AbstractAction
                 $field,
                 $select,
                 $range,
-                \Magento\Framework\DB\Query\BatchIteratorInterface::UNIQUE_FIELD_ITERATOR
+                \Magento\Framework\DB\Query\BatchIteratorInterface::NON_UNIQUE_FIELD_ITERATOR
             );
 
             $queries = [];
@@ -505,11 +504,10 @@ abstract class AbstractAction
             []
         )->joinInner(
             ['cc2' => $temporaryTreeTable],
-            $this->connection->quoteInto(
-                'cc2.parent_id = cc.entity_id AND cc.entity_id NOT IN (?)',
-                $rootCatIds,
-                \Zend_Db::INT_TYPE
-            ),
+            'cc2.parent_id = cc.entity_id AND cc.entity_id NOT IN (' . implode(
+                ',',
+                $rootCatIds
+            ) . ')',
             []
         )->joinInner(
             ['ccp' => $this->getTable('catalog_category_product')],

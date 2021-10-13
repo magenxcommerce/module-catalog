@@ -58,10 +58,8 @@
 
         <!-- Assert attribute can be used in product creation -->
         <actionGroup ref="AdminOpenProductIndexPageActionGroup" stepKey="navigateToCatalogProductGrid"/>
-        <comment userInput="Adding the comment to replace clickAddProductToggle action for preserving Backward Compatibility" stepKey="clickAddProductDropdown"/>
-        <actionGroup ref="AdminClickAddProductToggleAndSelectProductTypeActionGroup" stepKey="clickAddSimpleProduct">
-            <argument name="productType" value="simple"/>
-        </actionGroup>
+        <click selector="{{AdminProductGridActionSection.addProductToggle}}" stepKey="clickAddProductDropdown"/>
+        <click selector="{{AdminProductGridActionSection.addSimpleProduct}}" stepKey="clickAddSimpleProduct"/>
 
         <!-- Switch from default attribute set to new attribute set -->
         <click selector="{{AdminProductFormSection.attributeSet}}" stepKey="startEditAttrSet"/>

@@ -11,6 +11,7 @@ use Magento\Catalog\Model\Indexer\Category\Flat\Plugin\StoreGroup;
 use Magento\Catalog\Model\Indexer\Category\Flat\State;
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Store\Model\Group as GroupModel;
 use Magento\Store\Model\ResourceModel\Group;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -21,32 +22,32 @@ class StoreGroupTest extends TestCase
     /**
      * @var MockObject|IndexerInterface
      */
-    private $indexerMock;
+    protected $indexerMock;
 
     /**
      * @var MockObject|State
      */
-    private $stateMock;
+    protected $stateMock;
 
     /**
      * @var StoreGroup
      */
-    private $model;
+    protected $model;
 
     /**
      * @var MockObject|Group
      */
-    private $subjectMock;
+    protected $subjectMock;
 
     /**
      * @var IndexerRegistry|MockObject
      */
-    private $indexerRegistryMock;
+    protected $indexerRegistryMock;
 
     /**
      * @var MockObject|GroupModel
      */
-    private $groupMock;
+    protected $groupMock;
 
     protected function setUp(): void
     {
@@ -69,10 +70,14 @@ class StoreGroupTest extends TestCase
 
         $this->indexerRegistryMock = $this->createPartialMock(IndexerRegistry::class, ['get']);
 
-        $this->model = new StoreGroup($this->indexerRegistryMock, $this->stateMock);
+        $this->model = (new ObjectManager($this))
+            ->getObject(
+                StoreGroup::class,
+                ['indexerRegistry' => $this->indexerRegistryMock, 'state' => $this->stateMock]
+            );
     }
 
-    public function testAfterSave(): void
+    public function testBeforeAndAfterSave()
     {
         $this->stateMock->expects($this->once())->method('isFlatEnabled')->willReturn(true);
         $this->indexerMock->expects($this->once())->method('invalidate');
@@ -85,14 +90,14 @@ class StoreGroupTest extends TestCase
             ->with('root_category_id')
             ->willReturn(true);
         $this->groupMock->expects($this->once())->method('isObjectNew')->willReturn(false);
-
+        $this->model->beforeSave($this->subjectMock, $this->groupMock);
         $this->assertSame(
             $this->subjectMock,
             $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->groupMock)
         );
     }
 
-    public function testAfterSaveNotNew(): void
+    public function testBeforeAndAfterSaveNotNew()
     {
         $this->stateMock->expects($this->never())->method('isFlatEnabled');
         $this->groupMock->expects($this->once())
@@ -100,7 +105,7 @@ class StoreGroupTest extends TestCase
             ->with('root_category_id')
             ->willReturn(true);
         $this->groupMock->expects($this->once())->method('isObjectNew')->willReturn(true);
-
+        $this->model->beforeSave($this->subjectMock, $this->groupMock);
         $this->assertSame(
             $this->subjectMock,
             $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->groupMock)

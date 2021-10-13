@@ -9,7 +9,6 @@ namespace Magento\Catalog\Test\Unit\Model\Indexer\Product\Flat\Plugin;
 
 use Magento\Catalog\Model\Indexer\Product\Flat\Plugin\StoreGroup;
 use Magento\Catalog\Model\Indexer\Product\Flat\Processor;
-use Magento\Store\Model\Group as StoreGroupModel;
 use Magento\Store\Model\ResourceModel\Group;
 use Magento\Store\Model\Store;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,22 +19,17 @@ class StoreGroupTest extends TestCase
     /**
      * @var Processor|MockObject
      */
-    private $processorMock;
+    protected $processorMock;
 
     /**
      * @var Store|MockObject
      */
-    private $storeGroupMock;
+    protected $storeGroupMock;
 
     /**
      * @var MockObject
      */
-    private $subjectMock;
-
-    /**
-     * @var StoreGroup
-     */
-    private $storeGroupPlugin;
+    protected $subjectMock;
 
     protected function setUp(): void
     {
@@ -46,11 +40,9 @@ class StoreGroupTest extends TestCase
 
         $this->subjectMock = $this->createMock(Group::class);
         $this->storeGroupMock = $this->createPartialMock(
-            StoreGroupModel::class,
+            \Magento\Store\Model\Group::class,
             ['getId', 'dataHasChangedFor']
         );
-
-        $this->storeGroupPlugin = new StoreGroup($this->processorMock);
     }
 
     /**
@@ -58,16 +50,14 @@ class StoreGroupTest extends TestCase
      * @param int|null $storeId
      * @dataProvider storeGroupDataProvider
      */
-    public function testAfterSave(string $matcherMethod, ?int $storeId): void
+    public function testBeforeSave($matcherMethod, $storeId)
     {
         $this->processorMock->expects($this->{$matcherMethod}())->method('markIndexerAsInvalid');
 
         $this->storeGroupMock->expects($this->once())->method('getId')->willReturn($storeId);
 
-        $this->assertSame(
-            $this->subjectMock,
-            $this->storeGroupPlugin->afterSave($this->subjectMock, $this->subjectMock, $this->storeGroupMock)
-        );
+        $model = new StoreGroup($this->processorMock);
+        $model->beforeSave($this->subjectMock, $this->storeGroupMock);
     }
 
     /**
@@ -75,25 +65,30 @@ class StoreGroupTest extends TestCase
      * @param bool $websiteChanged
      * @dataProvider storeGroupWebsiteDataProvider
      */
-    public function testAfterSaveChangedWebsite(string $matcherMethod, bool $websiteChanged): void
+    public function testChangedWebsiteBeforeSave($matcherMethod, $websiteChanged)
     {
         $this->processorMock->expects($this->{$matcherMethod}())->method('markIndexerAsInvalid');
 
         $this->storeGroupMock->expects($this->once())->method('getId')->willReturn(1);
 
-        $this->storeGroupMock->expects($this->once())->method('dataHasChangedFor')
-            ->with('root_category_id')->willReturn($websiteChanged);
-
-        $this->assertSame(
-            $this->subjectMock,
-            $this->storeGroupPlugin->afterSave($this->subjectMock, $this->subjectMock, $this->storeGroupMock)
+        $this->storeGroupMock->expects(
+            $this->once()
+        )->method(
+            'dataHasChangedFor'
+        )->with(
+            'root_category_id'
+        )->willReturn(
+            $websiteChanged
         );
+
+        $model = new StoreGroup($this->processorMock);
+        $model->beforeSave($this->subjectMock, $this->storeGroupMock);
     }
 
     /**
      * @return array
      */
-    public function storeGroupWebsiteDataProvider(): array
+    public function storeGroupWebsiteDataProvider()
     {
         return [['once', true], ['never', false]];
     }
@@ -101,7 +96,7 @@ class StoreGroupTest extends TestCase
     /**
      * @return array
      */
-    public function storeGroupDataProvider(): array
+    public function storeGroupDataProvider()
     {
         return [['once', null], ['never', 1]];
     }

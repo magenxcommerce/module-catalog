@@ -10,8 +10,6 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Option;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Catalog\Pricing\Price\BasePrice;
-use Magento\Catalog\Pricing\Price\CalculateCustomOptionCatalogRule;
-use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Pricing\Price\CustomOptionPriceCalculator;
 use Magento\Catalog\Pricing\Price\RegularPrice;
 
@@ -72,11 +70,6 @@ class Value extends AbstractModel implements \Magento\Catalog\Api\Data\ProductCu
     private $customOptionPriceCalculator;
 
     /**
-     * @var CalculateCustomOptionCatalogRule
-     */
-    private $calculateCustomOptionCatalogRule;
-
-    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Catalog\Model\ResourceModel\Product\Option\Value\CollectionFactory $valueCollectionFactory
@@ -84,7 +77,6 @@ class Value extends AbstractModel implements \Magento\Catalog\Api\Data\ProductCu
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
      * @param CustomOptionPriceCalculator|null $customOptionPriceCalculator
-     * @param CalculateCustomOptionCatalogRule|null $calculateCustomOptionCatalogRule
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -93,14 +85,11 @@ class Value extends AbstractModel implements \Magento\Catalog\Api\Data\ProductCu
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = [],
-        CustomOptionPriceCalculator $customOptionPriceCalculator = null,
-        CalculateCustomOptionCatalogRule $calculateCustomOptionCatalogRule = null
+        CustomOptionPriceCalculator $customOptionPriceCalculator = null
     ) {
         $this->_valueCollectionFactory = $valueCollectionFactory;
         $this->customOptionPriceCalculator = $customOptionPriceCalculator
-            ?? ObjectManager::getInstance()->get(CustomOptionPriceCalculator::class);
-        $this->calculateCustomOptionCatalogRule = $calculateCustomOptionCatalogRule
-            ?? ObjectManager::getInstance()->get(CalculateCustomOptionCatalogRule::class);
+            ?? \Magento\Framework\App\ObjectManager::getInstance()->get(CustomOptionPriceCalculator::class);
 
         parent::__construct(
             $context,
@@ -264,16 +253,7 @@ class Value extends AbstractModel implements \Magento\Catalog\Api\Data\ProductCu
     public function getPrice($flag = false)
     {
         if ($flag) {
-            $catalogPriceValue = $this->calculateCustomOptionCatalogRule->execute(
-                $this->getProduct(),
-                (float)$this->getData(self::KEY_PRICE),
-                $this->getPriceType() === self::TYPE_PERCENT
-            );
-            if ($catalogPriceValue!==null) {
-                return $catalogPriceValue;
-            } else {
-                return $this->customOptionPriceCalculator->getOptionPriceByPriceCode($this, BasePrice::PRICE_CODE);
-            }
+            return $this->customOptionPriceCalculator->getOptionPriceByPriceCode($this, BasePrice::PRICE_CODE);
         }
         return $this->_getData(self::KEY_PRICE);
     }

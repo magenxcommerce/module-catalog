@@ -147,7 +147,7 @@ abstract class AbstractResource extends \Magento\Eav\Model\Entity\AbstractEntity
             ->select()
             ->from(['attr_table' => $table], [])
             ->where("attr_table.{$this->getLinkField()} = ?", $object->getData($this->getLinkField()))
-            ->where('attr_table.store_id IN (?)', $storeIds, \Zend_Db::INT_TYPE);
+            ->where('attr_table.store_id IN (?)', $storeIds);
 
         if ($setId) {
             $select->join(
@@ -562,11 +562,7 @@ abstract class AbstractResource extends \Magento\Eav\Model\Entity\AbstractEntity
         if ($typedAttributes) {
             foreach ($typedAttributes as $table => $_attributes) {
                 $defaultJoinCondition = [
-                    $connection->quoteInto(
-                        'default_value.attribute_id IN (?)',
-                        array_keys($_attributes),
-                        \Zend_Db::INT_TYPE
-                    ),
+                    $connection->quoteInto('default_value.attribute_id IN (?)', array_keys($_attributes)),
                     "default_value.{$this->getLinkField()} = e.{$this->getLinkField()}",
                     'default_value.store_id = 0',
                 ];
@@ -593,11 +589,7 @@ abstract class AbstractResource extends \Magento\Eav\Model\Entity\AbstractEntity
                         'store_value.attribute_id'
                     );
                     $joinCondition = [
-                        $connection->quoteInto(
-                            'store_value.attribute_id IN (?)',
-                            array_keys($_attributes),
-                            \Zend_Db::INT_TYPE
-                        ),
+                        $connection->quoteInto('store_value.attribute_id IN (?)', array_keys($_attributes)),
                         "store_value.{$this->getLinkField()} = e.{$this->getLinkField()}",
                         'store_value.store_id = :store_id',
                     ];

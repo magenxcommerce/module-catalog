@@ -193,7 +193,7 @@ class TierPrice extends AbstractDb
             []
         );
         if (!empty($entityIds)) {
-            $select->where('entity.entity_id IN (?)', $entityIds, \Zend_Db::INT_TYPE);
+            $select->where('entity.entity_id IN (?)', $entityIds);
         }
         $this->joinWebsites($select, $isAllWebsites);
         $this->joinCustomerGroups($select, $isAllCustomerGroups);

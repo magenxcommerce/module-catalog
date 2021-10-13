@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\Catalog\Model\ResourceModel\Product;
 
-use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Indexer\Category\Product\TableMaintainer;
 use Magento\Catalog\Model\Indexer\Product\Price\PriceTableResolver;
@@ -859,8 +858,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
                 ['name']
             )->where(
                 'product_website.product_id IN (?)',
-                array_keys($productWebsites),
-                \Zend_Db::INT_TYPE
+                array_keys($productWebsites)
             )->where(
                 'website.website_id > ?',
                 0
@@ -1360,7 +1358,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
                 $anchorStmt = clone $select;
                 $anchorStmt->limit();
                 //reset limits
-                $anchorStmt->where('count_table.category_id IN (?)', $isAnchor, \Zend_Db::INT_TYPE);
+                $anchorStmt->where('count_table.category_id IN (?)', $isAnchor);
                 $productCounts += $this->getConnection()->fetchPairs($anchorStmt);
                 $anchorStmt = null;
             }
@@ -1368,7 +1366,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
                 $notAnchorStmt = clone $select;
                 $notAnchorStmt->limit();
                 //reset limits
-                $notAnchorStmt->where('count_table.category_id IN (?)', $isNotAnchor, \Zend_Db::INT_TYPE);
+                $notAnchorStmt->where('count_table.category_id IN (?)', $isNotAnchor);
                 $notAnchorStmt->where('count_table.is_parent = 1');
                 $productCounts += $this->getConnection()->fetchPairs($notAnchorStmt);
                 $notAnchorStmt = null;
@@ -2131,17 +2129,16 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
 
         $firstCategory = array_shift($categories);
         if ($firstCategory['is_anchor'] == 1) {
-            //category hierarchy can not be modified by staging updates
-            $entityField = $this->metadataPool->getMetadata(CategoryInterface::class)->getIdentifierField();
-            $anchorCategory[] = (int)$firstCategory[$entityField];
+            $linkField = $this->getProductEntityMetadata()->getLinkField();
+            $anchorCategory[] = (int)$firstCategory[$linkField];
             foreach ($categories as $category) {
                 if (in_array($category['parent_id'], $categoryIds)
                     && in_array($category['parent_id'], $anchorCategory)) {
-                    $categoryIds[] = (int)$category[$entityField];
+                    $categoryIds[] = (int)$category[$linkField];
                     // Storefront approach is to treat non-anchor children of anchor category as anchors.
-                    // Adding theirs IDs to $anchorCategory for consistency.
+                    // Adding their's IDs to $anchorCategory for consistency.
                     if ($category['is_anchor'] == 1 || in_array($category['parent_id'], $anchorCategory)) {
-                        $anchorCategory[] = (int)$category[$entityField];
+                        $anchorCategory[] = (int)$category[$linkField];
                     }
                 }
             }
@@ -2168,7 +2165,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Collection\Abstrac
         $select = $this->getConnection()->select();
 
         $select->from($this->_productCategoryTable, ['product_id', 'category_id']);
-        $select->where('product_id IN (?)', $ids, \Zend_Db::INT_TYPE);
+        $select->where('product_id IN (?)', $ids);
 
         $data = $this->getConnection()->fetchAll($select);
 

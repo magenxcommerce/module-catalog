@@ -9,9 +9,9 @@ namespace Magento\Catalog\Test\Unit\Model\Indexer\Category\Product\Plugin;
 
 use Magento\Catalog\Model\Indexer\Category\Product;
 use Magento\Catalog\Model\Indexer\Category\Product\Plugin\StoreGroup;
-use Magento\Catalog\Model\Indexer\Category\Product\TableMaintainer;
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Store\Model\Group as GroupModel;
 use Magento\Store\Model\ResourceModel\Group;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,7 +22,7 @@ class StoreGroupTest extends TestCase
     /**
      * @var GroupModel|MockObject
      */
-    private $groupModelMock;
+    private $groupMock;
 
     /**
      * @var MockObject|IndexerInterface
@@ -32,17 +32,12 @@ class StoreGroupTest extends TestCase
     /**
      * @var MockObject|Group
      */
-    private $subjectMock;
+    private $subject;
 
     /**
      * @var IndexerRegistry|MockObject
      */
     private $indexerRegistryMock;
-
-    /**
-     * @var TableMaintainer|MockObject
-     */
-    private $tableMaintainerMock;
 
     /**
      * @var StoreGroup
@@ -51,7 +46,7 @@ class StoreGroupTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->groupModelMock = $this->createPartialMock(
+        $this->groupMock = $this->createPartialMock(
             GroupModel::class,
             ['dataHasChangedFor', 'isObjectNew']
         );
@@ -64,48 +59,44 @@ class StoreGroupTest extends TestCase
             true,
             ['getId', 'getState']
         );
-        $this->subjectMock = $this->createMock(Group::class);
+        $this->subject = $this->createMock(Group::class);
         $this->indexerRegistryMock = $this->createPartialMock(IndexerRegistry::class, ['get']);
-        $this->tableMaintainerMock = $this->createMock(TableMaintainer::class);
 
-        $this->model = new StoreGroup($this->indexerRegistryMock, $this->tableMaintainerMock);
+        $this->model = (new ObjectManager($this))
+            ->getObject(StoreGroup::class, ['indexerRegistry' => $this->indexerRegistryMock]);
     }
 
     /**
      * @param array $valueMap
      * @dataProvider changedDataProvider
      */
-    public function testAfterSave(array $valueMap): void
+    public function testBeforeAndAfterSave($valueMap)
     {
         $this->mockIndexerMethods();
-        $this->groupModelMock->expects($this->exactly(2))->method('dataHasChangedFor')->willReturnMap($valueMap);
-        $this->groupModelMock->expects($this->once())->method('isObjectNew')->willReturn(false);
+        $this->groupMock->expects($this->exactly(2))->method('dataHasChangedFor')->willReturnMap($valueMap);
+        $this->groupMock->expects($this->once())->method('isObjectNew')->willReturn(false);
 
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->groupModelMock)
-        );
+        $this->model->beforeSave($this->subject, $this->groupMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->groupMock));
     }
 
     /**
      * @param array $valueMap
      * @dataProvider changedDataProvider
      */
-    public function testAfterSaveNotNew(array $valueMap): void
+    public function testBeforeAndAfterSaveNotNew($valueMap)
     {
-        $this->groupModelMock->expects($this->exactly(2))->method('dataHasChangedFor')->willReturnMap($valueMap);
-        $this->groupModelMock->expects($this->once())->method('isObjectNew')->willReturn(true);
+        $this->groupMock->expects($this->exactly(2))->method('dataHasChangedFor')->willReturnMap($valueMap);
+        $this->groupMock->expects($this->once())->method('isObjectNew')->willReturn(true);
 
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->groupModelMock)
-        );
+        $this->model->beforeSave($this->subject, $this->groupMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->groupMock));
     }
 
     /**
      * @return array
      */
-    public function changedDataProvider(): array
+    public function changedDataProvider()
     {
         return [
             [
@@ -115,20 +106,18 @@ class StoreGroupTest extends TestCase
         ];
     }
 
-    public function testAfterSaveWithoutChanges(): void
+    public function testBeforeAndAfterSaveWithoutChanges()
     {
-        $this->groupModelMock->expects($this->exactly(2))
+        $this->groupMock->expects($this->exactly(2))
             ->method('dataHasChangedFor')
             ->willReturnMap([['root_category_id', false], ['website_id', false]]);
-        $this->groupModelMock->expects($this->never())->method('isObjectNew');
+        $this->groupMock->expects($this->never())->method('isObjectNew');
 
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->groupModelMock)
-        );
+        $this->model->beforeSave($this->subject, $this->groupMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->groupMock));
     }
 
-    private function mockIndexerMethods(): void
+    private function mockIndexerMethods()
     {
         $this->indexerMock->expects($this->once())->method('invalidate');
         $this->indexerRegistryMock->expects($this->once())

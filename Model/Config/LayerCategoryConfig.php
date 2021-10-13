@@ -60,7 +60,7 @@ class LayerCategoryConfig
         }
 
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_CATALOG_LAYERED_NAVIGATION_DISPLAY_CATEGORY,
+            static::XML_PATH_CATALOG_LAYERED_NAVIGATION_DISPLAY_CATEGORY,
             $scopeType,
             $scopeCode
         );

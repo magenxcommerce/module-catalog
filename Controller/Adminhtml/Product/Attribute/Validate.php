@@ -33,7 +33,6 @@ use Magento\Framework\View\Result\PageFactory;
 class Validate extends AttributeAction implements HttpGetActionInterface, HttpPostActionInterface
 {
     const DEFAULT_MESSAGE_KEY = 'message';
-    private const RESERVED_ATTRIBUTE_CODES = ['product_type', 'type_id'];
 
     /**
      * @var JsonFactory
@@ -146,16 +145,11 @@ class Validate extends AttributeAction implements HttpGetActionInterface, HttpPo
             );
         }
 
-        if (in_array($attributeCode, self::RESERVED_ATTRIBUTE_CODES, true)) {
-            $message = __('Code (%1) is a reserved key and cannot be used as attribute code.', $attributeCode);
-            $this->setMessageToResponse($response, [$message]);
-            $response->setError(true);
-        }
-
-        if ($attribute->getId() && !$attributeId) {
+        if ($attribute->getId() && !$attributeId || $attributeCode === 'product_type' || $attributeCode === 'type_id') {
             $message = strlen($this->getRequest()->getParam('attribute_code'))
                 ? __('An attribute with this code already exists.')
                 : __('An attribute with the same code (%1) already exists.', $attributeCode);
+
             $this->setMessageToResponse($response, [$message]);
 
             $response->setError(true);

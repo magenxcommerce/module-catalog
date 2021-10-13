@@ -18,9 +18,8 @@
         </arguments>
 
         <click selector="{{AdminProductFormSection.addAttributeBtn}}" stepKey="clickAddAttributeBtn"/>
-        <waitForText userInput="Select Attribute" stepKey="checkNewAttributePopUpAppeared"/>
+        <see userInput="Select Attribute" stepKey="checkNewAttributePopUpAppeared"/>
         <click selector="{{AdminProductFormAttributeSection.createNewAttribute}}" stepKey="clickCreateNewAttribute"/>
-        <waitForElementVisible selector="{{AdminProductFormNewAttributeSection.attributeLabel}}" stepKey="waitForAttrLabel" />
         <fillField selector="{{AdminProductFormNewAttributeSection.attributeLabel}}" userInput="{{attributeName}}" stepKey="fillAttributeLabel"/>
         <selectOption selector="{{AdminProductFormNewAttributeSection.attributeType}}" userInput="{{attributeType}}" stepKey="selectAttributeType"/>
         <click selector="{{AdminProductFormNewAttributeSection.saveAttribute}}" stepKey="saveAttribute"/>

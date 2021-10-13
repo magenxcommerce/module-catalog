@@ -6,16 +6,8 @@
 
 namespace Magento\Catalog\Model\Product\Price;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
-use Magento\Catalog\Model\ProductIdLocatorInterface;
-use Magento\Catalog\Model\ResourceModel\Attribute;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Framework\Exception\CouldNotDeleteException;
-use Magento\Framework\Exception\CouldNotSaveException;
-
 /**
- * Class responsibly for persistence of prices.
+ * Price persistence.
  */
 class PricePersistence
 {
@@ -27,24 +19,24 @@ class PricePersistence
     private $table = 'catalog_product_entity_decimal';
 
     /**
-     * @var Attribute
+     * @var \Magento\Catalog\Model\ResourceModel\Attribute
      */
     private $attributeResource;
 
     /**
-     * @var ProductAttributeRepositoryInterface
+     * @var \Magento\Catalog\Api\ProductAttributeRepositoryInterface
      */
     private $attributeRepository;
 
     /**
-     * @var ProductIdLocatorInterface
+     * @var \Magento\Catalog\Model\ProductIdLocatorInterface
      */
     private $productIdLocator;
 
     /**
      * Metadata pool.
      *
-     * @var MetadataPool
+     * @var \Magento\Framework\EntityManager\MetadataPool
      */
     private $metadataPool;
 
@@ -72,17 +64,17 @@ class PricePersistence
     /**
      * PricePersistence constructor.
      *
-     * @param Attribute $attributeResource
-     * @param ProductAttributeRepositoryInterface $attributeRepository
-     * @param ProductIdLocatorInterface $productIdLocator
-     * @param MetadataPool $metadataPool
+     * @param \Magento\Catalog\Model\ResourceModel\Attribute $attributeResource
+     * @param \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository
+     * @param \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator
+     * @param \Magento\Framework\EntityManager\MetadataPool $metadataPool
      * @param string $attributeCode
      */
     public function __construct(
-        Attribute $attributeResource,
-        ProductAttributeRepositoryInterface $attributeRepository,
-        ProductIdLocatorInterface $productIdLocator,
-        MetadataPool $metadataPool,
+        \Magento\Catalog\Model\ResourceModel\Attribute $attributeResource,
+        \Magento\Catalog\Api\ProductAttributeRepositoryInterface $attributeRepository,
+        \Magento\Catalog\Model\ProductIdLocatorInterface $productIdLocator,
+        \Magento\Framework\EntityManager\MetadataPool $metadataPool,
         $attributeCode = ''
     ) {
         $this->attributeResource = $attributeResource;
@@ -105,7 +97,7 @@ class PricePersistence
             ->select()
             ->from($this->attributeResource->getTable($this->table));
         return $this->attributeResource->getConnection()->fetchAll(
-            $select->where($this->getEntityLinkField() . ' IN (?)', $ids, \Zend_Db::INT_TYPE)
+            $select->where($this->getEntityLinkField() . ' IN (?)', $ids)
                 ->where('attribute_id = ?', $this->getAttributeId())
         );
     }
@@ -115,7 +107,7 @@ class PricePersistence
      *
      * @param array $prices
      * @return void
-     * @throws CouldNotSaveException
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
      */
     public function update(array $prices)
     {
@@ -135,7 +127,7 @@ class PricePersistence
             $connection->commit();
         } catch (\Exception $e) {
             $connection->rollBack();
-            throw new CouldNotSaveException(
+            throw new \Magento\Framework\Exception\CouldNotSaveException(
                 __('Could not save Prices.'),
                 $e
             );
@@ -147,7 +139,7 @@ class PricePersistence
      *
      * @param array $skus
      * @return void
-     * @throws CouldNotDeleteException
+     * @throws \Magento\Framework\Exception\CouldNotDeleteException
      */
     public function delete(array $skus)
     {
@@ -167,7 +159,7 @@ class PricePersistence
             $connection->commit();
         } catch (\Exception $e) {
             $connection->rollBack();
-            throw new CouldNotDeleteException(
+            throw new \Magento\Framework\Exception\CouldNotDeleteException(
                 __('Could not delete Prices'),
                 $e
             );
@@ -217,10 +209,10 @@ class PricePersistence
         $affectedIds = [];
 
         foreach ($this->productIdLocator->retrieveProductIdsBySkus($skus) as $productIds) {
-            $affectedIds[] = array_keys($productIds);
+            $affectedIds = array_merge($affectedIds, array_keys($productIds));
         }
 
-        return array_unique(array_merge([], ...$affectedIds));
+        return array_unique($affectedIds);
     }
 
     /**
@@ -230,7 +222,7 @@ class PricePersistence
      */
     public function getEntityLinkField()
     {
-        return $this->metadataPool->getMetadata(ProductInterface::class)
+        return $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class)
             ->getLinkField();
     }
 }

@@ -32,11 +32,9 @@
         </after>
 
         <actionGroup ref="AdminProductCatalogPageOpenActionGroup" stepKey="openProductCatalogPage"/>
-        <comment userInput="Adding the comment to replace clickAddProductToggle action for preserving Backward Compatibility" stepKey="clickAddProductToggle"/>
-        <comment userInput="Adding the comment to replace clickAddProductToggle action for preserving Backward Compatibility" stepKey="waitForProductToggleToSelectProduct"/>
-        <actionGroup ref="AdminClickAddProductToggleAndSelectProductTypeActionGroup" stepKey="clickVirtualProduct">
-            <argument name="productType" value="virtual"/>
-        </actionGroup>
+        <click selector="{{AdminProductGridActionSection.addProductToggle}}" stepKey="clickAddProductToggle"/>
+        <waitForPageLoad stepKey="waitForProductToggleToSelectProduct"/>
+        <click selector="{{AdminProductGridActionSection.addVirtualProduct}}" stepKey="clickVirtualProduct"/>
 
         <!-- Create virtual product with custom options suite and import options -->
         <fillField selector="{{AdminProductFormSection.productName}}" userInput="{{virtualProductCustomImportOptions.name}}" stepKey="fillProductName"/>

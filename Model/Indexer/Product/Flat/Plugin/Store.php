@@ -6,23 +6,19 @@
 
 namespace Magento\Catalog\Model\Indexer\Product\Flat\Plugin;
 
-use Magento\Catalog\Model\Indexer\Product\Flat\Processor;
-use Magento\Framework\Model\AbstractModel;
-use Magento\Store\Model\ResourceModel\Store as StoreResourceModel;
-
 class Store
 {
     /**
      * Product flat indexer processor
      *
-     * @var Processor
+     * @var \Magento\Catalog\Model\Indexer\Product\Flat\Processor
      */
     protected $_productFlatIndexerProcessor;
 
     /**
-     * @param Processor $productFlatIndexerProcessor
+     * @param \Magento\Catalog\Model\Indexer\Product\Flat\Processor $productFlatIndexerProcessor
      */
-    public function __construct(Processor $productFlatIndexerProcessor)
+    public function __construct(\Magento\Catalog\Model\Indexer\Product\Flat\Processor $productFlatIndexerProcessor)
     {
         $this->_productFlatIndexerProcessor = $productFlatIndexerProcessor;
     }
@@ -30,19 +26,18 @@ class Store
     /**
      * Before save handler
      *
-     * @param StoreResourceModel $subject
-     * @param StoreResourceModel $result
-     * @param AbstractModel $object
+     * @param \Magento\Store\Model\ResourceModel\Store $subject
+     * @param \Magento\Framework\Model\AbstractModel $object
      *
-     * @return StoreResourceModel
+     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterSave(StoreResourceModel $subject, StoreResourceModel $result, AbstractModel $object)
-    {
-        if ($object->isObjectNew() || $object->dataHasChangedFor('group_id')) {
+    public function beforeSave(
+        \Magento\Store\Model\ResourceModel\Store $subject,
+        \Magento\Framework\Model\AbstractModel $object
+    ) {
+        if (!$object->getId() || $object->dataHasChangedFor('group_id')) {
             $this->_productFlatIndexerProcessor->markIndexerAsInvalid();
         }
-
-        return $result;
     }
 }

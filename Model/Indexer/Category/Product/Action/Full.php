@@ -174,7 +174,7 @@ class Full extends AbstractAction
         foreach ($this->storeManager->getStores() as $store) {
             if ($this->getPathFromCategoryId($store->getRootCategoryId())) {
                 $userFunctions[$store->getId()] = function () use ($store) {
-                    $this->reindexStore($store);
+                    return $this->reindexStore($store);
                 };
             }
         }
@@ -282,7 +282,7 @@ class Full extends AbstractAction
             $this->connection->delete($this->tableMaintainer->getMainTmpTable((int)$store->getId()));
             $entityIds = $this->connection->fetchCol($query);
             $resultSelect = clone $basicSelect;
-            $resultSelect->where($whereCondition, $entityIds, \Zend_Db::INT_TYPE);
+            $resultSelect->where($whereCondition, $entityIds);
             $this->connection->query(
                 $this->connection->insertFromSelect(
                     $resultSelect,

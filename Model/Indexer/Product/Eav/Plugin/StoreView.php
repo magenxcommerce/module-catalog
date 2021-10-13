@@ -3,26 +3,21 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 namespace Magento\Catalog\Model\Indexer\Product\Eav\Plugin;
-
-use Magento\Catalog\Model\Indexer\Product\Eav\Processor;
-use Magento\Framework\Model\AbstractModel;
-use Magento\Store\Model\ResourceModel\Store;
 
 class StoreView
 {
     /**
      * Product attribute indexer processor
      *
-     * @var Processor
+     * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
      */
     protected $_indexerEavProcessor;
 
     /**
-     * @param Processor $indexerEavProcessor
+     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $indexerEavProcessor
      */
-    public function __construct(Processor $indexerEavProcessor)
+    public function __construct(\Magento\Catalog\Model\Indexer\Product\Eav\Processor $indexerEavProcessor)
     {
         $this->_indexerEavProcessor = $indexerEavProcessor;
     }
@@ -30,19 +25,18 @@ class StoreView
     /**
      * Before save handler
      *
-     * @param Store $subject
-     * @param Store $result
-     * @param AbstractModel $object
+     * @param \Magento\Store\Model\ResourceModel\Store $subject
+     * @param \Magento\Framework\Model\AbstractModel $object
      *
-     * @return Store
+     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterSave(Store $subject, Store $result, AbstractModel $object)
-    {
-        if (($object->isObjectNew() || $object->dataHasChangedFor('group_id')) && $object->getIsActive()) {
+    public function beforeSave(
+        \Magento\Store\Model\ResourceModel\Store $subject,
+        \Magento\Framework\Model\AbstractModel $object
+    ) {
+        if ((!$object->getId() || $object->dataHasChangedFor('group_id')) && $object->getIsActive()) {
             $this->_indexerEavProcessor->markIndexerAsInvalid();
         }
-
-        return $result;
     }
 }

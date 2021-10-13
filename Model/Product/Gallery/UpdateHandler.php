@@ -5,69 +5,17 @@
  */
 namespace Magento\Catalog\Model\Product\Gallery;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Media\Config;
 use Magento\Catalog\Model\ResourceModel\Product\Gallery;
-use Magento\Eav\Model\ResourceModel\AttributeValue;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\EntityManager\MetadataPool;
-use Magento\Framework\Filesystem;
-use Magento\Framework\Json\Helper\Data;
-use Magento\MediaStorage\Helper\File\Storage\Database;
-use Magento\Store\Model\Store;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\EntityManager\Operation\ExtensionInterface;
 
 /**
  * Update handler for catalog product gallery.
  *
  * @api
  * @since 101.0.0
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class UpdateHandler extends CreateHandler
+class UpdateHandler extends \Magento\Catalog\Model\Product\Gallery\CreateHandler
 {
-    /**
-     * @var AttributeValue
-     */
-    private $attributeValue;
-
-    /**
-     * @param MetadataPool $metadataPool
-     * @param ProductAttributeRepositoryInterface $attributeRepository
-     * @param Gallery $resourceModel
-     * @param Data $jsonHelper
-     * @param Config $mediaConfig
-     * @param Filesystem $filesystem
-     * @param Database $fileStorageDb
-     * @param StoreManagerInterface|null $storeManager
-     * @param AttributeValue|null $attributeValue
-     */
-    public function __construct(
-        MetadataPool $metadataPool,
-        ProductAttributeRepositoryInterface $attributeRepository,
-        Gallery $resourceModel,
-        Data $jsonHelper,
-        Config $mediaConfig,
-        Filesystem $filesystem,
-        Database $fileStorageDb,
-        StoreManagerInterface $storeManager = null,
-        ?AttributeValue $attributeValue = null
-    ) {
-        parent::__construct(
-            $metadataPool,
-            $attributeRepository,
-            $resourceModel,
-            $jsonHelper,
-            $mediaConfig,
-            $filesystem,
-            $fileStorageDb,
-            $storeManager
-        );
-        $this->attributeValue = $attributeValue ?: ObjectManager::getInstance()->get(AttributeValue::class);
-    }
-
     /**
      * @inheritdoc
      *
@@ -77,45 +25,32 @@ class UpdateHandler extends CreateHandler
     {
         $filesToDelete = [];
         $recordsToDelete = [];
-        $imagesToDelete = [];
-        $imagesToNotDelete = [];
-        foreach ($images as $image) {
-            if (empty($image['removed'])) {
-                $imagesToNotDelete[] = $image['file'];
-            }
+        $picturesInOtherStores = [];
+
+        foreach ($this->resourceModel->getProductImages($product, $this->extractStoreIds($product)) as $image) {
+            $picturesInOtherStores[$image['filepath']] = true;
         }
 
-        foreach ($images as $image) {
+        foreach ($images as &$image) {
             if (!empty($image['removed'])) {
                 if (!empty($image['value_id'])) {
+                    if (preg_match('/\.\.(\\\|\/)/', $image['file'])) {
+                        continue;
+                    }
                     $recordsToDelete[] = $image['value_id'];
-                    if (!in_array($image['file'], $imagesToNotDelete)) {
-                        $imagesToDelete[] = $image['file'];
-                        if ($this->canDeleteImage($image['file'])) {
-                            $filesToDelete[] = ltrim($image['file'], '/');
-                        }
+                    $catalogPath = $this->mediaConfig->getBaseMediaPath();
+                    $isFile = $this->mediaDirectory->isFile($catalogPath . $image['file']);
+                    // only delete physical files if they are not used by any other products and if this file exist
+                    if ($isFile && !($this->resourceModel->countImageUses($image['file']) > 1)) {
+                        $filesToDelete[] = ltrim($image['file'], '/');
                     }
                 }
             }
         }
 
-        $this->deleteMediaAttributeValues($product, $imagesToDelete);
         $this->resourceModel->deleteGallery($recordsToDelete);
-        $this->removeDeletedImages($filesToDelete);
-    }
 
-    /**
-     * Check if image exists and is not used by any other products
-     *
-     * @param string $file
-     * @return bool
-     */
-    private function canDeleteImage(string $file): bool
-    {
-        $catalogPath = $this->mediaConfig->getBaseMediaPath();
-        $filePath = $this->mediaDirectory->getRelativePath($catalogPath . $file);
-        return $this->mediaDirectory->isFile($filePath)
-            && $this->resourceModel->countImageUses($file) <= 1;
+        $this->removeDeletedImages($filesToDelete);
     }
 
     /**
@@ -159,14 +94,14 @@ class UpdateHandler extends CreateHandler
     /**
      * Retrieve store ids from product.
      *
-     * @param Product $product
+     * @param \Magento\Catalog\Model\Product $product
      * @return array
      * @since 101.0.0
      */
     protected function extractStoreIds($product)
     {
         $storeIds = $product->getStoreIds();
-        $storeIds[] = Store::DEFAULT_STORE_ID;
+        $storeIds[] = \Magento\Store\Model\Store::DEFAULT_STORE_ID;
 
         // Removing current storeId.
         $storeIds = array_flip($storeIds);
@@ -189,36 +124,6 @@ class UpdateHandler extends CreateHandler
 
         foreach ($files as $filePath) {
             $this->mediaDirectory->delete($catalogPath . '/' . $filePath);
-        }
-        return null;
-    }
-
-    /**
-     * Delete media attributes values for given images
-     *
-     * @param Product $product
-     * @param string[] $images
-     */
-    private function deleteMediaAttributeValues(Product $product, array $images): void
-    {
-        if ($images) {
-            $values = $this->attributeValue->getValues(
-                ProductInterface::class,
-                $product->getData($this->metadata->getLinkField()),
-                $this->mediaConfig->getMediaAttributeCodes()
-            );
-            $valuesToDelete = [];
-            foreach ($values as $value) {
-                if (in_array($value['value'], $images, true)) {
-                    $valuesToDelete[] = $value;
-                }
-            }
-            if ($valuesToDelete) {
-                $this->attributeValue->deleteValues(
-                    ProductInterface::class,
-                    $valuesToDelete
-                );
-            }
         }
     }
 }

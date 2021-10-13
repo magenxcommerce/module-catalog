@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Magento\Catalog\Test\Unit\Helper;
 
 use Magento\Catalog\Helper\Image;
-use Magento\Catalog\Model\Config\CatalogMediaConfig;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\ImageFactory as ProductImageFactory;
 use Magento\Catalog\Model\View\Asset\PlaceholderFactory;
@@ -71,11 +70,6 @@ class ImageTest extends TestCase
      */
     protected $placeholderFactory;
 
-    /**
-     * @var CatalogMediaConfig|MockObject
-     */
-    private $catalogMediaConfigMock;
-
     protected function setUp(): void
     {
         $this->mockContext();
@@ -96,17 +90,12 @@ class ImageTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->catalogMediaConfigMock = $this->createPartialMock(CatalogMediaConfig::class, ['getMediaUrlFormat']);
-        $this->catalogMediaConfigMock->method('getMediaUrlFormat')->willReturn(CatalogMediaConfig::HASH);
-
-
         $this->helper = new Image(
             $this->context,
             $this->imageFactory,
             $this->assetRepository,
             $this->viewConfig,
-            $this->placeholderFactory,
-            $this->catalogMediaConfigMock
+            $this->placeholderFactory
         );
     }
 
@@ -405,14 +394,6 @@ class ImageTest extends TestCase
 
         $this->helper->init($productMock, $imageId, $attributes);
         $this->assertEquals($data['width'], $this->helper->getWidth());
-    }
-
-    /**
-     * Check initBaseFile without properties - product
-     */
-    public function testGetUrlWithOutProduct()
-    {
-        $this->assertNull($this->helper->getUrl());
     }
 
     /**

@@ -12,12 +12,12 @@ use Magento\Catalog\Model\Product\Option;
 use Magento\Catalog\Model\Product\Option\Value;
 use Magento\Catalog\Model\ResourceModel\Product\Option\Value\Collection;
 use Magento\Catalog\Model\ResourceModel\Product\Option\Value\CollectionFactory;
+use Magento\Catalog\Pricing\Price\CustomOptionPriceCalculator;
+
 use Magento\Framework\Pricing\Price\PriceInterface;
 use Magento\Framework\Pricing\PriceInfoInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use PHPUnit\Framework\TestCase;
-use Magento\Catalog\Pricing\Price\CalculateCustomOptionCatalogRule;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Test for \Magento\Catalog\Model\Product\Option\Value class.
@@ -30,20 +30,17 @@ class ValueTest extends TestCase
     private $model;
 
     /**
-     * @var CalculateCustomOptionCatalogRule|MockObject
+     * @var CustomOptionPriceCalculator
      */
-    private $calculateCustomOptionCatalogRule;
+    private $customOptionPriceCalculatorMock;
 
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
         $mockedResource = $this->getMockedResource();
         $mockedCollectionFactory = $this->getMockedValueCollectionFactory();
 
-        $this->calculateCustomOptionCatalogRule = $this->createMock(
-            CalculateCustomOptionCatalogRule::class
+        $this->customOptionPriceCalculatorMock = $this->createMock(
+            CustomOptionPriceCalculator::class
         );
 
         $helper = new ObjectManager($this);
@@ -52,7 +49,7 @@ class ValueTest extends TestCase
             [
                 'resource' => $mockedResource,
                 'valueCollectionFactory' => $mockedCollectionFactory,
-                'calculateCustomOptionCatalogRule' => $this->calculateCustomOptionCatalogRule
+                'customOptionPriceCalculator' => $this->customOptionPriceCalculatorMock,
             ]
         );
         $this->model->setOption($this->getMockedOption());
@@ -80,8 +77,8 @@ class ValueTest extends TestCase
         $this->assertEquals($price, $this->model->getPrice(false));
 
         $percentPrice = 100.0;
-        $this->calculateCustomOptionCatalogRule->expects($this->atLeastOnce())
-            ->method('execute')
+        $this->customOptionPriceCalculatorMock->expects($this->atLeastOnce())
+            ->method('getOptionPriceByPriceCode')
             ->willReturn($percentPrice);
         $this->assertEquals($percentPrice, $this->model->getPrice(true));
     }

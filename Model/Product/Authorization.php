@@ -159,7 +159,7 @@ class Authorization
                     if (!$savedProduct->getSku()) {
                         throw NoSuchEntityException::singleField('id', $product->getId());
                     }
-                    $oldData = $savedProduct->getData();
+                    $oldData = $product->getOrigData();
                 }
             }
             if ($this->hasProductChanged($product, $oldData)) {

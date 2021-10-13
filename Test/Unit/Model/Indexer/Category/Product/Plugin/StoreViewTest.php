@@ -27,27 +27,27 @@ class StoreViewTest extends TestCase
     /**
      * @var MockObject|IndexerInterface
      */
-    private $indexerMock;
+    protected $indexerMock;
 
     /**
      * @var StoreView
      */
-    private $model;
+    protected $model;
 
     /**
      * @var IndexerRegistry|MockObject
      */
-    private $indexerRegistryMock;
+    protected $indexerRegistryMock;
 
     /**
      * @var TableMaintainer|MockObject
      */
-    private $tableMaintainerMock;
+    protected $tableMaintainer;
 
     /**
-     * @var Group|MockObject
+     * @var MockObject
      */
-    private $subjectMock;
+    protected $subject;
 
     protected function setUp(): void
     {
@@ -60,7 +60,7 @@ class StoreViewTest extends TestCase
             true,
             ['getId', 'getState']
         );
-        $this->subjectMock = $this->createMock(Group::class);
+        $this->subject = $this->createMock(Group::class);
         $this->indexerRegistryMock = $this->createPartialMock(IndexerRegistry::class, ['get']);
         $this->storeMock = $this->createPartialMock(
             Store::class,
@@ -70,56 +70,47 @@ class StoreViewTest extends TestCase
                 'dataHasChangedFor'
             ]
         );
-        $this->tableMaintainerMock = $this->createPartialMock(
+        $this->tableMaintainer = $this->createPartialMock(
             TableMaintainer::class,
             [
                 'createTablesForStore'
             ]
         );
 
-        $this->model = new StoreView($this->indexerRegistryMock, $this->tableMaintainerMock);
+        $this->model = new StoreView($this->indexerRegistryMock, $this->tableMaintainer);
     }
 
-    public function testAfterSaveNewObject(): void
+    public function testAroundSaveNewObject()
     {
         $this->mockIndexerMethods();
         $this->storeMock->expects($this->atLeastOnce())->method('isObjectNew')->willReturn(true);
         $this->storeMock->expects($this->atLeastOnce())->method('getId')->willReturn(1);
-
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->storeMock)
-        );
+        $this->model->beforeSave($this->subject, $this->storeMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->storeMock));
     }
 
-    public function testAfterSaveHasChanged(): void
+    public function testAroundSaveHasChanged()
     {
         $this->mockIndexerMethods();
         $this->storeMock->expects($this->once())
             ->method('dataHasChangedFor')
             ->with('group_id')
             ->willReturn(true);
-
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->storeMock)
-        );
+        $this->model->beforeSave($this->subject, $this->storeMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->storeMock));
     }
 
-    public function testAfterSaveNoNeed(): void
+    public function testAroundSaveNoNeed()
     {
         $this->storeMock->expects($this->once())
             ->method('dataHasChangedFor')
             ->with('group_id')
             ->willReturn(false);
-
-        $this->assertSame(
-            $this->subjectMock,
-            $this->model->afterSave($this->subjectMock, $this->subjectMock, $this->storeMock)
-        );
+        $this->model->beforeSave($this->subject, $this->storeMock);
+        $this->assertSame($this->subject, $this->model->afterSave($this->subject, $this->subject, $this->storeMock));
     }
 
-    private function mockIndexerMethods(): void
+    private function mockIndexerMethods()
     {
         $this->indexerMock->expects($this->once())->method('invalidate');
         $this->indexerRegistryMock->expects($this->once())

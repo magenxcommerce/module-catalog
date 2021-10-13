@@ -6,13 +6,13 @@
 namespace Magento\Catalog\Model\Product;
 
 use Magento\Catalog\Model\Product\Image\NotLoadInfoImageException;
-use Magento\Catalog\Model\Product\Image\ParamsBuilder;
 use Magento\Catalog\Model\View\Asset\ImageFactory;
 use Magento\Catalog\Model\View\Asset\PlaceholderFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Image as MagentoImage;
 use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Catalog\Model\Product\Image\ParamsBuilder;
 
 /**
  * Image operations
@@ -101,7 +101,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
 
     /**
      * @var int
-     * @deprecated unused
      */
     protected $_angle;
 
@@ -220,7 +219,6 @@ class Image extends \Magento\Framework\Model\AbstractModel
      * @param array $data
      * @param SerializerInterface $serializer
      * @param ParamsBuilder $paramsBuilder
-     * @throws \Magento\Framework\Exception\FileSystemException
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
@@ -665,7 +663,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
     public function isCached()
     {
         $path = $this->imageAsset->getPath();
-        return is_array($this->loadImageInfoFromCache($path)) || $this->_mediaDirectory->isExist($path);
+        return is_array($this->loadImageInfoFromCache($path)) || file_exists($path);
     }
 
     /**
@@ -937,7 +935,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
      */
     private function saveImageInfoToCache(array $imageInfo, string $imagePath)
     {
-        $imagePath = $this->cachePrefix . $imagePath;
+        $imagePath = $this->cachePrefix  . $imagePath;
         $this->_cacheManager->save(
             $this->serializer->serialize($imageInfo),
             $imagePath,
@@ -953,7 +951,7 @@ class Image extends \Magento\Framework\Model\AbstractModel
      */
     private function loadImageInfoFromCache(string $imagePath)
     {
-        $imagePath = $this->cachePrefix . $imagePath;
+        $imagePath = $this->cachePrefix  . $imagePath;
         $cacheData = $this->_cacheManager->load($imagePath);
         if (!$cacheData) {
             return false;

@@ -188,17 +188,12 @@ define([
         _addItem: function (event, imageData) {
             var count = this.element.find(this.options.imageSelector).length,
                 element,
-                imgElement,
-                position = count + 1,
-                lastElement = this.element.find(this.options.imageSelector + ':last');
+                imgElement;
 
-            if (lastElement.length === 1) {
-                position = parseInt(lastElement.data('imageData').position || count, 10) + 1;
-            }
             imageData = $.extend({
                 'file_id': imageData['value_id'] ? imageData['value_id'] : Math.random().toString(33).substr(2, 18),
                 'disabled': imageData.disabled ? imageData.disabled : 0,
-                'position': position,
+                'position': count + 1,
                 sizeLabel: bytesToSize(imageData.size)
             }, imageData);
 
@@ -211,7 +206,7 @@ define([
             if (count === 0) {
                 element.prependTo(this.element);
             } else {
-                element.insertAfter(lastElement);
+                element.insertAfter(this.element.find(this.options.imageSelector + ':last'));
             }
 
             if (!this.options.initialized &&

@@ -24,7 +24,8 @@
             <actionGroup ref="RestoreLayoutSetting" stepKey="sampleActionGroup"/>
             <actionGroup ref="AdminLogoutActionGroup" stepKey="logout"/>
         </after>
-        <actionGroup ref="AdminOpenWebConfigurationPageActionGroup" stepKey="navigateToWebConfigurationPage"/>
+        <amOnPage url="{{WebConfigurationPage.url}}" stepKey="navigateToWebConfigurationPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
         <conditionalClick stepKey="expandDefaultLayouts" selector="{{WebSection.DefaultLayoutsTab}}" dependentSelector="{{WebSection.CheckIfTabExpand}}" visible="true"/>
         <waitForElementVisible selector="{{DefaultLayoutsSection.productLayout}}" stepKey="DefaultProductLayout"/>
         <selectOption selector="{{DefaultLayoutsSection.productLayout}}" userInput="3 columns" stepKey="select3ColumnsLayout"/>
