@@ -12,10 +12,11 @@ use Magento\Catalog\Model\Session as CatalogSession;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Framework\View\LayoutInterface;
 use Magento\PageCache\Model\DepersonalizeChecker;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests Magento\Catalog\Model\Layout\DepersonalizePlugin.
+ * Unit tests for \Magento\Catalog\Model\Layout\DepersonalizePlugin class.
  */
 class DepersonalizePluginTest extends TestCase
 {
@@ -25,17 +26,17 @@ class DepersonalizePluginTest extends TestCase
     private $plugin;
 
     /**
-     * @var CatalogSession|\PHPUnit\Framework\MockObject\MockObject
+     * @var CatalogSession|MockObject
      */
     private $catalogSessionMock;
 
     /**
-     * @var DepersonalizeChecker|\PHPUnit\Framework\MockObject\MockObject
+     * @var DepersonalizeChecker|MockObject
      */
     private $depersonalizeCheckerMock;
 
     /**
-     * @var LayoutInterface|\PHPUnit\Framework\MockObject\MockObject
+     * @var LayoutInterface|MockObject
      */
     private $layoutMock;
 
@@ -58,7 +59,7 @@ class DepersonalizePluginTest extends TestCase
     }
 
     /**
-     * Tests afterGenerateElements method when depersonalization is needed.
+     * Test afterGenerateElements method when depersonalization is needed.
      *
      * @return void
      */
@@ -70,7 +71,7 @@ class DepersonalizePluginTest extends TestCase
     }
 
     /**
-     * Tests afterGenerateElements method when depersonalization is not needed.
+     * Test afterGenerateElements method when depersonalization is not needed.
      *
      * @return void
      */

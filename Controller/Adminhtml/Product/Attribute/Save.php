@@ -197,12 +197,10 @@ class Save extends Attribute implements HttpPostActionInterface
             $attributeCode = $model && $model->getId()
                 ? $model->getAttributeCode()
                 : $this->getRequest()->getParam('attribute_code');
-
             if (!$attributeCode) {
                 $frontendLabel = $this->getRequest()->getParam('frontend_label')[0] ?? '';
                 $attributeCode = $this->generateCode($frontendLabel);
             }
-
             $data['attribute_code'] = $attributeCode;
 
             //validate frontend_input
@@ -264,6 +262,10 @@ class Save extends Attribute implements HttpPostActionInterface
             if (!$model->getIsUserDefined() && $model->getId()) {
                 // Unset attribute field for system attributes
                 unset($data['apply_to']);
+            }
+
+            if ($model->getBackendType() == 'static' && !$model->getIsUserDefined()) {
+                $data['frontend_class'] = $model->getFrontendClass();
             }
 
             unset($data['entity_type_id']);

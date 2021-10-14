@@ -183,7 +183,7 @@ class Output extends AbstractHelper
         if ($attributeHtml !== null
             && $attribute->getIsHtmlAllowedOnFront()
             && $attribute->getIsWysiwygEnabled()
-            && $this->isDirectivesExists($attributeHtml)
+            && $this->isDirectivesExists((string)$attributeHtml)
         ) {
             $attributeHtml = $this->_getTemplateProcessor()->filter($attributeHtml);
         }
@@ -220,7 +220,7 @@ class Output extends AbstractHelper
         if ($attributeHtml !== null
             && $attribute->getIsHtmlAllowedOnFront()
             && $attribute->getIsWysiwygEnabled()
-            && $this->isDirectivesExists($attributeHtml)
+            && $this->isDirectivesExists((string)$attributeHtml)
 
         ) {
             $attributeHtml = $this->_getTemplateProcessor()->filter($attributeHtml);
@@ -239,7 +239,7 @@ class Output extends AbstractHelper
      * @param string|Phrase $attributeHtml
      * @return bool
      */
-    public function isDirectivesExists($attributeHtml)
+    public function isDirectivesExists(string $attributeHtml): bool
     {
         $matches = false;
         foreach ($this->directivePatterns as $pattern) {
@@ -248,7 +248,6 @@ class Output extends AbstractHelper
                 break;
             }
         }
-
         return $matches;
     }
 }

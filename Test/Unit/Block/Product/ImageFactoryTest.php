@@ -14,27 +14,29 @@ use Magento\Catalog\Model\Product\Image\ParamsBuilder;
 use Magento\Catalog\Model\View\Asset\Image as ViewAssetImage;
 use Magento\Catalog\Model\View\Asset\ImageFactory as ViewAssetImageFactory;
 use Magento\Framework\Config\View;
-use Magento\Framework\View\ConfigInterface;
 use Magento\Framework\ObjectManager\ObjectManager;
+use Magento\Framework\View\ConfigInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ImageFactoryTest extends \PHPUnit\Framework\TestCase
+class ImageFactoryTest extends TestCase
 {
-    /** @var  ParamsBuilder|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var  ParamsBuilder|MockObject */
     private $paramsBuilder;
 
-    /** @var  View|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var  View|MockObject */
     private $viewConfig;
 
-    /** @var  ObjectManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var  ObjectManager|MockObject */
     private $objectManager;
 
     /**
-     * @var ImageFactory|\PHPUnit\Framework\MockObject\MockObject
+     * @var ImageFactory|MockObject
      */
     private $model;
 
     /**
-     * @var ViewAssetImageFactory|\PHPUnit\Framework\MockObject\MockObject
+     * @var ViewAssetImageFactory|MockObject
      */
     private $viewAssetImageFactory;
 
@@ -95,6 +97,7 @@ class ImageFactoryTest extends \PHPUnit\Framework\TestCase
         return [
             $this->getTestDataWithoutAttributes(),
             $this->getTestDataWithAttributes(),
+            $this->getTestDataWithoutDimensions()
         ];
     }
 
@@ -144,7 +147,7 @@ class ImageFactoryTest extends \PHPUnit\Framework\TestCase
                     'height' => 100,
                     'label' => 'test_image_label',
                     'ratio' => 1,
-                    'custom_attributes' => '',
+                    'custom_attributes' => [],
                     'product_id' => null,
                     'class' => 'product-image-photo'
                 ],
@@ -202,11 +205,31 @@ class ImageFactoryTest extends \PHPUnit\Framework\TestCase
                     'height' => 50,
                     'label' => 'test_product_name',
                     'ratio' => 0.5, // <==
-                    'custom_attributes' => 'name_1="value_1" name_2="value_2"',
+                    'custom_attributes' => [
+                        'name_1' => 'value_1',
+                        'name_2' => 'value_2',
+                    ],
                     'product_id' => null,
                     'class' => 'my-class'
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getTestDataWithoutDimensions(): array
+    {
+        $data = $this->getTestDataWithoutAttributes();
+
+        $data['data']['imageParamsBuilder']['image_width'] = null;
+        $data['data']['imageParamsBuilder']['image_height'] = null;
+
+        $data['expected']['data']['width'] = null;
+        $data['expected']['data']['height'] = null;
+        $data['expected']['data']['ratio'] = 1.0;
+
+        return $data;
     }
 }

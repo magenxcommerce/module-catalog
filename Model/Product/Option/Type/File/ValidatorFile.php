@@ -13,6 +13,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Math\Random;
+use Magento\MediaStorage\Model\File\Uploader;
 
 /**
  * Validator class. Represents logic for validation file given from product option
@@ -174,16 +175,11 @@ class ValidatorFile extends Validator
         $userValue = [];
 
         if ($upload->isUploaded($file) && $upload->isValid($file)) {
-            $fileName = \Magento\MediaStorage\Model\File\Uploader::getCorrectFileName($fileInfo['name']);
-            $dispersion = \Magento\MediaStorage\Model\File\Uploader::getDispersionPath($fileName);
-
-            $filePath = $dispersion;
-
             $tmpDirectory = $this->filesystem->getDirectoryRead(DirectoryList::SYS_TMP);
-            // phpcs:ignore Magento2.Security.InsecureFunction
-            $fileHash = md5($tmpDirectory->readFile($tmpDirectory->getRelativePath($fileInfo['tmp_name'])));
             $fileRandomName = $this->random->getRandomString(32);
-            $filePath .= '/' . $fileRandomName;
+            $fileName = Uploader::getCorrectFileName($fileRandomName);
+            $dispersion = Uploader::getDispersionPath($fileName);
+            $filePath = $dispersion . '/' . $fileName;
             $fileFullPath = $this->mediaDirectory->getAbsolutePath($this->quotePath . $filePath);
 
             $upload->addFilter(new \Zend_Filter_File_Rename(['target' => $fileFullPath, 'overwrite' => true]));
@@ -204,10 +200,8 @@ class ValidatorFile extends Validator
             $_height = 0;
 
             if ($tmpDirectory->isReadable($tmpDirectory->getRelativePath($fileInfo['tmp_name']))) {
-                // phpcs:ignore Magento2.Functions.DiscouragedFunction
                 if (filesize($fileInfo['tmp_name'])) {
                     if ($this->isImageValidator->isValid($fileInfo['tmp_name'])) {
-                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
                         $imageSize = getimagesize($fileInfo['tmp_name']);
                     }
                 } else {
@@ -219,6 +213,8 @@ class ValidatorFile extends Validator
                     $_height = $imageSize[1];
                 }
             }
+
+            $fileHash = hash('sha256', $tmpDirectory->readFile($tmpDirectory->getRelativePath($fileInfo['tmp_name'])));
 
             $userValue = [
                 'type' => $fileInfo['type'],
@@ -273,11 +269,9 @@ class ValidatorFile extends Validator
      *
      * @return bool
      * @todo need correctly name
-     * @SuppressWarnings(PHPMD.Superglobals)
      */
     protected function validateContentLength()
     {
-        // phpcs:disable Magento2.Security.Superglobal
         return isset($_SERVER['CONTENT_LENGTH']) && $_SERVER['CONTENT_LENGTH'] > $this->fileSize->getMaxFileSize();
     }
 }

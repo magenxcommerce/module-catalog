@@ -3,26 +3,27 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
+
 namespace Magento\Catalog\Test\Unit\Ui\DataProvider\Product\Form\Modifier;
 
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use Magento\Catalog\Model\Config\Source\ProductPriceOptionsInterface;
+use Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\TierPrice;
 use Magento\Framework\Stdlib\ArrayManager;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\TierPrice;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-/**
- * Class TierPriceTest.
- */
-class TierPriceTest extends \PHPUnit\Framework\TestCase
+class TierPriceTest extends TestCase
 {
     /**
-     * @var ProductPriceOptionsInterface|\PHPUnit\Framework\MockObject\MockObject
+     * @var ProductPriceOptionsInterface|MockObject
      */
     private $productPriceOptions;
 
     /**
-     * @var ArrayManager|\PHPUnit\Framework\MockObject\MockObject
+     * @var ArrayManager|MockObject
      */
     private $arrayManager;
 

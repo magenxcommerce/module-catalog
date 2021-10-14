@@ -165,7 +165,7 @@ class Websites extends AbstractModifier
         $websitesList = $this->getWebsitesList();
         $isNewProduct = !$this->locator->getProduct()->getId();
         $tooltip = [
-            'link' => 'https://docs.magento.com/m2/ce/user_guide/configuration/scope.html',
+            'link' => 'https://docs.magento.com/user-guide/configuration/scope.html',
             'description' => __(
                 'If your Magento installation has multiple websites, ' .
                 'you can edit the scope to use the product on specific sites.'
@@ -186,7 +186,6 @@ class Websites extends AbstractModifier
                             'componentType' => Form\Field::NAME,
                             'formElement' => Form\Element\Checkbox::NAME,
                             'description' => __($website['name']),
-                            '__disableTmpl' => true,
                             'tooltip' => $tooltip,
                             'sortOrder' => $sortOrder,
                             'dataScope' => 'website_ids.' . $website['id'],
@@ -260,7 +259,8 @@ class Websites extends AbstractModifier
                         'columnsHeader' => true,
                         'dndConfig' => ['enabled' => false],
                         'imports' => [
-                            'visible' => '${$.namespace}.${$.namespace}.websites.' . $websiteId . ':checked'
+                            'visible' => '${$.namespace}.${$.namespace}.websites.' . $websiteId . ':checked',
+                            '__disableTmpl' => ['visible' => false],
                         ],
                         'itemTemplate' => 'record',
                         'dataScope' => '',
@@ -378,21 +378,18 @@ class Websites extends AbstractModifier
             $websiteOption = [
                 'value' => '0.' . $website['id'],
                 'label' => __($website['name']),
-                '__disableTmpl' => true,
             ];
             $groupOptions = [];
             foreach ($website['groups'] as $group) {
                 $groupOption = [
                     'value' => '0.' . $website['id'] . '.' . $group['id'],
                     'label' => __($group['name']),
-                    '__disableTmpl' => true,
                 ];
                 $storeViewOptions = [];
                 foreach ($group['stores'] as $storeView) {
                     $storeViewOptions[] = [
                         'value' => $storeView['id'],
                         'label' => __($storeView['name']),
-                        '__disableTmpl' => true,
                     ];
                 }
                 if (!empty($storeViewOptions)) {
