@@ -9,12 +9,11 @@
        xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
     <test name="AdminChangeProductAttributeGroupTest">
         <annotations>
-            <stories value="Preserving attribute value after attribute group is changed"/>
             <title value="Preserving attribute value after attribute group is changed"/>
             <description value="Attribute value should be preserved after changing attribute group"/>
             <severity value="CRITICAL"/>
-            <testCaseId value="MC-35612"/>
-            <useCaseId value="MC-31892"/>
+            <testCaseId value="MC-34707"/>
+            <useCaseId value="MC-31875"/>
             <group value="catalog"/>
         </annotations>
         <before>
@@ -27,21 +26,21 @@
             <createData entity="CatalogAttributeSet" stepKey="createAttributeSet"/>
             <createData entity="CatalogAttributeSet" stepKey="createSecondAttributeSet"/>
 
-            <actionGroup ref="AdminLoginActionGroup" stepKey="login"/>
+            <actionGroup ref="LoginAsAdmin" stepKey="login"/>
             <amOnPage url="{{AdminProductAttributeSetEditPage.url}}/$createAttributeSet.attribute_set_id$/"
                       stepKey="onAttributeSetEdit"/>
-            <actionGroup ref="AssignAttributeToGroupActionGroup" stepKey="assignAttributeToGroup">
+            <actionGroup ref="AssignAttributeToGroup" stepKey="assignAttributeToGroup">
                 <argument name="group" value="Product Details"/>
                 <argument name="attribute" value="$createProductAttribute.attribute_code$"/>
             </actionGroup>
-            <actionGroup ref="SaveAttributeSetActionGroup" stepKey="saveAttributeSet"/>
+            <actionGroup ref="SaveAttributeSet" stepKey="saveAttributeSet"/>
             <amOnPage url="{{AdminProductAttributeSetEditPage.url}}/$createSecondAttributeSet.attribute_set_id$/"
                       stepKey="onSecondAttributeSetEdit"/>
-            <actionGroup ref="AssignAttributeToGroupActionGroup" stepKey="assignAttributeToContentGroup">
+            <actionGroup ref="AssignAttributeToGroup" stepKey="assignAttributeToContentGroup">
                 <argument name="group" value="Content"/>
                 <argument name="attribute" value="$createProductAttribute.attribute_code$"/>
             </actionGroup>
-            <actionGroup ref="SaveAttributeSetActionGroup" stepKey="saveSecondAttributeSet"/>
+            <actionGroup ref="SaveAttributeSet" stepKey="saveSecondAttributeSet"/>
         </before>
         <after>
             <deleteData createDataKey="createSimpleProduct" stepKey="deleteProduct"/>
@@ -52,8 +51,8 @@
             <actionGroup ref="ClearProductsFilterActionGroup" stepKey="clearProductsFilter"/>
 
             <!-- Reindex invalidated indices after product attribute has been created/deleted -->
-            <magentoCron groups="index" stepKey="reindexInvalidatedIndices"/>
-            <actionGroup ref="AdminLogoutActionGroup" stepKey="logout"/>
+            <actionGroup ref="CliRunReindexUsingCronJobsActionGroup" stepKey="reindexInvalidatedIndices"/>
+            <actionGroup ref="logout" stepKey="logout"/>
         </after>
 
         <actionGroup ref="SearchForProductOnBackendActionGroup" stepKey="searchForSimpleProduct">
@@ -64,14 +63,14 @@
             <argument name="product" value="$createSimpleProduct$"/>
         </actionGroup>
 
-        <actionGroup ref="AdminProductPageSelectAttributeSetActionGroup" stepKey="selectAttributeSet">
+        <actionGroup ref="AdminProductPageSelectAttributeSet" stepKey="selectAttributeSet">
             <argument name="attributeSetName" value="$createAttributeSet.attribute_set_name$"/>
         </actionGroup>
         <waitForText userInput="$createProductAttribute.default_frontend_label$" stepKey="seeAttributeInForm"/>
         <fillField selector="{{AdminProductFormSection.attributeRequiredInput($createProductAttribute.attribute_code$)}}"
                    userInput="test"
                    stepKey="fillProductAttributeValue"/>
-        <actionGroup ref="AdminProductPageSelectAttributeSetActionGroup" stepKey="selectSecondAttributeSet">
+        <actionGroup ref="AdminProductPageSelectAttributeSet" stepKey="selectSecondAttributeSet">
             <argument name="attributeSetName" value="$createSecondAttributeSet.attribute_set_name$"/>
         </actionGroup>
         <actionGroup ref="ExpandAdminProductSectionActionGroup" stepKey="expandContentSection"/>
