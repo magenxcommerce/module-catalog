@@ -1,0 +1,54 @@
+{
+    "name": "magenxcommerce/module-catalog",
+    "description": "N/A",
+    "require": {
+        "php": "~7.0.13|~7.1.0|~7.2.0",
+        "magenxcommerce/module-store": "100.2.*",
+        "magenxcommerce/module-eav": "101.0.*",
+        "magenxcommerce/module-cms": "102.0.*",
+        "magenxcommerce/module-indexer": "100.2.*",
+        "magenxcommerce/module-customer": "101.0.*",
+        "magenxcommerce/module-theme": "100.2.*",
+        "magenxcommerce/module-checkout": "100.2.*",
+        "magenxcommerce/module-backend": "100.2.*",
+        "magenxcommerce/module-widget": "101.0.*",
+        "magenxcommerce/module-wishlist": "101.0.*",
+        "magenxcommerce/module-tax": "100.2.*",
+        "magenxcommerce/module-msrp": "100.2.*",
+        "magenxcommerce/module-catalog-inventory": "100.2.*",
+        "magenxcommerce/module-directory": "100.2.*",
+        "magenxcommerce/module-catalog-rule": "101.0.*",
+        "magenxcommerce/module-product-alert": "100.2.*",
+        "magenxcommerce/module-url-rewrite": "101.0.*",
+        "magenxcommerce/module-catalog-url-rewrite": "100.2.*",
+        "magenxcommerce/module-page-cache": "100.2.*",
+        "magenxcommerce/module-quote": "101.0.*",
+        "magenxcommerce/module-config": "101.0.*",
+        "magenxcommerce/module-media-storage": "100.2.*",
+        "magenxcommerce/framework": "101.0.*",
+        "magenxcommerce/module-ui": "101.0.*",
+        "magenxcommerce/module-authorization": "100.2.*"
+    },
+    "suggest": {
+        "magenxcommerce/module-cookie": "100.2.*",
+        "magenxcommerce/module-sales": "101.0.*",
+        "magenxcommerce/module-catalog-sample-data": "Sample Data version:100.2.*"
+    },
+    "type": "magento2-module",
+    "version": "102.0.10",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\Catalog\\": ""
+        }
+    },
+    "replace": {
+        "magento/module-catalog": "*"
+    }
+}
